@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources\Districts\Schemas;
 
+use App\Models\Person;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class DistrictForm
@@ -21,13 +25,18 @@ class DistrictForm
                     ->numeric(),
                 TextInput::make('longitude')
                     ->numeric(),
-                TextInput::make('bishop')
-                    ->numeric(),
-                Textarea::make('contact')
+                Select::make('bishop')
+                    ->options( function () {
+                        $persons = Person::whereHas('minister')->orderBy('surname')->orderBy('firstname')->get();
+                        foreach ($persons as $person){
+                            $options[$person->id]=$person->surname . ", " . $person->firstname;
+                        }
+                        return $options;
+                    })
+                    ->searchable(),
+                RichEditor::make('contact')->label('District office details')
                     ->columnSpanFull(),
-                TextInput::make('active')
-                    ->required()
-                    ->numeric(),
+                Toggle::make('active'),
             ]);
     }
 }

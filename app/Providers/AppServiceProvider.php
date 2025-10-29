@@ -28,11 +28,4 @@ class AppServiceProvider extends ServiceProvider
             $view->with('circuits', $circuits);
         });
     }
-
-    protected function bootForConsole(): void
-    {
-        $this->publishes([
-            __DIR__.'/../Resources/assets' => public_path('/'),
-          ], 'assets');
-    }
 }

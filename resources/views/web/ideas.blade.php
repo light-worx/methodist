@@ -1,4 +1,4 @@
-<x-layouts.web pageName="Ministry ideas">
+<x-web pageName="Ministry ideas">
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <p class="mb-4">

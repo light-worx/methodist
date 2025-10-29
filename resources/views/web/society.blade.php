@@ -1,4 +1,4 @@
-<x-layouts.web pageName="{{$society->society}} Society">
+<x-web pageName="{{$society->society}} Society">
     <div style="height:400px" id="map"></div>
     <script>
         var map = L.map('map').setView([{{$society->latitude}}, {{$society->longitude}}], 15);

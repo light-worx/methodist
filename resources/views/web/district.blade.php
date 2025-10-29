@@ -1,4 +1,4 @@
-<x-layouts.web pageName="{{$district->district}} District">
+<x-web pageName="{{$district->district}} District">
     <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-district" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">District</button>

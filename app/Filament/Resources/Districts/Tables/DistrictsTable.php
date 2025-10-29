@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Districts\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -18,32 +19,15 @@ class DistrictsTable
                     ->searchable(),
                 TextColumn::make('slug')
                     ->searchable(),
-                TextColumn::make('location')
-                    ->searchable(),
-                TextColumn::make('latitude')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('longitude')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('bishop')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('active')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                IconColumn::make('active')
+                    ->icon(fn (string $state): string => match ($state) {
+                        '0' => 'heroicon-o-x-circle',
+                        '1' => 'heroicon-o-check-circle'
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        '0' => 'danger',
+                        '1' => 'success'
+                    })
             ])
             ->filters([
                 //

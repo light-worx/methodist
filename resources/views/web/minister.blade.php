@@ -1,4 +1,4 @@
-<x-layouts.web pageName="{{$minister->title}} {{$minister->firstname}} {{$minister->surname}}">
+<x-web pageName="{{$minister->title}} {{$minister->firstname}} {{$minister->surname}}">
     @if ($minister->image)
         <img class="rounded" width="100px" src="{{url('/storage/public/' . $minister->image)}}">
     @else 

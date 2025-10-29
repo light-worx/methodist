@@ -1,4 +1,4 @@
-<x-layouts.web pageName="{{$circuit->circuit}} Circuit {{$circuit->reference}}">
+<x-web pageName="{{$circuit->circuit}} Circuit {{$circuit->reference}}">
     <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="pills-circuit-tab" data-bs-toggle="pill" data-bs-target="#pills-circuit" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Circuit</button>

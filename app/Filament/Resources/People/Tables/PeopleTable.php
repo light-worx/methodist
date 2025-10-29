@@ -15,27 +15,15 @@ class PeopleTable
     {
         return $table
             ->columns([
-                TextColumn::make('firstname')
-                    ->searchable(),
                 TextColumn::make('surname')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('firstname')
                     ->searchable(),
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('phone')
                     ->searchable(),
-                ImageColumn::make('image'),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
