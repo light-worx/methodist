@@ -63,8 +63,12 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->userMenuItems([
+                'users' => Action::make('users')
+                    ->label('Users')
+                    ->url('/admin/users')
+                    ->icon('heroicon-o-users'),
                 'shield' => Action::make('shield')
-                    ->label('Manage Roles')
+                    ->label('Roles')
                     ->url('/admin/shield/roles')
                     ->icon('heroicon-o-shield-check'),
             ]);

@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^4.0",
+        "dotswan/filament-map-picker": "^2.0",
         "filament/filament": "^4.1",
         "laravel/fortify": "^1.30",
         "laravel/framework": "^12.0",
