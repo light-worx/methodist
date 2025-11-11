@@ -63,6 +63,33 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->userMenuItems([
+                'settings' => Action::make('settings')
+                    ->label('Settings')
+                    ->url('/admin/settings')
+                    ->icon('heroicon-o-cog-8-tooth'),
+                'my_circuits' => Action::make('my_circuits')
+                    ->label('My circuits')
+                    ->url(function (){
+                        $user=auth()->user();
+                        if ($user->circuits){
+                            $this->circuit=$user->circuits[0];
+                        } else if ($user->societies){
+                            $this->circuit=Society::find($user->societies[0])->circuit_id;
+                        } else {
+                            $this->circuit="";
+                        }
+                        return '/admin/circuits/' . $this->circuit;
+                    })
+                    ->icon('heroicon-o-user-group'),
+                'back_to_site' => Action::make('back_to_site')
+                    ->label('Back to app')
+                    ->url('/')
+                    ->icon('heroicon-o-arrow-left'),
+            ]);
+    }
+}
+
+/*
                 'users' => Action::make('users')
                     ->label('Users')
                     ->url('/admin/users')
@@ -71,6 +98,4 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Roles')
                     ->url('/admin/shield/roles')
                     ->icon('heroicon-o-shield-check'),
-            ]);
-    }
-}
+*/
