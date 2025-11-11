@@ -65,7 +65,7 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 'settings' => Action::make('settings')
                     ->label('Settings')
-                    ->url('/admin/settings')
+                    ->url('/admin/manage-settings')
                     ->icon('heroicon-o-cog-8-tooth'),
                 'my_circuits' => Action::make('my_circuits')
                     ->label('My circuits')
