@@ -3,18 +3,21 @@
 namespace App\Filament\Pages;
 
 use App\Settings\GeneralSettings;
+use App\Filament\Clusters\Settings\SettingsCluster;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Actions\Action;
 
 class ManageSettings extends SettingsPage
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static string $settings = GeneralSettings::class;
-    protected string $view = 'filament.pages.manage-settings';
+
+    protected static ?string $cluster = SettingsCluster::class;
 
     public static function shouldRegisterNavigation(): bool
     {

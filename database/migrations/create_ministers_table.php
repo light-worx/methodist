@@ -13,6 +13,7 @@ return new class extends Migration
             $table->increments('id')->unsigned();
             $table->integer('person_id');
             $table->string('status', 199);
+            $table->string('image',199)->nullable();
             $table->tinyinteger('active');
             $table->json('leadership')->nullable();
             $table->year('ordained')->nullable();

@@ -13,7 +13,7 @@ return new class extends Migration
             $table->increments('id')->unsigned();
             $table->integer('person_id');
             $table->integer('circuit_id');
-            $table->json('societies');
+            $table->json('societies')->nullable();
             $table->json('status');
         });
     }
