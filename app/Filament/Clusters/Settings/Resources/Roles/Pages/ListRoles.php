@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\Resources\Roles\Pages;
+namespace App\Filament\Clusters\Settings\Resources\Roles\Pages;
 
-use App\Filament\Resources\Roles\RoleResource;
+use App\Filament\Clusters\Settings\Resources\Roles\RoleResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 

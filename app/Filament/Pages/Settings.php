@@ -4,14 +4,16 @@ namespace App\Filament\Pages;
 
 use App\Settings\GeneralSettings;
 use App\Filament\Clusters\Settings\SettingsCluster;
+use App\Filament\Resources\Roles\Pages\ListRoles;
 use BackedEnum;
+use Bishopm\Hub\Filament\Clusters\Settings\Resources\UserResource\Pages\ListUsers;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Actions\Action;
 
-class ManageSettings extends SettingsPage
+class Settings extends SettingsPage
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
@@ -21,7 +23,7 @@ class ManageSettings extends SettingsPage
 
     public static function shouldRegisterNavigation(): bool
     {
-        return false;
+        return true;
     }
 
     public function form(Schema $schema): Schema

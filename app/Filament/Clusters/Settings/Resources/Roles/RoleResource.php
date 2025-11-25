@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\Resources\Roles;
+namespace App\Filament\Clusters\Settings\Resources\Roles;
 
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use App\Filament\Resources\Roles\Pages\CreateRole;
-use App\Filament\Resources\Roles\Pages\EditRole;
-use App\Filament\Resources\Roles\Pages\ListRoles;
-use App\Filament\Resources\Roles\Pages\ViewRole;
+use App\Filament\Clusters\Settings\Resources\Roles\Pages\CreateRole;
+use App\Filament\Clusters\Settings\Resources\Roles\Pages\EditRole;
+use App\Filament\Clusters\Settings\Resources\Roles\Pages\ListRoles;
+use App\Filament\Clusters\Settings\Resources\Roles\Pages\ViewRole;
+use App\Filament\Clusters\Settings\SettingsCluster;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
 use BezhanSalleh\PluginEssentials\Concerns\Resource as Essentials;
@@ -28,6 +29,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
+use UnitEnum;
 
 class RoleResource extends Resource
 {
@@ -39,6 +41,8 @@ class RoleResource extends Resource
     use HasShieldFormComponents;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?string $cluster = SettingsCluster::class;
 
     public static function form(Schema $schema): Schema
     {
@@ -151,11 +155,6 @@ class RoleResource extends Resource
     public static function getSlug(?Panel $panel = null): string
     {
         return Utils::getResourceSlug();
-    }
-
-    public static function getCluster(): ?string
-    {
-        return Utils::getResourceCluster();
     }
 
     public static function getEssentialsPlugin(): ?FilamentShieldPlugin

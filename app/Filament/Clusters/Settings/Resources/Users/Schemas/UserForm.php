@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Users\Schemas;
+namespace App\Filament\Clusters\Settings\Resources\Users\Schemas;
 
 use App\Models\Circuit;
 use App\Models\District;
