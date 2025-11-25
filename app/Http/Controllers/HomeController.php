@@ -13,6 +13,7 @@ use App\Models\Meeting;
 use App\Models\Midweek;
 use App\Models\Plan;
 use App\Models\Society;
+use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -27,6 +28,11 @@ class HomeController extends Controller
     public $ministers;
     public $supernumeraries;
     public $localpreachers;
+
+    public function __construct(public GeneralSettings $settings)
+    {
+        //
+    }
 
     public function circuit($district, $circuit){
         $data['circuit']=Circuit::with('district','societies','persons')->whereSlug($circuit)->first();
@@ -65,6 +71,11 @@ class HomeController extends Controller
         ksort($data['ministers']);
         $data['pageName'] = $data['district']->district . ' District';
         return view('web.district',$data);
+    }
+
+    public function editplan($id){
+        $data['id']=$id;
+        return view('preaching-plan',$data);
     }
 
     public function home()
@@ -162,7 +173,7 @@ class HomeController extends Controller
         $rows=$this->getrows($this->circuit->id,$this->dates);
         $pdf = new tFPDF();
         $pdf->AddPage('L');
-        $imagepath=base_path('/vendor/bishopm/methodist/src/Resources/assets/images/mcsa.png');
+        $imagepath=base_path('/resources/images/mcsa.png');
         $pdf->Image($imagepath,10,5,19);
         $pdf->SetFont('Helvetica', 'B', 18);
         $pdf->text(35,11,"THE METHODIST CHURCH OF SOUTHERN AFRICA");
@@ -183,7 +194,7 @@ class HomeController extends Controller
 
         // Legend
         $yadd=0;
-        $defaultservicetypes=setting('general.servicetypes');
+        $defaultservicetypes=$this->settings->service_types;
         if ($this->circuit->servicetypes){
             $stypes=$this->circuit->servicetypes;    
         } else {
@@ -333,8 +344,8 @@ class HomeController extends Controller
         $xx=10;
         
         $pdf->SetFont('Helvetica', '', 10);
-        $pdf->text($xx,$yy,"Presiding Bishop: " . setting('general.presiding_bishop'));
-        $pdf->text($xx,$yy+4.5,"General Secretary: " . setting('general.general_secretary'));
+        $pdf->text($xx,$yy,"Presiding Bishop: " . $this->settings->presiding_bishop);
+        $pdf->text($xx,$yy+4.5,"General Secretary: " . $this->settings->general_secretary);
         $bishop=Person::find($this->circuit->district->bishop);
         $pdf->text($xx,$yy+9,"District Bishop: " . $bishop->name);
         $yy=$yy+20;
@@ -377,7 +388,7 @@ class HomeController extends Controller
             }   
         }
         // Lay leaders
-        $roles = setting('general.leadership_roles');
+        $roles = $this->settings->circuit_leadership_roles;
         foreach ($roles as $role){
             $leaders=DB::table('persons')->join('circuit_person','persons.id','=','circuit_person.person_id')->where('circuit_person.circuit_id',$this->circuit->id)->whereJsonContains('status',$role)->orderBy('surname')->get();
             if (count($leaders)){
@@ -429,7 +440,7 @@ class HomeController extends Controller
         $yy=$yy+4.5;
 
         // Preacher leaders
-        $roles = setting('general.preacher_leadership_roles');
+        $roles = $this->settings->preaching_leadership_roles;
         foreach ($roles as $role){
             $leaders=Person::whereHas('circuits',function ($q) { $q->where('circuits.id',$this->circuit->id); })->withWhereHas('preacher', function($q) use($role) { $q->whereJsonContains('leadership',$role); })->orderBy('surname')->get();
             if (count($leaders)){

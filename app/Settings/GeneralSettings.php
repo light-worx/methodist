@@ -9,11 +9,11 @@ class GeneralSettings extends Settings
     public ?string $mapbox_token;
     public ?string $presiding_bishop;
     public ?string $general_secretary;
-    public ?string $service_types;
+    public ?array $service_types;
     public ?string $map_location;
-    public ?string $circuit_leadership_roles;
-    public ?string $preaching_leadership_roles;
-    public ?string $minister_leadership_roles;
+    public ?array $circuit_leadership_roles;
+    public ?array $preaching_leadership_roles;
+    public ?array $minister_leadership_roles;
     public ?string $deepseek_api;
        
     public static function group(): string

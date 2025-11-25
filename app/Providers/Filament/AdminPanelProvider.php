@@ -80,7 +80,7 @@ class AdminPanelProvider extends PanelProvider
                 'back_to_site' => Action::make('back_to_site')
                     ->label('Back to app')
                     ->url('/')
-                    ->icon('heroicon-o-arrow-left'),
+                    ->icon('heroicon-o-device-tablet'),
             ]);
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Livewire\PreachingPlan;
 use App\Models\Circuit;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +29,6 @@ class AppServiceProvider extends ServiceProvider
             });
             $view->with('circuits', $circuits);
         });
+        Livewire::component('preaching-plan', PreachingPlan::class);
     }
 }

@@ -7,7 +7,9 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DistrictsTable
 {
@@ -15,9 +17,9 @@ class DistrictsTable
     {
         return $table
             ->columns([
-                TextColumn::make('district')
+                TextColumn::make('id')->label('Number')
                     ->searchable(),
-                TextColumn::make('slug')
+                TextColumn::make('district')
                     ->searchable(),
                 IconColumn::make('active')
                     ->icon(fn (string $state): string => match ($state) {
@@ -30,7 +32,9 @@ class DistrictsTable
                     })
             ])
             ->filters([
-                //
+                Filter::make('hide_inactive_districts')
+                    ->query(fn (Builder $query): Builder => $query->where('active', 1))
+                    ->default()
             ])
             ->recordActions([
                 EditAction::make(),

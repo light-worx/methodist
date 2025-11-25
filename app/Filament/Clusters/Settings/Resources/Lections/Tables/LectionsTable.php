@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Societies\Tables;
+namespace App\Filament\Clusters\Settings\Resources\Lections\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -8,21 +8,24 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class SocietiesTable
+class LectionsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('society')
-                    ->sortable()
+                TextColumn::make('year')
                     ->searchable(),
-                TextColumn::make('circuit.reference')->label('Number')
-                    ->sortable()
+                TextColumn::make('lection')
                     ->searchable(),
-                TextColumn::make('circuit.circuit')
-                    ->sortable()
-                    ->searchable()
+                TextColumn::make('ot')
+                    ->searchable(),
+                TextColumn::make('psalm')
+                    ->searchable(),
+                TextColumn::make('nt')
+                    ->searchable(),
+                TextColumn::make('gospel')
+                    ->searchable(),
             ])
             ->filters([
                 //
