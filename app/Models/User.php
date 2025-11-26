@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -24,6 +25,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'districts',
+        'circuits',
+        'societies'
     ];
 
     /**
@@ -48,6 +52,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'districts' => 'array',
+            'circuits' => 'array',
+            'societies' => 'array'
         ];
     }
 
@@ -62,4 +69,20 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
+    public function societies(): HasMany
+    {
+        return $this->hasMany(Society::class);
+    }
+
+    public function circuits(): HasMany
+    {
+        return $this->hasMany(Circuit::class);
+    }
+
+    public function districts(): HasMany
+    {
+        return $this->hasMany(District::class);
+    }
+
 }

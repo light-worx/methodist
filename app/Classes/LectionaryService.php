@@ -2,287 +2,336 @@
 
 namespace App\Classes;
 
-use Carbon\Carbon;
 use App\Models\Lection;
 use App\Models\Eastersunday;
-use Illuminate\Support\Collection;
+use Carbon\Carbon;
 
 class LectionaryService
 {
     protected Carbon $date;
-    protected Carbon $easterSunday;
-    protected int $year;
+    protected string $cycleLetter; // A|B|C
+
+    public function __construct($date = null)
+    {
+        $this->date = $date ? Carbon::parse($date) : Carbon::today();
+        $this->cycleLetter = $this->determineCycleLetter($this->date);
+    }
 
     /**
-     * Get lectionary readings for a given date
+     * Public API: get readings for a given date
      *
-     * @param string|Carbon $date
+     * @param string|Carbon|null $date
      * @return array
      */
-    public function getReadings($date): array
+    public function getReadings($date = null): array
     {
-        $this->date = $date instanceof Carbon ? $date : Carbon::parse($date);
-        $this->year = $this->date->year;
-        
-        // Get Easter Sunday for the liturgical year
-        $this->easterSunday = $this->getEasterSunday();
-        
-        // Get the Sunday for this date
+        $this->date = $date ? Carbon::parse($date) : $this->date;
+
+        // Determine the Sunday for this date (the Sunday of the week; if date is Sunday it is itself)
         $sunday = $this->getSundayForDate($this->date);
-        
-        // Get the liturgical day name
-        $liturgicalDay = $this->getLiturgicalDay($sunday);
-        
-        // Get readings for the Sunday
-        $sundayReadings = $this->fetchReadings($liturgicalDay);
-        
-        // Get any special midweek services in the same week
-        $midweekReadings = $this->getMidweekReadings($sunday);
-        
+
+        // Build mappings and names
+        $sundayName = $this->getSundayName($sunday);
+        $sundayReadings = $this->fetchReadingsFor($sundayName);
+
+        // Midweek: all special weekday services that fall in this week (Mon-Sat before that Sunday)
+        $midweek = $this->getMidweekServicesForWeek($sunday);
+
         return [
-            'date' => $this->date->toDateString(),
-            'sunday' => $sunday->toDateString(),
-            'liturgical_day' => $liturgicalDay,
-            'sunday_readings' => $sundayReadings,
-            'midweek_readings' => $midweekReadings,
+            'sunday' => [
+                'name' => $sundayName,
+                'readings' => $sundayReadings,
+            ],
+            'midweek' => $midweek,
         ];
     }
 
-    /**
-     * Get Easter Sunday for the current calendar year
-     */
-    protected function getEasterSunday(): Carbon
-    {
-        // Simply get the Easter date for the current calendar year
-        $easter = Eastersunday::whereYear('eastersunday', $this->year)->first();
-        
-        if ($easter) {
-            return Carbon::parse($easter->eastersunday);
-        }
-        
-        throw new \Exception("Easter Sunday not found for year {$this->year}");
-    }
+    /* -----------------------
+       Core helpers
+       ----------------------- */
 
-    /**
-     * Get the Sunday for a given date
-     * Returns the upcoming Sunday (or current date if it's Sunday)
-     */
     protected function getSundayForDate(Carbon $date): Carbon
     {
-        if ($date->isSunday()) {
-            return $date->copy();
-        }
-        
-        // Get the next Sunday
-        return $date->copy()->next(Carbon::SUNDAY);
+        // Sunday is considered the Sunday of the week. If date is Sunday return it,
+        // otherwise return the *next* Sunday (so week Mon-Sun, and our midweek is Mon-Sat).
+        return $date->isSunday() ? $date->copy() : $date->copy()->next(Carbon::SUNDAY);
     }
 
-    /**
-     * Determine the liturgical day name based on the date
-     */
-    protected function getLiturgicalDay(Carbon $sunday): string
+    protected function fetchReadingsFor(?string $name): ?array
     {
-        $month = $sunday->month;
-        $day = $sunday->day;
-        
-        // Calculate days from Easter (positive = after Easter, negative = before Easter)
-        $daysFromEaster = (int) $this->easterSunday->diffInDays($sunday, false);
-        
-        // Easter Season (Easter to Pentecost) - CHECK THIS FIRST
-        if ($daysFromEaster === 0) {
-            return 'Easter Sunday';
-        } elseif ($daysFromEaster > 0 && $daysFromEaster < 49) {
-            $week = intdiv($daysFromEaster, 7);
-            return "Easter {$week}";
-        } elseif ($daysFromEaster === 49) {
-            return 'Pentecost';
+        if (!$name) {
+            return null;
         }
-        
-        // Trinity Sunday (first Sunday after Pentecost)
-        if ($daysFromEaster >= 56 && $daysFromEaster < 63) {
-            return 'Trinity Sunday';
+
+        $lection = Lection::where('lection', $name)
+            ->where('year', $this->cycleLetter)
+            ->first();
+
+        if (!$lection) {
+            return null;
         }
-        
-        // After Pentecost - Ordinary Time (date-based, following RCL)
-        // Check if we're after Trinity Sunday
-        if ($daysFromEaster >= 63) {
-            // Use date ranges as per RCL
-            if ($month === 5 && $day >= 24 && $day <= 28) return 'Ordinary 8';
-            if (($month === 5 && $day >= 29) || ($month === 6 && $day <= 4)) return 'Ordinary 9';
-            if ($month === 6 && $day >= 5 && $day <= 11) return 'Ordinary 10';
-            if ($month === 6 && $day >= 12 && $day <= 18) return 'Ordinary 11';
-            if ($month === 6 && $day >= 19 && $day <= 25) return 'Ordinary 12';
-            if (($month === 6 && $day >= 26) || ($month === 7 && $day <= 2)) return 'Ordinary 13';
-            if ($month === 7 && $day >= 3 && $day <= 9) return 'Ordinary 14';
-            if ($month === 7 && $day >= 10 && $day <= 16) return 'Ordinary 15';
-            if ($month === 7 && $day >= 17 && $day <= 23) return 'Ordinary 16';
-            if ($month === 7 && $day >= 24 && $day <= 30) return 'Ordinary 17';
-            if (($month === 7 && $day === 31) || ($month === 8 && $day <= 6)) return 'Ordinary 18';
-            if ($month === 8 && $day >= 7 && $day <= 13) return 'Ordinary 19';
-            if ($month === 8 && $day >= 14 && $day <= 20) return 'Ordinary 20';
-            if ($month === 8 && $day >= 21 && $day <= 27) return 'Ordinary 21';
-            if (($month === 8 && $day >= 28) || ($month === 9 && $day <= 3)) return 'Ordinary 22';
-            if ($month === 9 && $day >= 4 && $day <= 10) return 'Ordinary 23';
-            if ($month === 9 && $day >= 11 && $day <= 17) return 'Ordinary 24';
-            if ($month === 9 && $day >= 18 && $day <= 24) return 'Ordinary 25';
-            if (($month === 9 && $day >= 25) || ($month === 10 && $day <= 1)) return 'Ordinary 26';
-            if ($month === 10 && $day >= 2 && $day <= 8) return 'Ordinary 27';
-            if ($month === 10 && $day >= 9 && $day <= 15) return 'Ordinary 28';
-            if ($month === 10 && $day >= 16 && $day <= 22) return 'Ordinary 29';
-            if ($month === 10 && $day >= 23 && $day <= 29) return 'Ordinary 30';
-            if (($month === 10 && $day >= 30) || ($month === 11 && $day <= 5)) return 'Ordinary 31';
-            if ($month === 11 && $day >= 6 && $day <= 12) return 'Ordinary 32';
-            if ($month === 11 && $day >= 13 && $day <= 19) return 'Ordinary 33';
-            if ($month === 11 && $day >= 20 && $day <= 26) return 'Ordinary 34';
+
+        return [
+            'ot' => $lection->ot ?? null,
+            'psalm' => $lection->psalm ?? null,
+            'nt' => $lection->nt ?? null,
+            'gospel' => $lection->gospel ?? null,
+        ];
+    }
+
+    /* -----------------------
+       Special & midweek services
+       ----------------------- */
+
+    protected function getMidweekServicesForWeek(Carbon $sunday): array
+    {
+        // Week for midweek runs Monday -> Saturday before the Sunday
+        $weekStart = $sunday->copy()->subDays(6); // Monday
+        $weekEnd = $sunday->copy()->subDay(); // Saturday
+
+        $services = [];
+
+        // Epiphany (Jan 6) - considered a special day; include if it falls in this week
+        $epiphany = Carbon::create($sunday->year, 1, 6);
+        if ($this->dateInRange($epiphany, $weekStart, $weekEnd)) {
+            $r = $this->fetchReadingsFor('Epiphany');
+            if ($r) $services[] = ['name' => 'Epiphany', 'readings' => $r];
         }
-        
-        // Before Easter - Lent
-        if ($daysFromEaster >= -42 && $daysFromEaster <= -1) {
-            if ($daysFromEaster >= -7 && $daysFromEaster <= -1) {
+
+        // Ash Wednesday (46 days before Easter)
+        $ash = $this->getEasterSunday($sunday->year)->copy()->subDays(46);
+        if ($this->dateInRange($ash, $weekStart, $weekEnd)) {
+            $r = $this->fetchReadingsFor('Ash Wednesday');
+            if ($r) $services[] = ['name' => 'Ash Wednesday', 'readings' => $r];
+        }
+
+        // Holy Week (Mon - Sat before Easter)
+        $easter = $this->getEasterSunday($sunday->year);
+        $holy = [
+            'Monday of Holy Week'    => $easter->copy()->subDays(6),
+            'Tuesday of Holy Week'   => $easter->copy()->subDays(5),
+            'Wednesday of Holy Week' => $easter->copy()->subDays(4),
+            'Holy Thursday'          => $easter->copy()->subDays(3),
+            'Good Friday'            => $easter->copy()->subDays(2),
+            'Holy Saturday'          => $easter->copy()->subDays(1),
+        ];
+        foreach ($holy as $label => $d) {
+            if ($this->dateInRange($d, $weekStart, $weekEnd)) {
+                $r = $this->fetchReadingsFor($label);
+                if ($r) $services[] = ['name' => $label, 'readings' => $r];
+            }
+        }
+
+        // Ascension Day (Thursday, 39 days after Easter)
+        $ascension = $easter->copy()->addDays(39);
+        if ($this->dateInRange($ascension, $weekStart, $weekEnd)) {
+            $r = $this->fetchReadingsFor('Ascension of the Lord') ?: $this->fetchReadingsFor('Ascension Day');
+            if ($r) $services[] = ['name' => 'Ascension Day', 'readings' => $r];
+        }
+
+        // Christmas Eve (Dec 24) may fall in a week that spans Advent -> Christmas
+        $christmasEve = Carbon::create($sunday->year, 12, 24);
+        if ($this->dateInRange($christmasEve, $weekStart, $weekEnd)) {
+            $r = $this->fetchReadingsFor('Christmas Eve');
+            if ($r) $services[] = ['name' => 'Christmas Eve', 'readings' => $r];
+        }
+
+        // Sort by date ascending to keep chronological order
+        usort($services, function ($a, $b) {
+            // both will exist in DB; use OT field as stable fallback if needed (not ideal),
+            // but better to attempt matching by fetching Lection date - we don't have dates in DB.
+            // For now preserve the inserted order; midweek array will be chronological because we checked known dates in order.
+            return 0;
+        });
+
+        return $services;
+    }
+
+    protected function dateInRange(Carbon $d, Carbon $start, Carbon $end): bool
+    {
+        return $d->between($start->startOfDay(), $end->endOfDay());
+    }
+
+    /* -----------------------
+       Sunday naming logic (RCL, System A)
+       ----------------------- */
+
+    protected function getSundayName(Carbon $sunday): ?string
+    {
+        // Standardize input to Sunday date (should already be)
+        $sunday = $sunday->copy()->startOfDay();
+
+        // 1) Advent Sundays (4 weeks before Christmas) - check first because Advent spans year-end
+        $adventStart = $this->getAdventStartForLiturgicalYear($sunday->year);
+        $christmas = Carbon::create($sunday->year, 12, 25);
+
+        if ($sunday->betweenIncluded($adventStart, $christmas->copy()->subDay())) {
+            // week offset from adventStart -> 0..3
+            $offset = $adventStart->diffInWeeks($sunday);
+            $labels = ['Advent 1','Advent 2','Advent 3','Advent 4'];
+            return $labels[$offset] ?? 'Advent';
+        }
+
+        // 2) Christmas & Sundays after Christmas
+        // First Sunday after Christmas: the first Sunday between Dec 26 and Jan 1 inclusive
+        $firstAfterChristmas = $christmas->copy()->addDay()->next(Carbon::SUNDAY);
+        // But compute robustly: find the first Sunday on or after Dec 26
+        $first = Carbon::create($sunday->year, 12, 26)->copy()->nextOrEqual(Carbon::SUNDAY);
+        if ($sunday->isSameDay($first)) {
+            return 'First Sunday after Christmas Day';
+        }
+
+        // Second Sunday after Christmas: if another Sunday before Jan 6
+        $second = $first->copy()->addWeek();
+        if ($sunday->isSameDay($second) && $sunday->lt(Carbon::create($sunday->year + 1, 1, 6))) {
+            return 'Second Sunday after Christmas Day';
+        }
+
+        // 3) Epiphany and Sundays after Epiphany up to Transfiguration (last Sun before Lent)
+        $epiphany = Carbon::create($sunday->year, 1, 6);
+        // First Sunday on or after Jan 6
+        $firstEpiphanySunday = $epiphany->copy()->nextOrEqual(Carbon::SUNDAY);
+        // Determine Ash Wednesday for this calendar year
+        $ashWednesday = $this->getEasterSunday($sunday->year)->copy()->subDays(46);
+        // Transfiguration = last Sunday before Ash Wednesday
+        $transfigurationSunday = $ashWednesday->copy()->previous(Carbon::SUNDAY);
+
+        // If the Sunday is Jan 6 itself and it is Sunday -> Epiphany
+        if ($sunday->isSameDay($epiphany) && $epiphany->isSunday()) {
+            return 'Epiphany';
+        }
+
+        // Baptism of the Lord: the Sunday after Epiphany (if Jan 6 is Sunday, then next Sunday; otherwise it's the first Sunday on/after Jan 7)
+        $baptismSunday = $epiphany->isSunday() ? $epiphany->copy()->addWeek() : $firstEpiphanySunday;
+        if ($sunday->isSameDay($baptismSunday)) {
+            return 'Baptism of the Lord';
+        }
+
+        // Epiphany Sundays (numbered) until Transfiguration (Transfiguration replaces last Epiphany Sunday)
+        if ($sunday->gte($baptismSunday) && $sunday->lte($transfigurationSunday)) {
+            if ($sunday->isSameDay($transfigurationSunday)) {
+                return 'Transfiguration';
+            }
+            // Week index: 1 for the Sunday after Baptism, etc.
+            $weeks = $baptismSunday->diffInWeeks($sunday) + 1; // start at 1
+            return "Epiphany {$weeks}";
+        }
+
+        // 4) Lent and Holy Week handled by midweek; Sundays in Lent:
+        // Ash Wednesday -> Lent Sunday start = the following Sunday after Ash Wed
+        $lentFirstSunday = $ashWednesday->copy()->next(Carbon::SUNDAY);
+        if ($sunday->gte($lentFirstSunday) && $sunday->lt($this->getEasterSunday($sunday->year))) {
+            $weeks = $lentFirstSunday->diffInWeeks($sunday) + 1;
+            // If it's the week of Palm Sunday (last week) we may label 'Palm Sunday' when appropriate
+            $palmSunday = $this->getEasterSunday($sunday->year)->copy()->subWeek();
+            if ($sunday->isSameDay($palmSunday)) {
                 return 'Palm Sunday';
             }
-            $week = intdiv(abs($daysFromEaster + 1), 7) + 1;
-            if ($week >= 1 && $week <= 5) {
-                return "Lent {$week}";
-            }
+            return "Lent {$weeks}";
         }
-        
-        // Transfiguration (last Sunday after Epiphany, before Lent)
-        if ($daysFromEaster === -49) {
-            return 'Transfiguration';
-        }
-        
-        // Epiphany Season (January 6 to Transfiguration Sunday)
-        // Only check if we're BEFORE Lent (negative days from Easter, more than 49 days before)
-        if ($daysFromEaster < -49) {
-            $epiphany = Carbon::create($this->year, 1, 6);
-            if ($sunday->gte($epiphany)) {
-                if ($sunday->isSameDay($epiphany) || ($sunday->isAfter($epiphany) && $sunday->diffInDays($epiphany) < 7)) {
-                    return 'Baptism of the Lord';
-                }
-                $week = intdiv($epiphany->diffInDays($sunday), 7);
-                if ($week > 0) {
-                    return "Ordinary {$week}";
-                }
-            }
-        }
-        
-        // Advent and Christmas
-        $christmas = Carbon::create($this->year, 12, 25);
-        $adventStart = $christmas->copy()->subDays(28)->previous(Carbon::SUNDAY);
-        
-        if ($sunday->gte($adventStart) && $sunday->lt($christmas)) {
-            $weeksToChristmas = intdiv($christmas->diffInDays($sunday) + 6, 7);
-            return "Advent " . (5 - $weeksToChristmas);
-        }
-        
-        if ($sunday->between($christmas, $christmas->copy()->addDays(6))) {
-            return 'Christmas';
-        }
-        
-        if ($sunday->gt($christmas) && $sunday->lt(Carbon::create($this->year + 1, 1, 6))) {
-            return 'Christmas ' . intdiv($sunday->diffInDays($christmas), 7);
-        }
-        
-        // Default
-        return 'Ordinary Time';
-    }
 
-    /**
-     * Fetch readings from the database
-     */
-    protected function fetchReadings(string $liturgicalDay): ?array
-    {
-        $lection = Lection::where('lection', $liturgicalDay)->first();
-        
-        if ($lection) {
-            return [
-                'old_testament' => $lection->ot ?? null,
-                'psalm' => $lection->psalm ?? null,
-                'epistle' => $lection->nt ?? null,
-                'gospel' => $lection->gospel ?? null,
-            ];
+        // 5) Easter season (Easter Sunday ... Pentecost)
+        $easter = $this->getEasterSunday($sunday->year);
+        if ($sunday->isSameDay($easter)) {
+            return 'Easter Sunday';
         }
-        
+        $pentecost = $easter->copy()->addDays(49); // 7 weeks after Easter -> Pentecost
+        if ($sunday->gt($easter) && $sunday->lt($pentecost)) {
+            // count Easter Sundays: 2..7 (Easter week handled above)
+            $weeksAfterEaster = $easter->diffInWeeks($sunday) + 1;
+            return "Easter {$weeksAfterEaster}";
+        }
+        if ($sunday->isSameDay($pentecost)) {
+            return 'Pentecost';
+        }
+
+        // 6) Trinity Sunday (first Sunday after Pentecost)
+        $trinity = $pentecost->copy()->addWeek();
+        if ($sunday->isSameDay($trinity)) {
+            return 'Trinity Sunday';
+        }
+
+        // 7) Ordinary Sundays AFTER Trinity (RCL): first ordinary is the Sunday AFTER Trinity => Ordinary 8
+        $firstOrdinary = $trinity->copy()->addWeek(); // first Sunday to be Ordinary 8
+        $adventStart = $this->getAdventStartForLiturgicalYear($sunday->year);
+
+        if ($sunday->gte($firstOrdinary) && $sunday->lt($adventStart)) {
+            // Build mapping deterministically:
+            // iterate Sundays from firstOrdinary up to but not including adventStart;
+            // assign Ordinary 8,9,... sequentially
+            $map = [];
+            $dt = $firstOrdinary->copy();
+            $num = 8;
+            while ($dt->lt($adventStart)) {
+                $map[$dt->toDateString()] = $num;
+                $dt->addWeek();
+                $num++;
+            }
+
+            $key = $sunday->toDateString();
+            if (isset($map[$key])) {
+                return 'Ordinary ' . $map[$key];
+            }
+        }
+
+        // If none matched, return null (caller can handle)
         return null;
     }
 
-    /**
-     * Get midweek service readings for the week leading up to the Sunday
-     */
-    protected function getMidweekReadings(Carbon $sunday): array
+    /* -----------------------
+       Utility & date calculations
+       ----------------------- */
+
+    protected function getEasterSunday(int $year): Carbon
     {
-        $midweekServices = [];
-        
-        // Calculate the week start (Monday before the Sunday)
-        $weekStart = $sunday->copy()->subDays(6);
-        
-        // Define special midweek services relative to Easter
-        $specialDays = [
-            'Ash Wednesday' => -46,
-            'Monday Holy Week' => -6,
-            'Tuesday Holy Week' => -5,
-            'Wednesday Holy Week' => -4,
-            'Maundy Thursday' => -3,
-            'Good Friday' => -2,
-            'Holy Saturday' => -1,
-        ];
-        
-        foreach ($specialDays as $dayName => $daysFromEaster) {
-            $specialDate = $this->easterSunday->copy()->addDays($daysFromEaster);
-            
-            // Check if this special day falls in the week leading up to Sunday
-            // (from Monday through Saturday before Sunday)
-            if ($specialDate->between($weekStart, $sunday->copy()->subDay())) {
-                $readings = $this->fetchReadings($dayName);
-                if ($readings) {
-                    $midweekServices[] = [
-                        'date' => $specialDate->toDateString(),
-                        'day_name' => $dayName,
-                        'readings' => $readings,
-                    ];
-                }
-            }
+        // Try DB first (your eastersundays table)
+        $row = Eastersunday::where('year', $year)->first();
+        if ($row) {
+            return Carbon::parse($row->eastersunday);
         }
-        
-        // Sort by date to ensure chronological order
-        usort($midweekServices, function($a, $b) {
-            return strcmp($a['date'], $b['date']);
-        });
-        
-        return $midweekServices;
+
+        // Fallback: compute via PHP easter_date
+        $ts = easter_date($year); // returns timestamp midnight GMT on Easter Sunday
+        return Carbon::createFromTimestamp($ts)->startOfDay();
     }
 
     /**
-     * Get the liturgical year (A, B, or C)
-     * The liturgical year starts with Advent (roughly December 1)
-     * and runs through the end of Ordinary Time the following calendar year
+     * Determine the first Sunday of Advent for a calendar year.
+     * Advent 1 is the Sunday between Nov 27 and Dec 3 (inclusive).
      */
-    public function getLiturgicalYear(?Carbon $date = null): string
+    protected function getAdventStartForLiturgicalYear(int $calendarYear): Carbon
     {
-        $checkDate = $date ?? $this->date;
-        
-        // Determine which year to use for the calculation
-        // If we're in Advent (late November/December), the liturgical year is based on the NEXT year
-        $liturgicalYear = $checkDate->year;
-        
-        // Check if we're in Advent of the previous calendar year
-        // Advent starts 4 Sundays before December 25
-        $christmas = Carbon::create($checkDate->year, 12, 25);
-        $adventStart = $christmas->copy()->subDays(28)->previous(Carbon::SUNDAY);
-        
-        // If we're after Advent starts, use next year for calculation
-        if ($checkDate->gte($adventStart)) {
-            $liturgicalYear = $checkDate->year + 1;
+        // Find the Sunday between Nov 27 and Dec 3 inclusive
+        $start = Carbon::create($calendarYear, 11, 27);
+        for ($i = 0; $i <= 6; $i++) {
+            $d = $start->copy()->addDays($i);
+            if ($d->isSunday()) {
+                return $d;
+            }
         }
-        
-        $yearMod = $liturgicalYear % 3;
-        
-        return match($yearMod) {
-            0 => 'A',
-            1 => 'B',
-            2 => 'C',
-            default => 'A',
-        };
+
+        // Should never happen, but fallback:
+        return Carbon::create($calendarYear, 11, 27)->next(Carbon::SUNDAY);
     }
+
+    /**
+     * Determine liturgical cycle letter (A/B/C) for a date.
+     * RCL Year A started at Advent of 2007 (then 2010, 2013, 2016, 2019, ...)
+     */
+    protected function determineCycleLetter(Carbon $date): string
+    {
+        // Advent 1 for the current calendar year
+        $adventStart = $this->getAdventStartForLiturgicalYear($date->year);
+
+        // If date >= Advent start, it's the **next liturgical year**
+        $liturgicalYear = $date->gte($adventStart) ? $date->year + 1 : $date->year;
+
+        // Cycle mapping (Year A starting at Advent 2007)
+        $baseA = 2007; 
+        $index = ($liturgicalYear - $baseA) % 3;
+        if ($index < 0) $index += 3;
+        $map = ['A', 'B', 'C'];
+        return $map[$index];
+    }
+
 }

@@ -18,6 +18,8 @@ class CircuitResource extends Resource
 {
     protected static ?string $model = Circuit::class;
 
+    public static array|string $routeMiddleware = ['checkperms'];
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
     protected static ?string $recordTitleAttribute = 'circuit';

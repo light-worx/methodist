@@ -39,7 +39,7 @@
             <thead>
                 <tr>
                     <th class="bg-white">
-                    <a class="text-black text-decoration-none" href="{{ url('/admin/circuits/' . $circuit->id) }}" title="Back to circuit page">
+                    <a class="text-black text-decoration-none" href="{{ url('/admin/circuits/' . $circuit->id . '/edit') }}" title="Back to circuit page">
                         <i class="text-black bi bi-house"></i> Home
                     </a>
                     </th>
@@ -49,11 +49,11 @@
                 </tr>
                 <tr>
                     <th class="bg-dark text-white" colspan="2">
-                    <a href="{{ route('filament.admin.resources.circuits.plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '- 3 months'))]) }}">
+                    <a href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '- 3 months'))]) }}">
                         <i class="text-white bi bi-arrow-left h4"></i>
                     </a>
                     <a href="/plan/{{ $circuit->slug }}/{{ $today }}" class="mx-3 btn btn-sm btn-secondary">View PDF</a>
-                    <a href="{{ route('filament.admin.resources.circuits.plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '+ 3 months'))]) }}">
+                    <a href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '+ 3 months'))]) }}">
                         <i class="text-white bi bi-arrow-right h4"></i>
                     </a>
                     </th>

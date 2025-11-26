@@ -28,9 +28,6 @@ class MethodistServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $router = $this->app['router'];
-        $router->aliasMiddleware('adminonly', AdminRoute::class);
-        $router->aliasMiddleware('checkperms', CheckPerms::class);
         Schema::defaultStringLength(191);
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'methodist');
         Paginator::useBootstrapFive();

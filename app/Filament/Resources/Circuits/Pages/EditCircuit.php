@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Circuits\Pages;
 
+use App\Filament\Pages\PreachingPlan;
 use App\Filament\Resources\Circuits\CircuitResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -15,7 +16,10 @@ class EditCircuit extends EditRecord
     {
         return [
             Action::make('Preaching plan')
-                ->url(fn (): string => route('admin.plan.edit', ['record' => $this->record, 'today' => date('Y-m-d')])),
+                ->url(fn (): string => PreachingPlan::getUrl([
+                    'record' => $this->record,
+                    'today' => date('Y-m-d'),
+                ])),
             DeleteAction::make(),
         ];
     }

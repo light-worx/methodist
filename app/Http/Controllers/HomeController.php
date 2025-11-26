@@ -73,8 +73,9 @@ class HomeController extends Controller
         return view('web.district',$data);
     }
 
-    public function editplan($id){
-        $data['id']=$id;
+    public function editplan($record,$today=""){
+        $data['today']=$today;
+        $data['record']=$record;
         return view('preaching-plan',$data);
     }
 

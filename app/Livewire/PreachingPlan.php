@@ -9,6 +9,7 @@ use App\Models\Plan;
 use App\Models\Society;
 use App\Models\Person;
 use App\Models\Service;
+use App\Settings\GeneralSettings;
 
 class PreachingPlan extends Component
 {
@@ -31,13 +32,13 @@ class PreachingPlan extends Component
     public $authorisedServices = [];
     //protected $listeners = ['clickedOutside' => 'saveAndClose'];
 
-    public function mount($record, $today=null)
+    public function mount($record, $today=null, GeneralSettings $settings)
     {
         if (!$today){
             $today=date('Y-m-d');
         }
         $this->today=$today;;
-        $this->serviceTypes=array_merge([''=>''],setting('general.servicetypes'));
+        $this->serviceTypes=array_merge([''=>''],$settings->service_types);
         $this->circuit=Circuit::find($record);
         if ($this->circuit->servicetypes){
             $this->serviceTypes=array_merge($this->serviceTypes,$this->circuit->servicetypes);
@@ -82,7 +83,7 @@ class PreachingPlan extends Component
     private function getUserAuthorisedServices()
     {
         $allsocieties=Society::where('circuit_id',$this->circuit->id)->get()->pluck('id');
-        if (auth()->user()->hasRole('Super Admin')){
+        if (auth()->user()->hasRole('super_admin')){
             return Service::whereIn('society_id',$allsocieties)->get()->pluck('id')->toArray();
         } else if (auth()->user()->circuits){
             if (in_array($this->circuit->id,auth()->user()->circuits)){
