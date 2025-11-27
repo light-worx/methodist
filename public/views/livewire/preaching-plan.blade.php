@@ -128,9 +128,9 @@
                                             @if(isset($schedule[$service['id']][$date]))
                                                 <div class="flex flex-col text-center">
                                                     @if(!empty($schedule[$service['id']][$date]['servicetype']))
-                                                        <div class="items-center text-xs">
+                                                        <span class="items-center text-xs">
                                                             {{ $schedule[$service['id']][$date]['servicetype'] }}
-                                                        </div>
+                                                        </span>
                                                     @endif
                                                     @if(!empty($schedule[$service['id']][$date]['preacher_name']))
                                                         <span class="items-center text-sm">{{ $schedule[$service['id']][$date]['preacher_name'] }}</span>

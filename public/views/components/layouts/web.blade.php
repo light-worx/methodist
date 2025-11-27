@@ -13,21 +13,21 @@
   <!-- Chrome/Android & iOS -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="Connexion">
-  <link rel="icon" sizes="512x512" href="{{ asset('images/icons/android/android-launchericon-512-512.png') }}">
+  <link rel="icon" sizes="512x512" href="{{ asset('methodist/images/icons/android/android-launchericon-512-512.png') }}">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Connexion">
-  <link rel="apple-touch-icon" href="{{ asset('images/icons/ios/512.png') }}">
+  <link rel="apple-touch-icon" href="{{ asset('methodist/images/icons/ios/512.png') }}">
   <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="{{ asset('images/icons/android/android-launchericon-512-512.png') }}">
+  <meta name="msapplication-TileImage" content="{{ asset('methodist/images/icons/android/android-launchericon-512-512.png') }}">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.min.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/choices.min.css') }}">
-  <script src="{{ asset('js/choices.min.js') }}"></script>
-  <script src="{{ asset('js/leaflet.js') }}"></script>
+  <link rel="stylesheet" href="{{ asset('methodist/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('methodist/css/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('methodist/css/leaflet.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script src="{{ asset('methodist/js/leaflet.js') }}"></script>
 
   <style>
     a { text-decoration: none; }
@@ -192,7 +192,7 @@
     </div>
     @stack('scripts')
     <!-- JS -->
-    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('methodist/js/bootstrap.min.js') }}"></script>
     <script>
         // --- Cookie helpers ---
         function setCookie(name, value, days = 365) {

@@ -36,18 +36,21 @@ class HomeController extends Controller
 
     public function circuit($district, $circuit){
         $data['circuit']=Circuit::with('district','societies','persons')->whereSlug($circuit)->first();
+        dd($data);
         $data['leaders']=array();
         $data['ministers']=array();
-        foreach ($data['circuit']->persons as $person){
-            if ($person->minister){
-                $data['ministers'][$person->surname.$person->firstname]=$person;
-            } elseif ($person->pivot->status){
-                foreach (json_decode($person->pivot->status) as $lead){
-                    if ($lead <> "Preacher"){
-                        $data['leaders'][$lead][$person->surname.$person->firstname]=$person;
+        if ($data['circuit']){
+            foreach ($data['circuit']->persons as $person){
+                if ($person->minister){
+                    $data['ministers'][$person->surname.$person->firstname]=$person;
+                } elseif ($person->pivot->status){
+                    foreach (json_decode($person->pivot->status) as $lead){
+                        if ($lead <> "Preacher"){
+                            $data['leaders'][$lead][$person->surname.$person->firstname]=$person;
+                        }
                     }
-                }
-            } 
+                } 
+            }
         }
         foreach ($data['leaders'] as $ll=>$vv){
             ksort($data['leaders'][$ll]);
