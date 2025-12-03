@@ -31,13 +31,13 @@ class PreachingPlan extends Component
     public $authorisedServices = [];
     //protected $listeners = ['clickedOutside' => 'saveAndClose'];
 
-    public function mount($record, $today=null, $settings)
+    public function mount($record, $today=null)
     {
         if (!$today){
             $today=date('Y-m-d');
         }
         $this->today=$today;;
-        $this->serviceTypes=array_merge([''=>''],$settings->service_types);
+        //$this->serviceTypes=array_merge([''=>''],$settings->service_types);
         $this->circuit=Circuit::find($record);
         if ($this->circuit->servicetypes){
             $this->serviceTypes=array_merge($this->serviceTypes,$this->circuit->servicetypes);

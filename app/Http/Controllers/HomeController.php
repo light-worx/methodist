@@ -28,7 +28,7 @@ class HomeController extends Controller
     public $supernumeraries;
     public $localpreachers;
 
-    public function __construct(public $settings)
+    public function __construct()
     {
         //
     }

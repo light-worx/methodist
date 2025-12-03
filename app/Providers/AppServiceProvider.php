@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot($settings): void
+    public function boot(): void
     {
         $router = $this->app['router'];
         $router->aliasMiddleware('adminonly', AdminRoute::class);
@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('circuits', $circuits);
         });
         Config::set('livewire.render_on_redirect',false);
-        putenv ("DEEPSEEK_API_KEY=" . $settings->deepseek_api);
+        //putenv ("DEEPSEEK_API_KEY=" . $settings->deepseek_api);
         Livewire::component('preaching-plan', PreachingPlan::class); 
         Livewire::component('service-details', ServiceDetails::class);
         Livewire::component('ministry-idea-form', MinistryIdeaForm::class);
