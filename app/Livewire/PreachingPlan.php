@@ -9,7 +9,6 @@ use App\Models\Plan;
 use App\Models\Society;
 use App\Models\Person;
 use App\Models\Service;
-use App\Settings\GeneralSettings;
 
 class PreachingPlan extends Component
 {
@@ -32,7 +31,7 @@ class PreachingPlan extends Component
     public $authorisedServices = [];
     //protected $listeners = ['clickedOutside' => 'saveAndClose'];
 
-    public function mount($record, $today=null, GeneralSettings $settings)
+    public function mount($record, $today=null, $settings)
     {
         if (!$today){
             $today=date('Y-m-d');

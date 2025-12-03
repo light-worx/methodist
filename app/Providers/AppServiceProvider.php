@@ -8,7 +8,6 @@ use App\Livewire\MinistryIdeaForm;
 use App\Livewire\PreachingPlan;
 use App\Livewire\ServiceDetails;
 use App\Models\Circuit;
-use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -27,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(GeneralSettings $settings): void
+    public function boot($settings): void
     {
         $router = $this->app['router'];
         $router->aliasMiddleware('adminonly', AdminRoute::class);

@@ -13,7 +13,6 @@ use App\Models\Meeting;
 use App\Models\Midweek;
 use App\Models\Plan;
 use App\Models\Society;
-use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -29,7 +28,7 @@ class HomeController extends Controller
     public $supernumeraries;
     public $localpreachers;
 
-    public function __construct(public GeneralSettings $settings)
+    public function __construct(public $settings)
     {
         //
     }
