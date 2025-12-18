@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -14,9 +16,9 @@ return [
     */
 
     'shield_resource' => [
-        'slug' => 'roles',
+        'slug' => 'shield/roles',
         'show_model_path' => true,
-        'cluster' => \App\Filament\Clusters\Settings\SettingsCluster::class,
+        'cluster' => null,
         'tabs' => [
             'pages' => true,
             'widgets' => true,
@@ -146,7 +148,7 @@ return [
 
     'localization' => [
         'enabled' => false,
-        'key' => 'filament-shield::filament-shield',
+        'key' => 'filament-shield::filament-shield.resource_permission_prefixes_labels',
     ],
 
     /*
