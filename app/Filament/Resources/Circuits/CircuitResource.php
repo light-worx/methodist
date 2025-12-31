@@ -37,7 +37,9 @@ class CircuitResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\SocietiesRelationManager::class,
+            RelationManagers\PersonsRelationManager::class,
+            RelationManagers\MeetingsRelationManager::class
         ];
     }
 

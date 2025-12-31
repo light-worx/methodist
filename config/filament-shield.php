@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Lightworx\FilamentSettings\Filament\Clusters\SettingsCluster;
+
 return [
 
     /*
@@ -18,7 +20,7 @@ return [
     'shield_resource' => [
         'slug' => 'shield/roles',
         'show_model_path' => true,
-        'cluster' => null,
+        'cluster' => SettingsCluster::class,
         'tabs' => [
             'pages' => true,
             'widgets' => true,

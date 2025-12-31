@@ -20,7 +20,7 @@ class SocietyForm
                 TextInput::make('slug')
                     ->required(),
                 Select::make('circuit_id')
-                    ->relationship('circuit', 'id')
+                    ->relationship('circuit', 'circuit')
                     ->required(),
                 TextInput::make('address'),
                 TextInput::make('email')

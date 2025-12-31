@@ -8,7 +8,7 @@ use App\Filament\Clusters\Settings\Resources\Users\Pages\ListUsers;
 use App\Filament\Clusters\Settings\Resources\Users\Schemas\UserForm;
 use App\Filament\Clusters\Settings\Resources\Users\Tables\UsersTable;
 use App\Models\User;
-use App\Filament\Clusters\Settings\SettingsCluster;
+use Lightworx\FilamentSettings\Filament\Clusters\SettingsCluster;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

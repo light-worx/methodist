@@ -9,7 +9,7 @@ use App\Filament\Clusters\Settings\Resources\Roles\Pages\CreateRole;
 use App\Filament\Clusters\Settings\Resources\Roles\Pages\EditRole;
 use App\Filament\Clusters\Settings\Resources\Roles\Pages\ListRoles;
 use App\Filament\Clusters\Settings\Resources\Roles\Pages\ViewRole;
-use App\Filament\Clusters\Settings\SettingsCluster;
+use Lightworx\FilamentSettings\Filament\Clusters\SettingsCluster;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
 use BezhanSalleh\PluginEssentials\Concerns\Resource as Essentials;

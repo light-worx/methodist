@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('super_admin') ? true : null;
+        });
         $router = $this->app['router'];
         $router->aliasMiddleware('adminonly', AdminRoute::class);
         $router->aliasMiddleware('checkperms', CheckPerms::class);
@@ -38,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('circuits', $circuits);
         });
         Config::set('livewire.render_on_redirect',false);
+        Config::set('app.name', setting('site_name'));
         //putenv ("DEEPSEEK_API_KEY=" . $settings->deepseek_api);
         Livewire::component('preaching-plan', PreachingPlan::class); 
         Livewire::component('service-details', ServiceDetails::class);

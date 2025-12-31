@@ -7,7 +7,7 @@ use App\Filament\Clusters\Settings\Resources\Midweeks\Pages\EditMidweek;
 use App\Filament\Clusters\Settings\Resources\Midweeks\Pages\ListMidweeks;
 use App\Filament\Clusters\Settings\Resources\Midweeks\Schemas\MidweekForm;
 use App\Filament\Clusters\Settings\Resources\Midweeks\Tables\MidweeksTable;
-use App\Filament\Clusters\Settings\SettingsCluster;
+use Lightworx\FilamentSettings\Filament\Clusters\SettingsCluster;
 use App\Models\Midweek;
 use BackedEnum;
 use Filament\Resources\Resource;

@@ -7,7 +7,7 @@ use App\Filament\Clusters\Settings\Resources\Lections\Pages\EditLection;
 use App\Filament\Clusters\Settings\Resources\Lections\Pages\ListLections;
 use App\Filament\Clusters\Settings\Resources\Lections\Schemas\LectionForm;
 use App\Filament\Clusters\Settings\Resources\Lections\Tables\LectionsTable;
-use App\Filament\Clusters\Settings\SettingsCluster;
+use Lightworx\FilamentSettings\Filament\Clusters\SettingsCluster;
 use App\Models\Lection;
 use BackedEnum;
 use Filament\Resources\Resource;

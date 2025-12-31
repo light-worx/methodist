@@ -28,6 +28,16 @@ class Person extends Model
         return $this->title . " " . substr($this->firstname,0,1) . " " . $this->surname;
     }
 
+    public function getFullnameAttribute($value)
+    {
+        return $this->firstname . " " . $this->surname;
+    }
+
+    public function getFullnamebackAttribute($value)
+    {
+        return $this->surname . ", " . $this->firstname;
+    }
+
     public function preacher(): HasOne
     {
         return $this->HasOne(Preacher::class);

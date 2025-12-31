@@ -35,7 +35,6 @@ class HomeController extends Controller
 
     public function circuit($district, $circuit){
         $data['circuit']=Circuit::with('district','societies','persons')->whereSlug($circuit)->first();
-        dd($data);
         $data['leaders']=array();
         $data['ministers']=array();
         if ($data['circuit']){
@@ -197,7 +196,7 @@ class HomeController extends Controller
 
         // Legend
         $yadd=0;
-        $defaultservicetypes=$this->settings->service_types;
+        $defaultservicetypes=setting('default_service_types');
         if ($this->circuit->servicetypes){
             $stypes=$this->circuit->servicetypes;    
         } else {
@@ -347,8 +346,8 @@ class HomeController extends Controller
         $xx=10;
         
         $pdf->SetFont('Helvetica', '', 10);
-        $pdf->text($xx,$yy,"Presiding Bishop: " . $this->settings->presiding_bishop);
-        $pdf->text($xx,$yy+4.5,"General Secretary: " . $this->settings->general_secretary);
+        $pdf->text($xx,$yy,"Presiding Bishop: " . setting('presiding_bishop'));
+        $pdf->text($xx,$yy+4.5,"General Secretary: " . setting('general_secretary'));
         $bishop=Person::find($this->circuit->district->bishop);
         $pdf->text($xx,$yy+9,"District Bishop: " . $bishop->name);
         $yy=$yy+20;
@@ -391,7 +390,7 @@ class HomeController extends Controller
             }   
         }
         // Lay leaders
-        $roles = $this->settings->circuit_leadership_roles;
+        $roles = setting('circuit_leadership_roles');
         foreach ($roles as $role){
             $leaders=DB::table('persons')->join('circuit_person','persons.id','=','circuit_person.person_id')->where('circuit_person.circuit_id',$this->circuit->id)->whereJsonContains('status',$role)->orderBy('surname')->get();
             if (count($leaders)){
@@ -443,7 +442,7 @@ class HomeController extends Controller
         $yy=$yy+4.5;
 
         // Preacher leaders
-        $roles = $this->settings->preaching_leadership_roles;
+        $roles = setting('preaching_leadership_roles');
         foreach ($roles as $role){
             $leaders=Person::whereHas('circuits',function ($q) { $q->where('circuits.id',$this->circuit->id); })->withWhereHas('preacher', function($q) use($role) { $q->whereJsonContains('leadership',$role); })->orderBy('surname')->get();
             if (count($leaders)){
