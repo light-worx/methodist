@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Circuits;
 use App\Filament\Resources\Circuits\Pages\CreateCircuit;
 use App\Filament\Resources\Circuits\Pages\EditCircuit;
 use App\Filament\Resources\Circuits\Pages\ListCircuits;
+use App\Filament\Resources\Circuits\Pages\ViewCircuit;
 use App\Filament\Resources\Circuits\Schemas\CircuitForm;
 use App\Filament\Resources\Circuits\Tables\CircuitsTable;
 use App\Models\Circuit;
@@ -49,6 +50,7 @@ class CircuitResource extends Resource
             'index' => ListCircuits::route('/'),
             'create' => CreateCircuit::route('/create'),
             'edit' => EditCircuit::route('/{record}/edit'),
+            'view' => ViewCircuit::route('/{record}'),
         ];
     }
 }

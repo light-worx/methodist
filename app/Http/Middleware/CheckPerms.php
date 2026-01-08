@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Circuit;
 use Closure;
 use Illuminate\Http\Response;
 
@@ -13,7 +14,15 @@ class CheckPerms
         if ($user->hasRole('super_admin')){
             return $next($request);
         } elseif ((str_contains($request->path(),"circuits")) and (str_contains($request->path(),"edit"))){
-            if ($user->circuits){
+            if ($user->districts){
+                $circs = Circuit::whereIn('district_id',$user->districts)->get();
+                foreach ($circs as $circ){
+                    if (str_contains($request->path(),$circ->id)){
+                        return $next($request);
+                    }
+                }
+                abort(Response::HTTP_UNAUTHORIZED);    
+            } else if ($user->circuits){
                 foreach ($user->circuits as $circ){
                     if (str_contains($request->path(),$circ)){
                         return $next($request);

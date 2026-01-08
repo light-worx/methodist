@@ -6,6 +6,7 @@ use App\Models\Society;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -21,11 +22,15 @@ class CircuitsTable
             ->modifyQueryUsing(function (Builder $query){
                 $user=Auth::user();
                 if (!$user->hasRole('super_admin')){
-                    if ($user->circuits){
+                    if ($user->districts) {
+                        return $query->whereIn('district_id',$user->districts);
+                    } else if ($user->circuits){
                         return $query->whereIn('id',$user->circuits);
                     } else if ($user->societies) {
                         $circuits=Society::whereIn('id',$user->societies)->select('circuit_id')->get()->pluck('circuit_id');
                         return $query->whereIn('id',$circuits);
+                    } else {
+                        return $query->whereRaw('1 = 0');
                     }
                 }
             })
@@ -55,6 +60,7 @@ class CircuitsTable
                     ->default()
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

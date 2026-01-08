@@ -22,7 +22,9 @@ class SocietiesTable
                         return $query->whereIn('circuit_id',$user->circuits);
                     } else if ($user->societies){
                         return $query->whereIn('id',$user->societies);
-                    } 
+                    } else {
+                        return $query->whereRaw('1 = 0');
+                    }
                 }
             })
             ->columns([

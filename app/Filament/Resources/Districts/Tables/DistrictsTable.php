@@ -31,8 +31,8 @@ class DistrictsTable
                         $circuits=Society::whereIn('id',$user->societies)->select('circuit_id')->get()->pluck('circuit_id');
                         $districts=Circuit::whereIn('id',$circuits)->select('district_id')->get()->pluck('district_id');
                         return $query->whereIn('id',$districts);
-                    } else {
-                        return $query->where('id',0);
+                    }  else {
+                        return $query->whereRaw('1 = 0');
                     }
                 }
             })
