@@ -49,13 +49,13 @@
                 </tr>
                 <tr>
                     <th class="bg-dark text-white" colspan="2">
-                    <a href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '- 3 months'))]) }}">
-                        <i class="text-white bi bi-arrow-left h4"></i>
-                    </a>
-                    <a href="/plan/{{ $circuit->slug }}/{{ $today }}" class="mx-3 btn btn-sm btn-secondary">View PDF</a>
-                    <a href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '+ 3 months'))]) }}">
-                        <i class="text-white bi bi-arrow-right h4"></i>
-                    </a>
+                        <a style="text-decoration:none" href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '- 3 months'))]) }}">
+                            <i class="text-white bi bi-arrow-left h4"></i>
+                        </a>
+                        <a href="/plan/{{ $circuit->slug }}/{{ $today }}" class="mx-3 btn btn-sm btn-secondary">View PDF</a>
+                        <a href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '+ 3 months'))]) }}">
+                            <i class="text-white bi bi-arrow-right h4"></i>
+                        </a>
                     </th>
                     @foreach($dates as $date)
                     <th class="bg-dark text-white text-center">
@@ -98,6 +98,7 @@
                                             </div>
 
                                             <select wire:model="selectedServiceType" wire:change="saveAndClose" class="form-select form-select-sm">
+                                                <option></option>
                                                 @foreach($serviceTypes as $value => $label)
                                                     <option value="{{ $value }}">{{ $label }}</option>
                                                 @endforeach

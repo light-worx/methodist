@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,8 +43,10 @@ class AppServiceProvider extends ServiceProvider
             $view->with('circuits', $circuits);
         });
         Config::set('livewire.render_on_redirect',false);
-        Config::set('app.name', setting('site_name'));
-        //putenv ("DEEPSEEK_API_KEY=" . $settings->deepseek_api);
+        if (Schema::hasTable('filament_settings')){
+            Config::set('app.name', setting('site_name'));
+            putenv ("DEEPSEEK_API_KEY=" . setting('deepseek_api'));
+        }
         Livewire::component('preaching-plan', PreachingPlan::class); 
         Livewire::component('service-details', ServiceDetails::class);
         Livewire::component('ministry-idea-form', MinistryIdeaForm::class);

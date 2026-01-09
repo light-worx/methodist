@@ -196,24 +196,8 @@ class HomeController extends Controller
 
         // Legend
         $yadd=0;
-        $defaultservicetypes=setting('default_service_types');
         if ($this->circuit->servicetypes){
             $stypes=$this->circuit->servicetypes;    
-        } else {
-            if (count($defaultservicetypes)){
-                $stypes=$defaultservicetypes;
-            } else {
-                $stypes=array();
-            }
-        }
-        if (count($stypes)){
-            if (count($defaultservicetypes)){
-                foreach ($defaultservicetypes as $kk=>$st){
-                    if (!isset($stypes[$kk])){
-                        $stypes[$kk]=$st;
-                    }
-                }
-            }
             ksort($stypes);
             $i=1;
             if (count($stypes) % 2 == 0){
