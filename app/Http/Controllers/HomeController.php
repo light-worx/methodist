@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tag;
-use App\Classes\LectionaryService;
 use App\Classes\tFPDF;
 use App\Models\Person;
 use App\Models\Circuit;
@@ -15,6 +14,7 @@ use App\Models\Plan;
 use App\Models\Society;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class HomeController extends Controller
@@ -158,14 +158,13 @@ class HomeController extends Controller
             ->with('success', 'Thank you! Your ministry idea has been submitted and will be reviewed by our team before being published.');
     }
 
-    public function lectionary($sunday=""){
-        $data['lects']=$this->get_lectionary($sunday);
+    public function lectionary(){
+        $data['lects']=json_decode($this->get_lectionary()->body(),true);
         return view('web.lectionary',$data);
     }
 
     private function get_lectionary(){
-        $lects=new LectionaryService();
-        return $lects->getReadings(date('Y-m-d'));
+        return Http::get('https://lectionary.lightworx.co.za/api/index.php');
     }
 
     public function pdf($circuit,$plandate){
