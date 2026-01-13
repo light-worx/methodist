@@ -22,6 +22,8 @@ class DistrictResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'district';
 
+    public static array|string $routeMiddleware = ['checkperms'];
+
     public static function form(Schema $schema): Schema
     {
         return DistrictForm::configure($schema);

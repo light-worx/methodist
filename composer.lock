@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9dc5d9dde91253d0219be920a0679f1e",
+    "content-hash": "517790ab74d5fd14f9bd159bfd956026",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3708,6 +3708,68 @@
                 }
             ],
             "time": "2025-12-07T16:03:21+00:00"
+        },
+        {
+            "name": "light-worx/filament-issues",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/light-worx/filament-issues.git",
+                "reference": "56b5b3fce0179a1692065e6bcc8fbfe440964246"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/light-worx/filament-issues/zipball/56b5b3fce0179a1692065e6bcc8fbfe440964246",
+                "reference": "56b5b3fce0179a1692065e6bcc8fbfe440964246",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0",
+                "php": "^8.3",
+                "spatie/laravel-package-tools": "^1.16.1"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.13.1",
+                "nunomaduro/collision": "^7.8.1|^8.0",
+                "orchestra/testbench": "^9.0|^10.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Lightworx\\FilamentIssues\\FilamentIssuesServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Lightworx\\FilamentIssues\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Bishop",
+                    "email": "admin@lightworx.co.za",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Filament Issues",
+            "homepage": "https://github.com/light-worx/filament-issues",
+            "keywords": [
+                "filament-issues",
+                "laravel",
+                "light-worx"
+            ],
+            "support": {
+                "issues": "https://github.com/light-worx/filament-issues/issues",
+                "source": "https://github.com/light-worx/filament-issues/tree/master"
+            },
+            "time": "2025-12-13T14:42:05+00:00"
         },
         {
             "name": "light-worx/filament-settings",
@@ -12340,6 +12402,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "light-worx/filament-issues": 20,
         "light-worx/filament-settings": 20
     },
     "prefer-stable": true,
@@ -12347,6 +12410,6 @@
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

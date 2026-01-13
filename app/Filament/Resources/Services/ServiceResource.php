@@ -22,6 +22,8 @@ class ServiceResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'servicetime';
 
+    public static array|string $routeMiddleware = ['checkperms'];
+
     public static function shouldRegisterNavigation(): bool
     {
         return false;

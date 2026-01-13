@@ -2,11 +2,15 @@
 
 namespace App\Filament\Resources\Circuits\Tables;
 
+use App\Filament\Pages\PreachingPlan;
+use App\Models\Circuit;
 use App\Models\Society;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -60,6 +64,13 @@ class CircuitsTable
                     ->default()
             ])
             ->recordActions([
+                Action::make('Preaching plan')
+                    ->label('Plan')
+                    ->icon(Heroicon::Calendar)
+                    ->url(fn (Circuit $record): string => PreachingPlan::getUrl([
+                        'record' => $record,
+                        'today' => date('Y-m-d'),
+                    ])),
                 ViewAction::make(),
                 EditAction::make(),
             ])

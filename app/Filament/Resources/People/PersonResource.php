@@ -20,6 +20,8 @@ class PersonResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
 
+    public static array|string $routeMiddleware = ['checkperms'];
+
     protected static ?string $recordTitleAttribute = 'firstname';
 
     public static function form(Schema $schema): Schema

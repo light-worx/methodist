@@ -29,7 +29,7 @@ class SocietyForm
                 TextInput::make('website')
                     ->url(),
                 Map::make('location')
-                    ->markerIconUrl('/images/location.png')
+                    ->markerIconUrl('/methodist/images/location.png')
                     ->clickable(true)
                     ->zoom(18)
                     ->tilesUrl('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYmlzaG9wbSIsImEiOiJjanNjenJ3MHMwcWRyM3lsbmdoaDU3ejI5In0.M1x6KVBqYxC2ro36_Ipz_w')

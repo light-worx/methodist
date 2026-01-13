@@ -31,6 +31,10 @@ class PeopleTable
                         return $query->whereHas('circuits', function ($q) use ($circuits) {
                             $q->whereIn('circuits.id', $circuits);
                         });
+                    } else if ($user->societies){
+                        return $query->whereIn('society_id',$user->societies);
+                    } else {
+                        return $query->whereRaw('1 = 0');
                     }
                 }
             })
@@ -42,8 +46,8 @@ class PeopleTable
                     ->searchable(),
                 TextColumn::make('title')
                     ->searchable(),
-                TextColumn::make('phone')
-                    ->searchable(),
+                TextColumn::make('society.society'),
+                TextColumn::make('circuits.circuit')->label('Circuit'),
             ])
             ->filters([
                 //

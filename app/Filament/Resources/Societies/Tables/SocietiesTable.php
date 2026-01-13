@@ -27,14 +27,15 @@ class SocietiesTable
                     }
                 }
             })
+            ->defaultSort('society')
             ->columns([
                 TextColumn::make('society')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('circuit.reference')->label('Number')
+                TextColumn::make('circuit.reference')->label('Circuit no.')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('circuit.circuit')
+                TextColumn::make('circuit.circuit')->label('Circuit name')
                     ->sortable()
                     ->searchable()
             ])

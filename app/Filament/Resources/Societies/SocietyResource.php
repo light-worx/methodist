@@ -20,6 +20,8 @@ class SocietyResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHomeModern;
 
+    public static array|string $routeMiddleware = ['checkperms'];
+
     protected static ?string $recordTitleAttribute = 'society';
 
     public static function form(Schema $schema): Schema
