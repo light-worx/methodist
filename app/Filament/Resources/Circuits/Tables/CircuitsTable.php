@@ -49,14 +49,7 @@ class CircuitsTable
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('active')
-                    ->icon(fn (string $state): string => match ($state) {
-                        '0' => 'heroicon-o-x-circle',
-                        '1' => 'heroicon-o-check-circle'
-                    })
-                    ->color(fn (string $state): string => match ($state) {
-                        '0' => 'danger',
-                        '1' => 'success'
-                    }),
+                    ->boolean()
             ])
             ->filters([
                 Filter::make('hide_inactive_circuits')

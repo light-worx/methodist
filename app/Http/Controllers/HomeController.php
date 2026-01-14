@@ -231,15 +231,15 @@ class HomeController extends Controller
             if (date('w',strtotime($col))=="0"){
                 $pdf->setxy($xx,$yy-3);
             } else {
-                $tmw=Midweek::where('servicedate',$col)->first();
+                $tmw=$this->calculate_midweeks($startdate, $enddate, $col);
                 $pdf->setxy($xx,$yy-2);
                 $font=8;
                 $size="unknown";
                 do {
                     $pdf->SetFont('Helvetica', '', $font);
-                    $width=$pdf->GetStringWidth($tmw->midweek);
+                    $width=$pdf->GetStringWidth($tmw['midweek']);
                     if ($width < $xgap){
-                        $pdf->cell($xgap+1,0,$tmw->midweek,0,0,'C');
+                        $pdf->cell($xgap+1,0,$tmw['midweek'],0,0,'C');
                         $size="known";
                         $font=8;
                     } else {
@@ -627,7 +627,7 @@ class HomeController extends Controller
         $this->dates=$dates;
     }
 
-    public function calculate_midweeks($start,$end){
+    public function calculate_midweeks($start,$end,$needle=null){
         $years=array();
         $years[]=date('Y',strtotime($start));
         $years[]=date('Y',strtotime($end));
@@ -638,7 +638,13 @@ class HomeController extends Controller
             if ($mw->type=="fixed"){
                 foreach ($years as $yr){
                     $temp=date('Y-m-d',strtotime($yr . '-' . $mw->month . '-' . $mw->day));
-                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0))){
+                    if ($needle==$temp){
+                        return [
+                            'midweek' => $mw->midweek,
+                            'date' => $temp
+                        ];
+                    }
+                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0)) and (!in_array($temp,$dates))){
                         $dates[]=$temp;
                     }
                 }
@@ -648,7 +654,13 @@ class HomeController extends Controller
                         ->whereYear('eastersunday', $yr)
                         ->value('eastersunday');
                     $temp=Carbon::parse($easter)->addDays($mw->offset)->format('Y-m-d');
-                    if (($temp>=$start) and ($temp<=$end)){
+                    if ($needle==$temp){
+                        return [
+                            'midweek' => $mw->midweek,
+                            'date' => $temp
+                        ];
+                    }
+                    if (($temp>=$start) and ($temp<=$end) and (!in_array($temp,$dates))){
                         $dates[]=$temp;
                     }
                 }

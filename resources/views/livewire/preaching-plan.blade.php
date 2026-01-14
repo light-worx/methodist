@@ -60,7 +60,7 @@
                     @foreach($dates as $date)
                     <th class="bg-dark text-white text-center">
                         {{ date('j M', strtotime($date)) }}
-                        @php $mw = array_search($date, $midweeks); @endphp
+                        @php $mw = array_search($date, $midweeks);@endphp
                         <div class="text-sm text-center">{{ $mw }}</div>
                     </th>
                     @endforeach

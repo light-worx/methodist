@@ -149,9 +149,9 @@ class PreachingPlan extends Component
                 $dates[$w]=date("Y-m-d",strtotime($firstsunday)+86400*7*$w);
             }
         }
-        $mw = $this->calculate_midweeks($firstday,$lastday);
-        if (count($mw)){
-            $dates=array_merge($dates,$mw);
+        $this->midweeks = $this->calculate_midweeks($firstday,$lastday);
+        if (count($this->midweeks)){
+            $dates=array_merge($dates,$this->midweeks);
         }
         sort($dates);
         $this->dates=$dates;
@@ -170,8 +170,8 @@ class PreachingPlan extends Component
             if ($mw->type=="fixed"){
                 foreach ($years as $yr){
                     $temp=date('Y-m-d',strtotime($yr . '-' . $mw->month . '-' . $mw->day));
-                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0))){
-                        $dates[]=$temp;
+                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0) and (!in_array($temp,$dates)))){
+                        $dates[$mw->midweek]=$temp;
                     }
                 }
             } else {
@@ -180,8 +180,8 @@ class PreachingPlan extends Component
                         ->whereYear('eastersunday', $yr)
                         ->value('eastersunday');
                     $temp=Carbon::parse($easter)->addDays($mw->offset)->format('Y-m-d');
-                    if (($temp>=$start) and ($temp<=$end)){
-                        $dates[]=$temp;
+                    if (($temp>=$start) and ($temp<=$end) and (!in_array($temp,$dates))){
+                        $dates[$mw->midweek]=$temp;
                     }
                 }
             }
