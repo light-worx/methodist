@@ -9,6 +9,8 @@ use App\Models\Plan;
 use App\Models\Society;
 use App\Models\Person;
 use App\Models\Service;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PreachingPlan extends Component
 {
@@ -147,24 +149,49 @@ class PreachingPlan extends Component
                 $dates[$w]=date("Y-m-d",strtotime($firstsunday)+86400*7*$w);
             }
         }
-        $this->midweeks=Midweek::where('servicedate','>=',$firstday)->where('servicedate','<',$lastday)->orderBy('servicedate','ASC')->get()->pluck('servicedate','midweek')->toArray();
-        foreach ($this->midweeks as $desc=>$mw){
-            if (($this->circuit->midweeks) and (in_array($desc,$this->circuit->midweeks))){
-                $dates[]=$mw;
-            }
+        $mw = $this->calculate_midweeks($firstday,$lastday);
+        if (count($mw)){
+            $dates=array_merge($dates,$mw);
         }
         sort($dates);
         $this->dates=$dates;
         $this->firstday=$firstday;
         $this->period = date("j F Y",strtotime($firstday)) . " - " . date("j F Y",strtotime($lastday . '- 1 day'));
     }
+
+    public function calculate_midweeks($start,$end){
+        $years=array();
+        $years[]=date('Y',strtotime($start));
+        $years[]=date('Y',strtotime($end));
+        array_unique($years);
+        $mws = Midweek::whereIn('midweek',$this->circuit->midweeks)->get();
+        $dates = array();
+        foreach ($mws as $mw){
+            if ($mw->type=="fixed"){
+                foreach ($years as $yr){
+                    $temp=date('Y-m-d',strtotime($yr . '-' . $mw->month . '-' . $mw->day));
+                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0))){
+                        $dates[]=$temp;
+                    }
+                }
+            } else {
+                foreach ($years as $yr){
+                    $easter = DB::table('eastersundays')
+                        ->whereYear('eastersunday', $yr)
+                        ->value('eastersunday');
+                    $temp=Carbon::parse($easter)->addDays($mw->offset)->format('Y-m-d');
+                    if (($temp>=$start) and ($temp<=$end)){
+                        $dates[]=$temp;
+                    }
+                }
+            }
+        }
+        return $dates;
+    }
     
     public function loadSchedule()
     {
-        // Prepare the schedule array
         $this->schedule = [];
-        
-        // Initialize with empty values
         foreach ($this->services as $society){
             foreach ($society as $service){
                 $this->schedule[$service['id']] = [];

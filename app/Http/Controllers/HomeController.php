@@ -12,6 +12,7 @@ use App\Models\Meeting;
 use App\Models\Midweek;
 use App\Models\Plan;
 use App\Models\Society;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -425,7 +426,7 @@ class HomeController extends Controller
         $yy=$yy+4.5;
 
         // Preacher leaders
-        $roles = setting('preaching_leadership_roles');
+        $roles = setting('preacher_leadership_roles');
         foreach ($roles as $role){
             $leaders=Person::whereHas('circuits',function ($q) { $q->where('circuits.id',$this->circuit->id); })->withWhereHas('preacher', function($q) use($role) { $q->whereJsonContains('leadership',$role); })->orderBy('surname')->get();
             if (count($leaders)){
@@ -618,16 +619,42 @@ class HomeController extends Controller
                 $dates[$w]=date("Y-m-d",strtotime($firstsunday)+86400*7*$w);
             }
         }
-        $this->midweeks=Midweek::where('servicedate','>=',$firstday)->where('servicedate','<',$lastday)->orderBy('servicedate','ASC')->get()->pluck('servicedate','midweek')->toArray();
-        foreach ($this->midweeks as $desc=>$mw){
-            if (isset($this->circuit->midweeks)){
-                if (in_array($desc,$this->circuit->midweeks)){
-                    $dates[]=$mw;
-                }
-            }
+        $mw = $this->calculate_midweeks($firstday,$lastday);
+        if (count($mw)){
+            $dates=array_merge($dates,$mw);
         }
         sort($dates);
         $this->dates=$dates;
+    }
+
+    public function calculate_midweeks($start,$end){
+        $years=array();
+        $years[]=date('Y',strtotime($start));
+        $years[]=date('Y',strtotime($end));
+        array_unique($years);
+        $mws = Midweek::whereIn('midweek',$this->circuit->midweeks)->get();
+        $dates = array();
+        foreach ($mws as $mw){
+            if ($mw->type=="fixed"){
+                foreach ($years as $yr){
+                    $temp=date('Y-m-d',strtotime($yr . '-' . $mw->month . '-' . $mw->day));
+                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0))){
+                        $dates[]=$temp;
+                    }
+                }
+            } else {
+                foreach ($years as $yr){
+                    $easter = DB::table('eastersundays')
+                        ->whereYear('eastersunday', $yr)
+                        ->value('eastersunday');
+                    $temp=Carbon::parse($easter)->addDays($mw->offset)->format('Y-m-d');
+                    if (($temp>=$start) and ($temp<=$end)){
+                        $dates[]=$temp;
+                    }
+                }
+            }
+        }
+        return $dates;
     }
 
     public function minister($id){

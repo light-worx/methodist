@@ -12,7 +12,7 @@ class PersonForm
     {
         return $schema
             ->components([
-                TextInput::make('firstname')
+                TextInput::make('firstname')->label('First name')
                     ->required(),
                 TextInput::make('surname')
                     ->required(),

@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Settings\Resources\Midweeks\Schemas;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -13,8 +14,16 @@ class MidweekForm
         return $schema
             ->components([
                 TextInput::make('midweek')
+                    ->label('Name')
                     ->required(),
-                DatePicker::make('servicedate'),
+                Select::make('type')
+                    ->options([
+                        'fixed' => 'Fixed date',
+                        'relative' => 'Relative to Easter'
+                    ]),
+                TextInput::make('month')->numeric(),
+                TextInput::make('day')->numeric(),
+                TextInput::make('offset')->numeric()
             ]);
     }
 }

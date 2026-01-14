@@ -12,7 +12,10 @@ return new class extends Migration
             $table->engine = 'InnoDB';
             $table->increments('id')->unsigned();
             $table->string('midweek',199);
-            $table->date('servicedate')->nullable();
+            $table->string('type',199)->default('fixed');
+            $table->integer('month')->nullable();
+            $table->integer('day')->nullable();
+            $table->integer('offset')->nullable();
         });
     }
     

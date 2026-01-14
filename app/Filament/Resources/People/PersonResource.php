@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class PersonResource extends Resource
 {
@@ -48,5 +49,10 @@ class PersonResource extends Resource
             'create' => CreatePerson::route('/create'),
             'edit' => EditPerson::route('/{record}/edit'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->hasRole('super_admin');
     }
 }

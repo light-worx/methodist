@@ -13,7 +13,10 @@ class Circuit extends Model
     protected $guarded = ['id'];
     protected $casts = [
         'servicetypes' => 'array',
-        'midweeks' => 'array'
+        'midweeks' => 'array',
+        'active' => 'boolean',
+        'showphone' => 'boolean',
+        'setup' => 'boolean'
     ];
 
     public function district(): BelongsTo

@@ -36,7 +36,7 @@ class PersonsRelationManager extends RelationManager
                     ->columnSpanFull()
                     ->columns(3)
                     ->schema([
-                        TextInput::make('firstname')
+                        TextInput::make('firstname')->label('First name')
                             ->required(),
                         TextInput::make('surname')
                             ->required(),
@@ -259,13 +259,9 @@ class PersonsRelationManager extends RelationManager
                         })
             ])
             ->recordActions([
-                EditAction::make(),
-                DetachAction::make(),
+                EditAction::make()
             ])
             ->toolbarActions([
-                    BulkActionGroup::make([
-                    DetachBulkAction::make(),
-                ]),
             ]);
     }
 }

@@ -14,11 +14,8 @@ class MidweeksTable
     {
         return $table
             ->columns([
-                TextColumn::make('midweek')
-                    ->searchable(),
-                TextColumn::make('servicedate')
-                    ->date()
-                    ->sortable(),
+                TextColumn::make('midweek')->label('Name'),
+                TextColumn::make('type')
             ])
             ->filters([
                 //
