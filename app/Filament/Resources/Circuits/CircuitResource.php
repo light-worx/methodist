@@ -50,7 +50,6 @@ class CircuitResource extends Resource
             'index' => ListCircuits::route('/'),
             'create' => CreateCircuit::route('/create'),
             'edit' => EditCircuit::route('/{record}/edit'),
-            'view' => ViewCircuit::route('/{record}'),
         ];
     }
 }

@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Society extends Model
 {
+    use SoftDeletes;
+
     public $table = 'societies';
     protected $guarded = ['id'];
     protected $casts = [
@@ -22,6 +25,11 @@ class Society extends Model
     public function services(): HasMany
     {
         return $this->hasMany(Service::class)->orderBy('servicetime');
+    }
+
+    public function persons(): HasMany
+    {
+        return $this->hasMany(Person::class);
     }
 
     public function preachers(): HasMany

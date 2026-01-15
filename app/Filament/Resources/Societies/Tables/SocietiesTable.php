@@ -2,9 +2,13 @@
 
 namespace App\Filament\Resources\Societies\Tables;
 
+use App\Filament\Pages\PreachingPlan;
+use App\Models\Society;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,6 +47,12 @@ class SocietiesTable
                 //
             ])
             ->recordActions([
+                Action::make('Preaching plan')
+                    ->icon(Heroicon::Calendar)
+                    ->url(fn (Society $record): string => PreachingPlan::getUrl([
+                        'record' => $record->circuit_id,
+                        'today' => date('Y-m-d'),
+                    ])),
                 EditAction::make(),
             ])
             ->toolbarActions([

@@ -28,6 +28,8 @@ class PersonsRelationManager extends RelationManager
 {
     protected static string $relationship = 'persons';
 
+    protected static ?string $title = 'People';
+
     public function form(Schema $schema): Schema
     {
         return $schema

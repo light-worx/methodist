@@ -37,6 +37,7 @@ class SocietyResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\PreachersRelationManager::class,
             RelationManagers\ServicesRelationManager::class
         ];
     }

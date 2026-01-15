@@ -58,13 +58,11 @@ class CircuitsTable
             ])
             ->recordActions([
                 Action::make('Preaching plan')
-                    ->label('Plan')
                     ->icon(Heroicon::Calendar)
                     ->url(fn (Circuit $record): string => PreachingPlan::getUrl([
                         'record' => $record,
                         'today' => date('Y-m-d'),
                     ])),
-                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([
