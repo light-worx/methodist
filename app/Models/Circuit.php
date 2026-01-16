@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Circuit extends Model
 {
@@ -37,6 +38,11 @@ class Circuit extends Model
     public function ministers(): HasMany
     {
         return $this->hasMany(Minister::class);
+    }
+
+    public function preachers(): HasManyThrough
+    {
+        return $this->hasManyThrough(Preacher::class, Society::class);
     }
 
     public function circuitroles(): HasMany

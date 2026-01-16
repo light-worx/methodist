@@ -14,6 +14,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -21,12 +22,15 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 
 class PreachersRelationManager extends RelationManager
 {
     protected static string $relationship = 'preachers';
+
+    protected static ?string $recordTitleAttribute = 'person.firstname';
 
     public function form(Schema $schema): Schema
     {
@@ -35,12 +39,19 @@ class PreachersRelationManager extends RelationManager
                 Section::make('Personal details')
                     ->columnSpanFull()
                     ->columns(3)
+                    ->relationship('person', condition: function (string $operation){
+                        if ($operation=="edit"){
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
                     ->schema([
-                        TextInput::make('person.firstname')->label('First name')
+                        TextInput::make('firstname')->label('First name')
                             ->required(),
-                        TextInput::make('person.surname')
+                        TextInput::make('surname')
                             ->required(),
-                        Select::make('person.title')
+                        Select::make('title')
                             ->selectablePlaceholder(false)
                             ->options([
                                 '' => '',
@@ -49,33 +60,18 @@ class PreachersRelationManager extends RelationManager
                                 'Mrs' => 'Mrs',
                                 'Rev' => 'Rev'
                             ]),
-                        TextInput::make('person.phone')
+                        TextInput::make('phone')
                             ->tel(),
-                        FileUpload::make('person.image')
-                            ->image(),
-                        Select::make('preacherstatus')
-                            ->visibleOn('create')
-                            ->label('Status')
-                            ->options([
-                                'note' => 'Preacher on note',
-                                'trial' => 'Preacher on trial',
-                                'preacher' => 'Local preacher',
-                                'emeritus' => 'Emeritus preacher',
-                                'guest' => 'Guest preacher'
-                            ]),
+                        FileUpload::make('image')
+                            ->image()
                     ]),
-                Section::make('Preacher details')
-                    ->hiddenOn('create')
+                Fieldset::make('Preacher details')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         Select::make('leadership')->label('Preacher leadership roles')
                             ->multiple()
                             ->options(array_combine(setting('preacher_leadership_roles'),setting('preacher_leadership_roles'))),
-                        Select::make('society_id')->label('Society')
-                            ->options(function ($livewire){
-                                return Society::where('circuit_id',$livewire->getOwnerRecord()->circuit_id)->orderBy('society')->get()->pluck('society','id');
-                            }),
                         Select::make('status')
                             ->live()
                             ->options([
@@ -104,6 +100,7 @@ class PreachersRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('person'))
             ->recordTitleAttribute('id')
             ->columns([
                 TextColumn::make('person.surname')
@@ -122,9 +119,12 @@ class PreachersRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->using(function (array $data, string $model, RelationManager $livewire): Person {
+                    ->using(function (array $data, RelationManager $livewire): Preacher {
                         $society = $livewire->getOwnerRecord();
-                        $person = $model::create($data);
+                        dd($data['person']);
+                        $person = Person::create([
+
+                        ]);
                         $status=array();
                         $preacher = $person->preacher()->create([
                             'person_id' => $person->id,
@@ -141,7 +141,7 @@ class PreachersRelationManager extends RelationManager
                         DB::table('circuit_person')->insert(
                             ['person_id' => $person->id, 'circuit_id' => $circuit->id, 'status' => json_encode($status)]
                         );
-                        return $person;
+                        return $preacher;
                     })
             ])
             ->recordActions([
