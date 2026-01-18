@@ -11,6 +11,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -25,11 +26,46 @@ class MeetingsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                DateTimePicker::make('meetingdate'),
+                DateTimePicker::make('meetingdate')
+                    ->live(),
                 Select::make('society_id')
-                    ->relationship('society', 'id'),
+                    ->relationship('society', 'society', modifyQueryUsing: function (Builder $query, RelationManager $livewire){
+                        return $query->where('circuit_id',$livewire->getOwnerRecord()->id);
+                    }),
                 TextInput::make('description'),
-                TextInput::make('quarter'),
+                Select::make('quarter')
+                    ->label('Which plan must the meeting be listed in?')
+                    ->selectablePlaceholder(false)
+                    ->options(function (RelationManager $livewire, Get $get){
+                        $circuit=$livewire->getOwnerRecord();
+                        if ($get('meetingdate')){
+                            $yr = date('Y',strtotime($get('meetingdate')));
+                        } else {
+                            $yr=date('Y');
+                        }
+                        if ($circuit->plan_month==2) {
+                            return [
+                                2 => 'Feb - Apr ' . $yr,
+                                5 => 'May - Jul ' . $yr,
+                                8 => 'Aug - Oct ' . $yr,
+                                11 => 'Nov - Jan ' . $yr
+                            ];
+                        } elseif ($circuit->plan_month==3) {
+                            return [
+                                3 => 'Mar - May ' . $yr,
+                                6 => 'Jun - Aug ' . $yr,
+                                9 => 'Sep - Nov ' . $yr,
+                                12 => 'Dec - Feb ' . $yr
+                            ];
+                        } else {
+                            return [
+                                1 => 'Jan - Mar ' . $yr,
+                                4 => 'Apr - Jun ' . $yr,
+                                7 => 'Jul - Sep ' . $yr,
+                                10 => 'Oct - Dec ' . $yr
+                            ];
+                        }
+                    }),
             ]);
     }
 
