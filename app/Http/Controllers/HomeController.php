@@ -490,19 +490,7 @@ class HomeController extends Controller
                 }
             }
         }
-        $nstartday=date('Y-m-d',strtotime($startday . " - 3 months"));
-        $nendday=$startday;
-        $pendday=date('Y-m-d',strtotime($endday . " + 3 months"));
-        $pstartday=date('Y-m-d',strtotime($endday . " + 1 day"));
-        $meetings=Meeting::where('circuit_id',$this->circuit->id)->with('society')
-            ->where(function($q)use ($startday,$endday) {
-                $q->where('meetingdate','>=',$startday)->where('meetingdate','<=',$endday)->where('quarter','current');
-            })
-            ->orWhere(function($q2)use ($pstartday,$pendday) {
-                $q2->where('meetingdate','>=',$pstartday)->where('meetingdate','<=',$pendday)->where('quarter','previous');
-            })->orWhere(function($q3)use ($nstartday,$nendday) {
-                $q3->where('meetingdate','>=',$nstartday)->where('meetingdate','<=',$nendday)->where('quarter','next');
-            })->orderBy('meetingdate')->get();
+        $meetings=Meeting::where('circuit_id',$this->circuit->id)->where('quarter',date('Y-m-01',strtotime($startdate)))->with('society')->orderBy('meetingdate')->get();
         if (count($meetings)){
             $pdf->SetFont('Helvetica', 'B', 10);
             $pdf->text($xx,$yy+2,"CIRCUIT MEETINGS");

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Circuits\RelationManagers;
 
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -34,39 +35,41 @@ class MeetingsRelationManager extends RelationManager
                     }),
                 TextInput::make('description'),
                 Select::make('quarter')
-                    ->label('Which plan must the meeting be listed in?')
+                    ->label('In which plan must the meeting be advertised?')
                     ->selectablePlaceholder(false)
                     ->options(function (RelationManager $livewire, Get $get){
                         $circuit=$livewire->getOwnerRecord();
                         if ($get('meetingdate')){
-                            $yr = date('Y',strtotime($get('meetingdate')));
+                            $md = date('Y-m-d',strtotime($get('meetingdate')));
                         } else {
-                            $yr=date('Y');
+                            $md = date('Y-m-d');
                         }
-                        if ($circuit->plan_month==2) {
-                            return [
-                                2 => 'Feb - Apr ' . $yr,
-                                5 => 'May - Jul ' . $yr,
-                                8 => 'Aug - Oct ' . $yr,
-                                11 => 'Nov - Jan ' . $yr
-                            ];
-                        } elseif ($circuit->plan_month==3) {
-                            return [
-                                3 => 'Mar - May ' . $yr,
-                                6 => 'Jun - Aug ' . $yr,
-                                9 => 'Sep - Nov ' . $yr,
-                                12 => 'Dec - Feb ' . $yr
-                            ];
-                        } else {
-                            return [
-                                1 => 'Jan - Mar ' . $yr,
-                                4 => 'Apr - Jun ' . $yr,
-                                7 => 'Jul - Sep ' . $yr,
-                                10 => 'Oct - Dec ' . $yr
-                            ];
-                        }
+                        return $this->getQuarter($md,$circuit->plan_month);
                     }),
             ]);
+    }
+
+    private function getQuarter($meetingDate, $startMonth)
+    {
+        $date = Carbon::parse($meetingDate);
+        
+        $monthOfMeeting = (int)$date->format('n');
+        $diff = ($monthOfMeeting - $startMonth + 12) % 3;
+
+        $currentPlanStart = $date->copy()->startOfMonth()->subMonths($diff);
+        $plan1Start = $currentPlanStart->copy()->subMonths(3);
+
+        // 4. Format the output (ordered chronologically)
+        $plans = [$plan1Start, $currentPlanStart];
+        $results = [];
+
+        foreach ($plans as $p) {
+            $end = $p->copy()->addMonths(2);
+            $rangeLabel = $p->format('M Y') . ' - ' . $end->format('M Y');
+            $results[$p->format('Y-m-01')] = $rangeLabel;
+        }
+
+        return $results;
     }
 
     public function table(Table $table): Table
