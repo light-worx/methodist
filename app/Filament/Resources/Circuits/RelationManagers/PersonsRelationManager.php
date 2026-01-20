@@ -23,6 +23,7 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class PersonsRelationManager extends RelationManager
@@ -186,6 +187,7 @@ class PersonsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('surname')
+            ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('minister'))
             ->defaultSort('surname')
             ->columns([
                 TextColumn::make('surname')

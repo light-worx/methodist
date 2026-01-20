@@ -29,7 +29,7 @@ class UserForm
                     ->password()
                     ->revealable()
                     ->required(),
-                Select::make('roles')->multiple()->relationship('roles', 'name'),
+                Select::make('roles')->multiple()->relationship('roles', 'name')->preload(),
                 Select::make('districts')->multiple()
                     ->options(District::orderBy('district')->get()->pluck('district', 'id'))
                     ->searchable(),
