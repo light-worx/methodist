@@ -13,10 +13,10 @@ class PreacherForm
         return $schema
             ->components([
                 Select::make('person_id')
-                    ->relationship('person', 'title')
+                    ->relationship('person', 'surname')
                     ->required(),
                 Select::make('society_id')
-                    ->relationship('society', 'id'),
+                    ->relationship('society', 'society'),
                 TextInput::make('status')
                     ->required(),
                 TextInput::make('leadership'),

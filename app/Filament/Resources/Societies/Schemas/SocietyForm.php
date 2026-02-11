@@ -37,10 +37,13 @@ class SocietyForm
                             ->hiddenLabel(),
                     ]),
                 Map::make('location')
+                    ->label('Location (click to move the marker)')
                     ->markerIconUrl('/methodist/images/location.png')
                     ->clickable(true)
+                    ->showMyLocationButton(false)
+                    ->showFullscreenControl(false)
                     ->zoom(18)
-                    ->tilesUrl('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYmlzaG9wbSIsImEiOiJjanNjenJ3MHMwcWRyM3lsbmdoaDU3ejI5In0.M1x6KVBqYxC2ro36_Ipz_w')
+                    ->tilesUrl('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=' . setting('mapbox_token'))
                     ->markerIconSize([36, 36])
                     ->extraStyles([
                         'min-height: 37vh',

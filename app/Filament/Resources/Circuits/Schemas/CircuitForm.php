@@ -23,10 +23,12 @@ class CircuitForm
                     Tab::make('Circuit')->columns(2)->schema([
                         TextInput::make('circuit')
                             ->required()
+                            ->disabled(!auth()->user()->can('Update:District'))
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))   
                             ->maxLength(199),
                         TextInput::make('reference')->label('Circuit number')
+                            ->disabled(!auth()->user()->can('Update:District'))
                             ->required()
                             ->live(onBlur:true)
                             ->afterStateUpdated(function (Set $set, ?string $state) {
@@ -43,11 +45,13 @@ class CircuitForm
                             ->numeric(),
                         TextInput::make('slug')
                             ->required()
+                            ->disabled(!auth()->user()->can('Update:District'))
                             ->maxLength(199),
                         Select::make('district_id')
+                            ->disabled(!auth()->user()->can('Update:District'))
                             ->relationship('district', 'district')
                             ->required(),
-                        Toggle::make('active')
+                        Toggle::make('active')->disabled()
                     ]),
                     Tab::make('Service settings')->columns(2)->schema([
                         Select::make('midweeks')->label('Midweek services')

@@ -27,14 +27,13 @@ class CheckPerms
             $this->checkCircuitPermission($request, $user);
         } elseif (str_contains($request->path(), 'societies')) {
             $this->checkSocietyPermission($request, $user);
-        } elseif (str_contains($request->path(), 'people')) {
+        } elseif ((str_contains($request->path(), 'people')) or (str_contains($request->path(), 'preachers'))){
             $this->checkPersonPermission($request, $user);
         } elseif (str_contains($request->path(), 'services')) {
             $this->checkServicePermission($request, $user);
         } elseif (str_contains($request->path(), 'meetings')) {
             $this->checkMeetingPermission($request, $user);
         }
-
         return $next($request);
     }
 

@@ -64,20 +64,6 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->userMenuItems([
-                'my_circuits' => Action::make('my_circuits')
-                    ->label('My circuits')
-                    ->url(function (){
-                        $user=auth()->user();
-                        if ($user->circuits){
-                            $this->circuit=$user->circuits[0];
-                        } else if ($user->societies){
-                            $this->circuit=Society::find($user->societies[0])->circuit_id;
-                        } else {
-                            $this->circuit="";
-                        }
-                        return '/admin/circuits/' . $this->circuit;
-                    })
-                    ->icon('heroicon-o-user-group'),
                 'back_to_site' => Action::make('back_to_site')
                     ->label('Back to app')
                     ->url('/')

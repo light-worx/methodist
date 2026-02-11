@@ -7,6 +7,7 @@ use App\Models\Person;
 use App\Models\Preacher;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -16,6 +17,8 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -102,7 +105,12 @@ class PreachersRelationManager extends RelationManager
                 TextColumn::make('status')
                     ->formatStateUsing(function ($state){
                         return ucfirst($state);
-                    })
+                    }),
+                IconColumn::make('active')
+                    ->boolean()
+                    ->label('Active')
+                    ->trueIcon(Heroicon::OutlinedCheckCircle)
+                    ->falseIcon(Heroicon::OutlinedXCircle)
             ])
             ->filters([
                 TrashedFilter::make(),
@@ -193,6 +201,7 @@ class PreachersRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

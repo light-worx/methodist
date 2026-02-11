@@ -11,6 +11,7 @@ use Filament\Actions\DissociateAction;
 use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -24,7 +25,9 @@ class ServicesRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                TextInput::make('servicetime')
+                TimePicker::make('servicetime')
+                    ->default('09:00')
+                    ->seconds(false)
                     ->required(),
             ]);
     }

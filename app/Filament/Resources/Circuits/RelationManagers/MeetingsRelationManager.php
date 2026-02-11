@@ -57,10 +57,10 @@ class MeetingsRelationManager extends RelationManager
         $diff = ($monthOfMeeting - $startMonth + 12) % 3;
 
         $currentPlanStart = $date->copy()->startOfMonth()->subMonths($diff);
+        $nextPlanStart = $currentPlanStart->copy()->addMonths(3);
         $plan1Start = $currentPlanStart->copy()->subMonths(3);
 
-        // 4. Format the output (ordered chronologically)
-        $plans = [$plan1Start, $currentPlanStart];
+        $plans = [$plan1Start, $currentPlanStart, $nextPlanStart];
         $results = [];
 
         foreach ($plans as $p) {

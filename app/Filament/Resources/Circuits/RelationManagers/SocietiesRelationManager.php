@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Circuits\RelationManagers;
 
+use App\Filament\Resources\Societies\SocietyResource;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
@@ -13,6 +14,8 @@ use Filament\Tables\Table;
 class SocietiesRelationManager extends RelationManager
 {
     protected static string $relationship = 'societies';
+
+    protected static ?string $relatedResource = SocietyResource::class;
 
     public function form(Schema $schema): Schema
     {
@@ -43,8 +46,7 @@ class SocietiesRelationManager extends RelationManager
             ->defaultSort('society')
             ->columns([
                 TextColumn::make('society')
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
                 TextColumn::make('services.servicetime')
             ])
             ->filters([

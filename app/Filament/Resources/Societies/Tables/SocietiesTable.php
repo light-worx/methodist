@@ -34,19 +34,19 @@ class SocietiesTable
             ->defaultSort('society')
             ->columns([
                 TextColumn::make('society')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('circuit.reference')->label('Circuit no.')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('circuit.circuit')->label('Circuit name')
-                    ->sortable()
                     ->searchable()
+                    ->sortable(),
+                TextColumn::make('circuit.reference')->label('Circuit no.')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('circuit.circuit')->label('Circuit name')
+                    ->searchable()
+                    ->sortable()
             ])
             ->filters([
                 //
             ])
-            ->recordActions([
+            ->recordActions([                
                 Action::make('Preaching plan')
                     ->icon(Heroicon::Calendar)
                     ->url(fn (Society $record): string => PreachingPlan::getUrl([

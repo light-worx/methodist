@@ -130,6 +130,7 @@ class PersonsRelationManager extends RelationManager
                     ->columns(2)
                     ->schema([
                         Select::make('status')->label('Status')
+                            ->live()
                             ->options(function ($record){
                                 $person = $record;
                                 if ($person->minister){
@@ -252,7 +253,7 @@ class PersonsRelationManager extends RelationManager
                                                 return substr($msg,0,-1) . ".";
                                             }
                                         } else {
-                                            $similars = Person::with('circuits')->where('surname',$get('surname'))->get();
+                                            $similars = Person::with('circuits')->whereHas('minister')->where('surname',$get('surname'))->get();
                                             if (count($similars)){
                                                 $msg="The following similar clergy names already exist in the database (if the person is already in our database, rather transfer them or add them as a guest preacher):";
                                                 foreach ($similars as $similar){
@@ -391,7 +392,7 @@ class PersonsRelationManager extends RelationManager
                                     ->live()
                                     ->options(function ($livewire){
                                         $circuitid=$livewire->getOwnerRecord()->id;
-                                        $persons = Person::whereDoesntHave('circuits', function ($q) use ($circuitid) {
+                                        $persons = Person::whereHas('minister')->whereDoesntHave('circuits', function ($q) use ($circuitid) {
                                             $q->where('circuit_id', $circuitid);
                                         })
                                         ->orderBy('surname')
