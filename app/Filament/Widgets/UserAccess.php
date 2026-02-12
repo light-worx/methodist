@@ -27,18 +27,23 @@ class UserAccess extends Widget
                 'societies' => [],
             ];
         }
-
-        $dis=District::whereIn('id',$user->districts)->orderBy('district')->get();
-        foreach ($dis as $dd){
-            $districts[]="<a href=\"" . url('/admin/districts') . "/" . $dd->id . "/edit\"><b>" . $dd->district . "</b></a>";
+        if ($user->districts){
+            $dis=District::whereIn('id',$user->districts)->orderBy('district')->get();
+            foreach ($dis as $dd){
+                $districts[]="<a href=\"" . url('/admin/districts') . "/" . $dd->id . "/edit\"><b>" . $dd->district . "</b></a>";
+            }
         }
-        $cir=Circuit::whereIn('id',$user->circuits)->orderBy('circuit')->get();
-        foreach ($cir as $cc){
-            $circuits[]="<a href=\"" . url('/admin/circuits') . "/" . $cc->id . "/edit\"><b>" . $cc->circuit . "</b></a>";
+        if ($user->circuits){
+            $cir=Circuit::whereIn('id',$user->circuits)->orderBy('circuit')->get();
+            foreach ($cir as $cc){
+                $circuits[]="<a href=\"" . url('/admin/circuits') . "/" . $cc->id . "/edit\"><b>" . $cc->circuit . "</b></a>";
+            }
         }
-        $soc=Society::whereIn('id',$user->societies)->orderBy('society')->get();
-        foreach ($soc as $ss){
-            $societies[]="<a href=\"" . url('/admin/societies') . "/" . $ss->id . "/edit\"><b>" . $ss->society . "</b></a>";
+        if ($user->societies){
+            $soc=Society::whereIn('id',$user->societies)->orderBy('society')->get();
+            foreach ($soc as $ss){
+                $societies[]="<a href=\"" . url('/admin/societies') . "/" . $ss->id . "/edit\"><b>" . $ss->society . "</b></a>";
+            }
         }
         return [
             'user_name' => $user->name,

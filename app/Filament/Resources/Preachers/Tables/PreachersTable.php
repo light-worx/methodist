@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Preachers\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -14,31 +15,17 @@ class PreachersTable
     {
         return $table
             ->columns([
-                TextColumn::make('person.title')
+                TextColumn::make('person.surname')
                     ->searchable(),
-                TextColumn::make('society.id')
+                TextColumn::make('person.firstname')
+                    ->searchable(),
+                TextColumn::make('society.society')
                     ->searchable(),
                 TextColumn::make('status')
-                    ->searchable(),
-                TextColumn::make('induction')
-                    ->searchable(),
-                TextColumn::make('number')
-                    ->searchable(),
-                TextColumn::make('active')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
+                IconColumn::make('active')
+                    ->boolean(),
             ])
             ->filters([
                 //

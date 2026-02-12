@@ -5,11 +5,11 @@ namespace App\Filament\Resources\Circuits;
 use App\Filament\Resources\Circuits\Pages\CreateCircuit;
 use App\Filament\Resources\Circuits\Pages\EditCircuit;
 use App\Filament\Resources\Circuits\Pages\ListCircuits;
-use App\Filament\Resources\Circuits\Pages\ViewCircuit;
 use App\Filament\Resources\Circuits\Schemas\CircuitForm;
 use App\Filament\Resources\Circuits\Tables\CircuitsTable;
 use App\Models\Circuit;
 use BackedEnum;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -39,7 +39,9 @@ class CircuitResource extends Resource
     {
         return [
             RelationManagers\SocietiesRelationManager::class,
-            RelationManagers\PersonsRelationManager::class,
+            RelationManagers\MinistersRelationManager::class,
+            RelationManagers\PreachersRelationManager::class,
+            RelationManagers\LeadersRelationManager::class,
             RelationManagers\MeetingsRelationManager::class
         ];
     }

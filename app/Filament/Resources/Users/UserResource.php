@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Clusters\Settings\Resources\Users;
+namespace App\Filament\Resources\Users;
 
-use App\Filament\Clusters\Settings\Resources\Users\Pages\CreateUser;
-use App\Filament\Clusters\Settings\Resources\Users\Pages\EditUser;
-use App\Filament\Clusters\Settings\Resources\Users\Pages\ListUsers;
-use App\Filament\Clusters\Settings\Resources\Users\Schemas\UserForm;
-use App\Filament\Clusters\Settings\Resources\Users\Tables\UsersTable;
+use App\Filament\Resources\Users\Pages\CreateUser;
+use App\Filament\Resources\Users\Pages\EditUser;
+use App\Filament\Resources\Users\Pages\ListUsers;
+use App\Filament\Resources\Users\Schemas\UserForm;
+use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use Lightworx\FilamentSettings\Filament\Clusters\SettingsCluster;
 use BackedEnum;
@@ -21,9 +21,9 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
 
-    protected static ?string $cluster = SettingsCluster::class;
-
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static array|string $routeMiddleware = ['checkperms'];
 
     public static function form(Schema $schema): Schema
     {

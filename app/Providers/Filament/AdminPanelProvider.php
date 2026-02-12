@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Models\Society;
 use Filament\Http\Middleware\Authenticate;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Actions\Action;

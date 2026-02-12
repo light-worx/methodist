@@ -16,4 +16,23 @@ class EditPreacher extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return $this->record->person->firstname . ' ' . $this->record->person->surname;
+    }
+
+    public function getHeading(): string
+    {
+        return 'Edit preacher: ' . $this->record->person->firstname . ' ' . $this->record->person->surname;
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        
+        return [
+            url('/admin/circuits/' . $this->record->society->circuit->id . '/edit?relation=2&') => 'Preachers',
+            $this->record->person->firstname . ' ' . $this->record->person->surname
+        ];
+    }
 }

@@ -4,6 +4,9 @@
             <p>Welcome, <i>{{ $this->getData()['user_name'] }}</i>. You have full administrator rights.
         @else
             <p>Welcome, <i>{{ $this->getData()['user_name'] }}</i>. Your user has been set up with editing rights as follows:</p>
+            @if ($this->getData()['districts'])
+                <p><i>Districts:</i> {!!implode(', ', $this->getData()['districts'])!!}.</p>
+            @endif
             @if ($this->getData()['circuits'])
                 <p><i>Circuits:</i> {!!implode(', ', $this->getData()['circuits'])!!}.</p>
             @endif

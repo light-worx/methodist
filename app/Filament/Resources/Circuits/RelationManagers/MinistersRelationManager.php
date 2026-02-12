@@ -26,11 +26,11 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-class PersonsRelationManager extends RelationManager
+class MinistersRelationManager extends RelationManager
 {
     protected static string $relationship = 'persons';
 
-    protected static ?string $title = 'People';
+    protected static ?string $title = 'Ministers';
 
     public function form(Schema $schema): Schema
     {
@@ -153,7 +153,11 @@ class PersonsRelationManager extends RelationManager
                             ->multiple()
                             ->statePath('status'),
                         Select::make('societies')->label('Pastoral oversight ')
-                            ->visible(fn ($record) => $record->minister)
+                            ->visible(function ($record){
+                                if (($record->minister) and ((in_array('Superintendent',json_decode($record->pivot_status))) or (in_array('Minister',json_decode($record->pivot_status))))){
+                                    return true;
+                                }
+                            })
                             ->options(function ($record){
                                 return Society::where('circuit_id',$record->circuit_id)->orderBy('society')->get()->pluck('society','id');
                             })

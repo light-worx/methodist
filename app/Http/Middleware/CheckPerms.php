@@ -16,7 +16,6 @@ class CheckPerms
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
-        
         // Super admins bypass all checks
         if ($user->hasRole('super_admin')) {
             return $next($request);
@@ -33,8 +32,116 @@ class CheckPerms
             $this->checkServicePermission($request, $user);
         } elseif (str_contains($request->path(), 'meetings')) {
             $this->checkMeetingPermission($request, $user);
+        } elseif (str_contains($request->path(), 'users')) {
+            $this->checkUserPermission($request, $user);
         }
         return $next($request);
+    }
+
+    protected function checkUserPermission(Request $request, $user): void
+    {
+        $userId = $this->extractIdFromPath($request->path(), 'users');
+        
+        // If no ID (list view), check if user has any permissions
+        if (!$userId) {
+            if (!$user->districts && !$user->circuits && !$user->societies) {
+                abort(Response::HTTP_FORBIDDEN);
+            }
+            return;
+        }
+        
+        // Users can always edit themselves
+        if ($userId === $user->id) {
+            return;
+        }
+        
+        $targetUser = \App\Models\User::findOrFail($userId);
+        
+        // District-level users can access anyone in their districts
+        if ($user->districts) {
+            // Check if target has districts in common
+            if ($targetUser->districts) {
+                $hasOverlap = !empty(array_intersect($user->districts, $targetUser->districts));
+                if ($hasOverlap) {
+                    return;
+                }
+            }
+            
+            // Check if ALL target's circuits belong to user's districts
+            if ($targetUser->circuits) {
+                $targetCircuitsInUserDistricts = Circuit::whereIn('district_id', $user->districts)
+                    ->whereIn('id', $targetUser->circuits)
+                    ->pluck('id')
+                    ->toArray();
+                    
+                if (count($targetCircuitsInUserDistricts) === count($targetUser->circuits)) {
+                    return;
+                }
+            }
+            
+            // Check if ALL target's societies belong to user's districts
+            if ($targetUser->societies) {
+                $targetSocietiesInUserDistricts = Society::whereHas('circuit', function ($query) use ($user) {
+                    $query->whereIn('district_id', $user->districts);
+                })->whereIn('id', $targetUser->societies)
+                ->pluck('id')
+                ->toArray();
+                
+                if (count($targetSocietiesInUserDistricts) === count($targetUser->societies)) {
+                    return;
+                }
+            }
+        }
+        
+        // Circuit-level users can only access users whose permissions are ALL within their circuits
+        if ($user->circuits) {
+            // No access if target has district permissions
+            if ($targetUser->districts) {
+                abort(Response::HTTP_FORBIDDEN);
+            }
+            
+            // Check if ALL target's circuits overlap
+            if ($targetUser->circuits) {
+                $hasOverlap = !empty(array_intersect($user->circuits, $targetUser->circuits));
+                $allCircuitsMatch = empty(array_diff($targetUser->circuits, $user->circuits));
+                
+                if ($hasOverlap && $allCircuitsMatch) {
+                    return;
+                }
+            }
+            
+            // Check if ALL target's societies belong to user's circuits
+            if ($targetUser->societies) {
+                $targetSocietiesInUserCircuits = Society::whereIn('circuit_id', $user->circuits)
+                    ->whereIn('id', $targetUser->societies)
+                    ->pluck('id')
+                    ->toArray();
+                    
+                if (count($targetSocietiesInUserCircuits) === count($targetUser->societies)) {
+                    return;
+                }
+            }
+        }
+        
+        // Society-level users can only access users with the same societies
+        if ($user->societies) {
+            // No access if target has district or circuit permissions
+            if ($targetUser->districts || $targetUser->circuits) {
+                abort(Response::HTTP_FORBIDDEN);
+            }
+            
+            // Check if ALL target's societies overlap
+            if ($targetUser->societies) {
+                $hasOverlap = !empty(array_intersect($user->societies, $targetUser->societies));
+                $allSocietiesMatch = empty(array_diff($targetUser->societies, $user->societies));
+                
+                if ($hasOverlap && $allSocietiesMatch) {
+                    return;
+                }
+            }
+        }
+        
+        abort(Response::HTTP_FORBIDDEN);
     }
 
     protected function checkCircuitPermission(Request $request, $user): void
