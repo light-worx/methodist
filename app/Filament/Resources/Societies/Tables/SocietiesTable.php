@@ -56,9 +56,6 @@ class SocietiesTable
                 EditAction::make(),
             ])
             ->toolbarActions([
-                    BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

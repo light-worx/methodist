@@ -30,26 +30,50 @@ class UserForm
                     ->revealable()
                     ->required(),
                 Select::make('roles')
+                    ->selectablePlaceholder(false)
+                    ->label('Role')
                     ->live()
+                    ->preload()
+                    ->required()
                     ->options(function () {
-                        $roles = \Spatie\Permission\Models\Role::orderBy('name')->pluck('name', 'id');
-                        if (auth()->user()->hasRole('super_admin')) {
-                            return $roles;
-                        } else {
-                            return $roles->filter(function ($role) {
-                                return $role !== 'super_admin';
-                            });
+                        $user = auth()->user();
+
+                        if ($user->hasRole('super_admin')) {
+                            return Role::orderBy('name')->pluck('name', 'id');
                         }
-                    })->preload()->required(),
+
+                        if ($user->hasRole('District user')) {
+                            return Role::whereIn('name', [
+                                'District user',
+                                'Circuit user',
+                                'Society user',
+                            ])->pluck('name', 'id');
+                        }
+
+                        if ($user->hasRole('Circuit user')) {
+                            return Role::whereIn('name', [
+                                'Circuit user',
+                                'Society user',
+                            ])->pluck('name', 'id');
+                        }
+
+                        return collect();
+                    })
+                    ->formatStateUsing(function ($record) {
+                        return $record?->roles()->first()?->id;
+                    })
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $set('districts', null);
+                        $set('circuits', null);
+                        $set('societies', null);
+                    }),
                 Select::make('districts')->multiple()
                     ->visible(function (Get $get) {
                         $roleId = $get('roles');
-                        if (!$roleId) {
+                        if (! $roleId) {
                             return false;
                         }
-                        
-                        $role = Role::find($roleId);
-                        return $role && $role->name === 'District user';
+                        return Role::find($roleId)?->name === 'District user';
                     })
                     ->options(function () {
                         if (auth()->user()->hasRole('super_admin')) {
@@ -64,12 +88,10 @@ class UserForm
                 Select::make('circuits')->multiple()
                     ->visible(function (Get $get) {
                         $roleId = $get('roles');
-                        if (!$roleId) {
+                        if (! $roleId) {
                             return false;
                         }
-                        
-                        $role = Role::find($roleId);
-                        return $role && $role->name === 'Circuit user';
+                        return Role::find($roleId)?->name === 'Circuit user';
                     })
                     ->options(function (){
                         if (auth()->user()->hasRole('super_admin')) {
@@ -79,34 +101,32 @@ class UserForm
                                     'label' => $circ->circuit . ' (' . $circ->reference . ')'
                                 ];
                         })->pluck('label', 'value');
-                    } elseif (auth()->user()->districts) {
-                        return Circuit::whereIn('district_id', auth()->user()->districts)->orderBy('circuit')->get()->map(function ($circ) {
-                            return [
-                                'value' => $circ->id,
-                                'label' => $circ->circuit . ' (' . $circ->reference . ')'
-                            ];
-                        })->pluck('label', 'value');
-                    } elseif (auth()->user()->circuits) {
-                        return Circuit::whereIn('id', auth()->user()->circuits)->orderBy('circuit')->get()->map(function ($circ) {
-                            return [
-                                'value' => $circ->id,
-                                'label' => $circ->circuit . ' (' . $circ->reference . ')'
-                            ];
-                        })->pluck('label', 'value');
-                    } else {
-                        return [];
-                    }
+                        } elseif (auth()->user()->districts) {
+                            return Circuit::whereIn('district_id', auth()->user()->districts)->orderBy('circuit')->get()->map(function ($circ) {
+                                return [
+                                    'value' => $circ->id,
+                                    'label' => $circ->circuit . ' (' . $circ->reference . ')'
+                                ];
+                            })->pluck('label', 'value');
+                        } elseif (auth()->user()->circuits) {
+                            return Circuit::whereIn('id', auth()->user()->circuits)->orderBy('circuit')->get()->map(function ($circ) {
+                                return [
+                                    'value' => $circ->id,
+                                    'label' => $circ->circuit . ' (' . $circ->reference . ')'
+                                ];
+                            })->pluck('label', 'value');
+                        } else {
+                            return [];
+                        }
                     })
                     ->searchable(),
                 Select::make('societies')->multiple()
                     ->visible(function (Get $get) {
                         $roleId = $get('roles');
-                        if (!$roleId) {
+                        if (! $roleId) {
                             return false;
                         }
-                        
-                        $role = Role::find($roleId);
-                        return $role && $role->name === 'Society user';
+                        return Role::find($roleId)?->name === 'Society user';
                     })
                     ->options(function (){
                         if (auth()->user()->hasRole('super_admin')) {
