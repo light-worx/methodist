@@ -48,6 +48,7 @@ class ServicesRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
