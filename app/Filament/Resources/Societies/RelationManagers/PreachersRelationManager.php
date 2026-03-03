@@ -15,6 +15,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -36,58 +38,64 @@ class PreachersRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Section::make('Personal details')
-                    ->relationship('person')
-                    ->columnSpanFull()
-                    ->columns(3)
-                    ->schema([
-                        TextInput::make('firstname')->label('First name')
-                            ->required(),
-                        TextInput::make('surname')
-                            ->required(),
-                        Select::make('title')
-                            ->selectablePlaceholder(false)
-                            ->options([
-                                '' => '',
-                                'Mr' => 'Mr',
-                                'Ms' => 'Ms',
-                                'Mrs' => 'Mrs',
-                                'Rev' => 'Rev'
-                            ]),
-                        TextInput::make('phone')
-                            ->tel(),
-                        FileUpload::make('image')
-                            ->image()
-                        ]),                        
-                Section::make('Preacher details')
-                    ->columnSpanFull()
-                    ->columns(2)
-                    ->schema([
-                        Select::make('leadership')->label('Preacher leadership roles')
-                            ->multiple()
-                            ->options(array_combine(setting('preacher_leadership_roles'),setting('preacher_leadership_roles'))),
-                        Select::make('status')
-                            ->live()
-                            ->options([
-                                'note' => 'Preacher on note',
-                                'trial' => 'Preacher on trial',
-                                'preacher' => 'Local preacher',
-                                'emeritus' => 'Emeritus preacher',
-                                'guest' => 'Guest preacher'
-                            ]),
-                        TextInput::make('number')->label('Preacher number (optional)')
-                            ->numeric(),
-                        TextInput::make('induction')->label('Year of induction')
-                            ->readonly(function (Get $get){
-                                if (($get('status')=="preacher") or ($get('status')=="emeritus")){
-                                    return false;
-                                } else {
-                                    return true;
-                                }
-                            }),
-                        Toggle::make('active')
-                            ->onColor('success'),
+                Tabs::make('Preachers')->columnSpanFull()->tabs([
+                    Tab::make('Personal details')->schema([
+                        Section::make()
+                            ->columns(2)
+                            ->relationship('person')
+                            ->columnSpanFull()
+                            ->schema([
+                                TextInput::make('firstname')->label('First name')
+                                    ->required(),
+                                TextInput::make('surname')
+                                    ->required(),
+                                Select::make('title')
+                                    ->selectablePlaceholder(false)
+                                    ->options([
+                                        '' => '',
+                                        'Mr' => 'Mr',
+                                        'Ms' => 'Ms',
+                                        'Mrs' => 'Mrs',
+                                        'Rev' => 'Rev'
+                                    ]),
+                                TextInput::make('phone')
+                                    ->tel(),
+                                FileUpload::make('image')
+                                    ->image()
+                        ])
                     ]),
+                    Tab::make('Preacher details')->columns(2)->schema([
+                        Section::make()
+                            ->columnSpanFull()
+                            ->columns(2)
+                            ->schema([
+                                Select::make('leadership')->label('Preacher leadership roles')
+                                    ->multiple()
+                                    ->options(array_combine(setting('preacher_leadership_roles'),setting('preacher_leadership_roles'))),
+                                Select::make('status')
+                                    ->live()
+                                    ->options([
+                                        'note' => 'Preacher on note',
+                                        'trial' => 'Preacher on trial',
+                                        'preacher' => 'Local preacher',
+                                        'emeritus' => 'Emeritus preacher',
+                                        'guest' => 'Guest preacher'
+                                    ]),
+                                TextInput::make('number')->label('Preacher number (optional)')
+                                    ->numeric(),
+                                TextInput::make('induction')->label('Year of induction')
+                                    ->readonly(function (Get $get){
+                                        if (($get('status')=="preacher") or ($get('status')=="emeritus")){
+                                            return false;
+                                        } else {
+                                            return true;
+                                        }
+                                    }),
+                                Toggle::make('active')
+                                    ->onColor('success'),
+                            ]),
+                    ])
+                ])
             ]);
     }
 
