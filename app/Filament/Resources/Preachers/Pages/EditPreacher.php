@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Preachers\Pages;
 
 use App\Filament\Resources\Preachers\PreacherResource;
-use Filament\Actions\DeleteAction;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Livewire\Livewire;
 
 class EditPreacher extends EditRecord
 {
@@ -13,7 +15,34 @@ class EditPreacher extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            Action::make('Remove as preacher')
+                ->requiresConfirmation()
+                ->action(function () {
+                    $circuit = $this->record->society->circuit_id;
+                    $person = $this->record->person;
+                    foreach ($person->circuitroles as $circuitrole) {
+                        if ($circuitrole->circuit_id == $circuit) {
+                            $status = $circuitrole->status; // must already be an array
+                            if (($key = array_search("Preacher", $status, true)) !== false) {
+                                unset($status[$key]);
+                            }
+                            $status = array_values($status); // reindex
+                            if (empty($status)) {
+                                $circuitrole->delete();
+                            } else {
+                                $circuitrole->status = $status;
+                                $circuitrole->save();
+                            }
+                        }
+                    }
+                    $this->record->delete();
+                    Notification::make()
+                        ->title('Preacher removed')
+                        ->body('The preacher has been successfully removed.')
+                        ->success()
+                        ->send();
+                    $this->redirect(PreacherResource::getUrl('index'));
+                })
         ];
     }
 

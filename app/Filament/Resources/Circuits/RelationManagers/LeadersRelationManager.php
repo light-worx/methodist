@@ -13,7 +13,7 @@ class LeadersRelationManager extends RelationManager
 {
     protected static string $relationship = 'persons';
 
-        protected static ?string $title = 'Circuit leaders';
+    protected static ?string $title = 'Circuit leaders';
 
     public function table(Table $table): Table
     {
