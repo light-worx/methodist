@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Societies\RelationManagers;
 use App\Models\Circuit;
 use App\Models\Person;
 use App\Models\Preacher;
+use App\Models\Society;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -13,6 +14,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
@@ -105,9 +107,11 @@ class PreachersRelationManager extends RelationManager
             ->modifyQueryUsing(fn (Builder $query) => $query->with('person'))
             ->columns([
                 TextColumn::make('person.surname')
+                    ->label('Surname')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('person.firstname')
+                    ->label('First name')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('status')
@@ -126,56 +130,77 @@ class PreachersRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->schema([
-                        Section::make('Personal details')
-                            ->columnSpanFull()
-                            ->columns(3)
-                            ->schema([
-                                TextInput::make('person.firstname')->label('First name')
-                                    ->required(),
-                                TextInput::make('person.surname')
-                                    ->required(),
-                                Select::make('person.title')
-                                    ->selectablePlaceholder(false)
-                                    ->options([
-                                        '' => '',
-                                        'Mr' => 'Mr',
-                                        'Ms' => 'Ms',
-                                        'Mrs' => 'Mrs',
-                                        'Rev' => 'Rev'
+                        Tabs::make('Preachers')->columnSpanFull()->tabs([
+                            Tab::make('Personal details')->schema([
+                                Section::make()
+                                    ->columnSpanFull()
+                                    ->columns(2)
+                                    ->schema([
+                                        TextInput::make('person.surname')
+                                            ->live()
+                                            ->required(),
+                                        TextInput::make('person.firstname')->label('First name')
+                                            ->required(),
+                                        TextEntry::make('namecheck')->hiddenLabel(true)
+                                            ->columnSpanFull()
+                                            ->state(function (Get $get, RelationManager $livewire){
+                                                $circuit=Society::find($livewire->getOwnerRecord()->id)->circuit_id;
+                                                $similars = Person::whereHas('circuits', function ($q) use ($circuit) { $q->where('circuit_id', $circuit); })->withWhereHas('preacher')->where('surname',$get('person.surname'))->get();
+                                                if (count($similars)){
+                                                    $msg="Note: the following similar preacher names already exist in this circuit:";
+                                                    foreach ($similars as $similar){
+                                                        $society=Society::find($similar->preacher->society_id);
+                                                        $msg.= " " . $similar->title . " " . $similar->firstname . " " . $similar->surname . " (" . $society->society . "),";
+                                                    }
+                                                    return substr($msg,0,-1) . ".";
+                                                }
+                                            }),
+                                        Select::make('person.title')
+                                            ->selectablePlaceholder(false)
+                                            ->options([
+                                                '' => '',
+                                                'Mr' => 'Mr',
+                                                'Ms' => 'Ms',
+                                                'Mrs' => 'Mrs',
+                                                'Rev' => 'Rev'
+                                            ]),
+                                        TextInput::make('person.phone')
+                                            ->tel(),
+                                        FileUpload::make('person.image')
+                                            ->image()
                                     ]),
-                                TextInput::make('person.phone')
-                                    ->tel(),
-                                FileUpload::make('person.image')
-                                    ->image()
                             ]),
-                        Section::make('Preacher details')
-                            ->columnSpanFull()
-                            ->columns(2)
-                            ->schema([
-                                Select::make('leadership')->label('Preacher leadership roles')
-                                    ->multiple()
-                                    ->options(array_combine(
-                                        setting('preacher_leadership_roles'),
-                                        setting('preacher_leadership_roles')
-                                    )),
-                                Select::make('status')
-                                    ->live()
-                                    ->options([
-                                        'note' => 'Preacher on note',
-                                        'trial' => 'Preacher on trial',
-                                        'preacher' => 'Local preacher',
-                                        'emeritus' => 'Emeritus preacher',
-                                        'guest' => 'Guest preacher'
-                                    ]),
-                                TextInput::make('number')->label('Preacher number (optional)')
-                                    ->numeric(),
-                                TextInput::make('induction')->label('Year of induction')
-                                    ->readonly(function (Get $get){
-                                        return !in_array($get('status'), ['preacher', 'emeritus']);
-                                    }),
-                                Toggle::make('active')
-                                    ->onColor('success'),
-                        ]),
+                            Tab::make('Preacher details')->columns(2)->schema([
+                                Section::make()
+                                    ->columnSpanFull()
+                                    ->columns(2)
+                                    ->schema([
+                                        Select::make('leadership')->label('Preacher leadership roles')
+                                            ->multiple()
+                                            ->options(array_combine(
+                                                setting('preacher_leadership_roles'),
+                                                setting('preacher_leadership_roles')
+                                            )),
+                                        Select::make('status')
+                                            ->live()
+                                            ->options([
+                                                'note' => 'Preacher on note',
+                                                'trial' => 'Preacher on trial',
+                                                'preacher' => 'Local preacher',
+                                                'emeritus' => 'Emeritus preacher',
+                                                'guest' => 'Guest preacher'
+                                            ]),
+                                        TextInput::make('number')->label('Preacher number (optional)')
+                                            ->numeric(),
+                                        TextInput::make('induction')->label('Year of induction')
+                                            ->readonly(function (Get $get){
+                                                return !in_array($get('status'), ['preacher', 'emeritus']);
+                                            }),
+                                        Toggle::make('active')
+                                            ->onColor('success'),
+                                ])
+                            ])
+                        ])
                     ])
                     ->using(function (array $data, RelationManager $livewire): Preacher {
                         $society = $livewire->getOwnerRecord();

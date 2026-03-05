@@ -57,6 +57,12 @@ class UserForm
                             ])->pluck('name', 'id');
                         }
 
+                        if ($user->hasRole('Society user')) {
+                            return Role::whereIn('name', [
+                                'Society user',
+                            ])->pluck('name', 'id');
+                        }
+
                         return collect();
                     })
                     ->formatStateUsing(function ($record) {

@@ -17,6 +17,8 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
@@ -37,115 +39,135 @@ class MinistersRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Section::make('Personal details')
+                Tabs::make()
                     ->columnSpanFull()
-                    ->columns(3)
-                    ->schema([
-                        TextInput::make('firstname')->label('First name')
-                            ->required(),
-                        TextInput::make('surname')
-                            ->required(),
-                        TextInput::make('title'),
-                        TextInput::make('phone')
-                            ->tel(),
-                        FileUpload::make('image')
-                            ->image()
-                    ]),
-                Section::make('Clergy')
-                    ->relationship('minister')
-                    ->description('This section relates only to ministers and deacons')
-                    ->columnSpanFull()
-                    ->columns(3)
-                    ->hiddenOn('create')
-                    ->visible(function ($record){
-                        if ($record->minister){
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    })
-                    ->schema([
-                        Select::make('leadership')->label('District leadership roles')
-                            ->multiple()
-                            ->options(setting('district_leadership_roles')),
-                        TextInput::make('ordained')->numeric(),
-                        Toggle::make('active')
-                            ->onColor('success'),
-                    ]),
-                Section::make('Status in this circuit')
-                    ->hiddenOn('create')
-                    ->afterHeader([
-                        Action::make('removeFromCircuit')->label('Remove from this Circuit')
-                            ->requiresConfirmation()
-                            ->action(function ($record, $action) { 
-                                DB::table('circuit_person')
-                                    ->where('person_id', $record->id)
-                                    ->where('circuit_id', $record->pivot_circuit_id)
-                                    ->delete();
-                                $action->cancelParentActions();
-                            }),
-                    ])
-                    ->columnSpanFull()
-                    ->columns(2)
-                    ->schema([
-                        Select::make('circuitstatus')->label('Status')
-                            ->live()
-                            ->options(function ($record){
-                                $person = $record;
-                                if ($person->minister){
-                                    $options=[
-                                        'Guest' => 'Guest preacher',
-                                        'Deacon' => 'Circuit deacon',
-                                        'Minister' => 'Circuit minister',
-                                        'Superintendent' => 'Superintendent minister',
-                                        'Supernumerary' => 'Supernumerary minister'
-                                    ];
-                                } elseif ($person->preacher){
-                                    $options=array_combine(setting('district_leadership_roles'),setting('district_leadership_roles'));
-                                    $options['Guest'] = 'Guest preacher';
-                                    $options['Preacher'] = 'Local preacher';
-                                } else {
-                                    $options=array_combine(setting('district_leadership_roles'),setting('district_leadership_roles'));
-                                }
-                                return $options;
-                            })
-                            //->formatStateUsing(fn ($state) => json_decode($state))
-                            ->multiple()
-                            ->statePath('status'),
-                        Select::make('societies')->label('Pastoral oversight')
-                            ->visible(function ($record){
-                                if (($record->minister) and ((in_array('Superintendent',json_decode($record->pivot_status))) or (in_array('Minister',json_decode($record->pivot_status))))){
-                                    return true;
-                                }
-                            })
-                            ->options(function ($record){
-                                return Society::where('circuit_id',$record->circuit_id)->orderBy('society')->get()->pluck('society','id');
-                            })
-                            ->multiple()
-                            ->statePath('societies'),
-                    ]),                
-                TextEntry::make('circuitroles')->label('Status in other circuits')
-                    ->hiddenOn('create')
-                    ->visible(function ($record){
-                        if (count($record->circuitroles)>1){
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    })
-                    ->columnSpanFull()
-                    ->listWithLineBreaks()
-                    ->state(function ($record, RelationManager $livewire){
-                        $states=[];
-                        $thiscircuit = $livewire->getOwnerRecord()->id;
-                        foreach ($record->circuitroles as $role){
-                            if ($role->circuit_id !== $thiscircuit){
-                                $states[]=$role->circuit->reference . " " . $role->circuit->circuit . " (" . implode(", ",$role->status) . ")";
-                            }
-                        }
-                        return $states;
-                    })
-            ]);
+                    ->tabs([
+                        Tab::make('Personal details')
+                            ->schema([
+                                Section::make('Personal details')
+                                    ->columnSpanFull()
+                                    ->columns(2)
+                                    ->schema([
+                                        TextInput::make('firstname')->label('First name')
+                                            ->required(),
+                                        TextInput::make('surname')
+                                            ->required(),
+                                        Select::make('title')
+                                            ->selectablePlaceholder(false)
+                                            ->options([
+                                                '' => '',
+                                                'Mr' => 'Mr',
+                                                'Mrs' => 'Mrs',
+                                                'Ms' => 'Ms',
+                                                'Dr' => 'Dr',
+                                                'Rev' => 'Rev',
+                                                'Prof' => 'Prof'
+                                            ]),
+                                        TextInput::make('phone')
+                                            ->tel(),
+                                        FileUpload::make('image')
+                                            ->image()
+                                    ]),
+                            ]),
+                        Tab::make('Clergy details')
+                            ->schema([
+                                Section::make('Clergy')
+                                    ->relationship('minister')
+                                    ->description('This section relates only to ministers and deacons')
+                                    ->columnSpanFull()
+                                    ->columns(2)
+                                    ->hiddenOn('create')
+                                    ->visible(function ($record){
+                                        if ($record->minister){
+                                            return true;
+                                        } else {
+                                            return false;
+                                        }
+                                    })
+                                    ->schema([
+                                        Select::make('leadership')->label('District leadership roles')
+                                            ->multiple()
+                                            ->options(setting('district_leadership_roles')),
+                                        TextInput::make('ordained')->numeric(),
+                                        Toggle::make('active')
+                                            ->onColor('success'),
+                                    ]),
+                                    Section::make('Status in this circuit')
+                                        ->hiddenOn('create')
+                                        ->afterHeader([
+                                            Action::make('removeFromCircuit')->label('Remove from this Circuit')
+                                                ->requiresConfirmation()
+                                                ->action(function ($record, $action) { 
+                                                    DB::table('circuit_person')
+                                                        ->where('person_id', $record->id)
+                                                        ->where('circuit_id', $record->pivot_circuit_id)
+                                                        ->delete();
+                                                    $action->cancelParentActions();
+                                                }),
+                                        ])
+                                        ->columnSpanFull()
+                                        ->columns(2)
+                                        ->schema([
+                                            Select::make('circuitstatus')->label('Status')
+                                                ->live()
+                                                ->options(function ($record){
+                                                    $person = $record;
+                                                    if ($person->minister){
+                                                        $options=[
+                                                            'Guest' => 'Guest preacher',
+                                                            'Deacon' => 'Circuit deacon',
+                                                            'Minister' => 'Circuit minister',
+                                                            'Superintendent' => 'Superintendent minister',
+                                                            'Supernumerary' => 'Supernumerary minister'
+                                                        ];
+                                                    } elseif ($person->preacher){
+                                                        $options=array_combine(setting('district_leadership_roles'),setting('district_leadership_roles'));
+                                                        $options['Guest'] = 'Guest preacher';
+                                                        $options['Preacher'] = 'Local preacher';
+                                                    } else {
+                                                        $options=array_combine(setting('district_leadership_roles'),setting('district_leadership_roles'));
+                                                    }
+                                                    return $options;
+                                                })
+                                                //->formatStateUsing(fn ($state) => json_decode($state))
+                                                ->multiple()
+                                                ->statePath('status'),
+                                            Select::make('societies')->label('Pastoral oversight')
+                                                ->visible(function ($record){
+                                                    if (($record->minister) and ((in_array('Superintendent',json_decode($record->pivot_status))) or (in_array('Minister',json_decode($record->pivot_status))))){
+                                                        return true;
+                                                    }
+                                                })
+                                                ->options(function ($record){
+                                                    return Society::where('circuit_id',$record->circuit_id)->orderBy('society')->get()->pluck('society','id');
+                                                })
+                                                ->multiple()
+                                                ->statePath('societies'),
+                                        ]),                
+                                        TextEntry::make('circuitroles')->label('Status in other circuits')
+                                            ->hiddenOn('create')
+                                            ->visible(function ($record){
+                                                if (count($record->circuitroles)>1){
+                                                    return true;
+                                                } else {
+                                                    return false;
+                                                }
+                                            })
+                                            ->columnSpanFull()
+                                            ->listWithLineBreaks()
+                                            ->state(function ($record, RelationManager $livewire){
+                                                $states=[];
+                                                $thiscircuit = $livewire->getOwnerRecord()->id;
+                                                foreach ($record->circuitroles as $role){
+                                                    if ($role->circuit_id !== $thiscircuit){
+                                                        $states[]=$role->circuit->reference . " " . $role->circuit->circuit . " (" . implode(", ",$role->status) . ")";
+                                                    }
+                                                }
+                                                return $states;
+                                            })
+                                    ])
+                        ])
+                    ]);
     }
 
     public function table(Table $table): Table

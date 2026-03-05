@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title', 199)->nullable();
             $table->string('phone', 199)->nullable();
             $table->string('image', 199)->nullable();
+            $table->integer('user_id')->nullable();
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->timestamp('deleted_at')->nullable();

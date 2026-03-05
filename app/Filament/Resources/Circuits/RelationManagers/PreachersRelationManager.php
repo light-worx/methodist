@@ -17,7 +17,8 @@ class PreachersRelationManager extends RelationManager
     {
         return $table
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->url(fn () => PreacherResource::getUrl('create', ['circuit_id' => $this->ownerRecord->id])),
             ]);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Pages\InvitationRegister;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -32,6 +33,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/manifest.json', fn() => response()->view('pwa.manifest')->header('Content-Type', 'application/json'));
 Route::get('/service-worker.js', fn () => response()->view('pwa.service-worker')->header('Content-Type', 'application/javascript'));
+
+Route::get('/register/invite/{token}', InvitationRegister::class)->name('invite.register');
 
 // Website routes
 Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->group(function () {

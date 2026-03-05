@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 class UserAccess extends Widget
 {
     protected string $view = 'filament.widgets.user-access';
+
+    protected int | string | array $columnSpan = 'full';
     
     protected static ?int $sort = -11;
 
@@ -30,19 +32,19 @@ class UserAccess extends Widget
         if ($user->districts){
             $dis=District::whereIn('id',$user->districts)->orderBy('district')->get();
             foreach ($dis as $dd){
-                $districts[]="<a href=\"" . url('/admin/districts') . "/" . $dd->id . "/edit\"><b>" . $dd->district . "</b></a>";
+                $districts[]="<a class=\"fi-color fi-color-primary fi-bg-color-600 hover:fi-bg-color-500 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-0 hover:fi-text-color-0 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md  fi-ac-btn-action\" href=\"" . url('/admin/districts') . "/" . $dd->id . "/edit\"><b>" . $dd->district . "</b></a>";
             }
         }
         if ($user->circuits){
             $cir=Circuit::whereIn('id',$user->circuits)->orderBy('circuit')->get();
             foreach ($cir as $cc){
-                $circuits[]="<a href=\"" . url('/admin/circuits') . "/" . $cc->id . "/edit\"><b>" . $cc->circuit . "</b></a>";
+                $circuits[]="<a class=\"fi-color fi-color-primary fi-bg-color-600 hover:fi-bg-color-500 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-0 hover:fi-text-color-0 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md  fi-ac-btn-action\" href=\"" . url('/admin/circuits') . "/" . $cc->id . "/edit\"><b>" . $cc->circuit . "</b></a>";
             }
         }
         if ($user->societies){
             $soc=Society::whereIn('id',$user->societies)->orderBy('society')->get();
             foreach ($soc as $ss){
-                $societies[]="<a href=\"" . url('/admin/societies') . "/" . $ss->id . "/edit\"><b>" . $ss->society . "</b></a>";
+                $societies[]="<a class=\"fi-color fi-color-primary fi-bg-color-600 hover:fi-bg-color-500 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-0 hover:fi-text-color-0 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md  fi-ac-btn-action\" href=\"" . url('/admin/societies') . "/" . $ss->id . "/edit\"><b>" . $ss->society . "</b></a>";
             }
         }
         return [

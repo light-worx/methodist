@@ -54,6 +54,7 @@ class SocietiesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->url(fn () => SocietyResource::getUrl('create', ['circuit_id' => $this->ownerRecord->id])),
             ])
             ->recordActions([
                 EditAction::make()

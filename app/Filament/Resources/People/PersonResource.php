@@ -53,6 +53,8 @@ class PersonResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('super_admin');
+        $user = auth()->user();
+
+        return $user && $user->hasRole('super_admin');
     }
 }

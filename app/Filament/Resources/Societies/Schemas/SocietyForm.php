@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class SocietyForm
 {
@@ -21,12 +22,17 @@ class SocietyForm
                     ->dense()
                     ->schema([
                         TextInput::make('society')
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))
                             ->required(),
-                        Select::make('circuit_id')
+                        Hidden::make('circuit_id')->default(fn () => request()->query('circuit_id')),
+                        Select::make('circuit')
                             ->disabled()
-                            ->relationship('circuit', 'circuit')
-                            ->required(),
+                            ->default(fn () => request()->query('circuit_id'))
+                            ->label('Circuit')
+                            ->relationship('circuit', 'circuit'),
                         TextInput::make('address'),
+                        TextInput::make('slug'),
                         TextInput::make('email')
                             ->label('Email address')
                             ->email(),
@@ -35,7 +41,9 @@ class SocietyForm
                     ]),
                 MapPicker::make('location')
                     ->height(400)
-                    ->center(-23.5505, -46.6333)
+                    ->center(function (){
+                        return [setting('default_latitude', -26.180611), setting('default_longitude', 28.1046067)];
+                    })
                     ->zoom(18)
                     ->autoCenter()  // Auto-center to user's location
                     ->tileLayersUrl([

@@ -43,6 +43,16 @@ class AppServiceProvider extends ServiceProvider
         if (Schema::hasTable('filament_settings')){
             Config::set('app.name', setting('site_name'));
             putenv ("DEEPSEEK_API_KEY=" . setting('deepseek_api'));
+            Config::set('mail.default',setting('mailer', ['value' => 'smtp','label' => 'Mailer type','category' => 'Email','setting_type' => 'list','options' => ['smtp','mailgun','ses','postmark']]));
+            Config::set('mail.mailers.' . setting('mailer') . '.host',setting('mail_host', ['label' => 'Host','category' => 'Email']));
+            Config::set('mail.mailers.' . setting('mailer') . '.port',setting('mail_port', ['label' => 'Port','category' => 'Email']));
+            Config::set('mail.mailers.' . setting('mailer') . '.username',setting('mail_username', ['label' => 'Username','category' => 'Email']));
+            Config::set('mail.mailers.' . setting('mailer') . '.password',setting('mail_password', ['label' => 'Password','setting_type' => 'password','category' => 'Email']));
+            Config::set('mail.mailers.' . setting('mailer') . '.encryption',setting('mail_encryption', ['value' => 'ssl','label' => 'Encryption','category' => 'Email','setting_type' => 'list','options' => ['ssl','tls']]));
+            Config::set('mail.from.address',setting('mail_from_address', ['label' => 'From address','category' => 'Email']));
+            Config::set('mail.from.name',setting('mail_from_name', ['label' => 'From name','category' => 'Email']));    
+            Config::set('mail.reply_to.address',setting('mail_from_address', ['label' => 'Reply-to address','category' => 'Email']));
+            Config::set('mail.reply_to.name',setting('mail_from_name', ['label' => 'Reply-to name','category' => 'Email']));
         }
         Livewire::component('preaching-plan', PreachingPlan::class); 
         Livewire::component('service-details', ServiceDetails::class);
