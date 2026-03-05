@@ -30,6 +30,7 @@ class ListUsers extends ListRecords
                 ->schema([
                     TextInput::make('email')->email()->required(),
                     Select::make('roles')
+                        ->required()
                         ->placeholder('Select a role')
                         ->label('Role')
                         ->live()
