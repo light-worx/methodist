@@ -15,6 +15,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Livewire\Livewire;
 
 class PreacherForm
 {
@@ -70,8 +71,13 @@ class PreacherForm
                                 Hidden::make('circuit_id')->default(fn () => request()->query('circuit_id')),
                                 Select::make('society_id')->label('Society')
                                     ->selectablePlaceholder(false)
-                                    ->options(function (Get $get){
-                                        $circuitId =$get('circuit_id');
+                                    ->options(function (Get $get, $record){
+                                        if (!$get('circuit_id')) {
+                                            $soc = Society::find($record->society_id);
+                                            $circuitId = $soc->circuit_id;
+                                        } else {
+                                            $circuitId =$get('circuit_id');
+                                        }
                                         return Society::where('circuit_id', $circuitId)->orderBy('society')->pluck('society','id');
                                     }),
                                 Select::make('status')

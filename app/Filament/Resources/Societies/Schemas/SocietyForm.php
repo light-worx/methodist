@@ -2,12 +2,17 @@
 
 namespace App\Filament\Resources\Societies\Schemas;
 
+use App\Models\Circuit;
+use App\Models\District;
+use App\Models\Log;
 use EduardoRibeiroDev\FilamentLeaflet\Enums\TileLayer;
 use EduardoRibeiroDev\FilamentLeaflet\Fields\MapPicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
@@ -40,9 +45,24 @@ class SocietyForm
                             ->url(),
                     ]),
                 MapPicker::make('location')
-                    ->height(400)
+                    ->height(418)
                     ->center(function (){
-                        return [setting('default_latitude', -26.180611), setting('default_longitude', 28.1046067)];
+                        $circuit = Circuit::with(['societies' => function ($q) { $q->whereNotNull('latitude')->whereNotNull('longitude');}])->find(request()->query('circuit_id'));
+                        if ($circuit){
+                            if ($circuit->societies){
+                                $society = $circuit->societies->last();
+                                return [$society->latitude, $society->longitude];
+                            } else {
+                                $district = District::find($circuit->district_id);
+                                if ($district && $district->latitude && $district->longitude){
+                                    return [$district->latitude, $district->longitude];
+                                } else {
+                                    return [setting('default_latitude', -26.180611), setting('default_longitude', 28.1046067)];
+                                }
+                            }
+                        } else {
+                            return [setting('default_latitude', -26.180611), setting('default_longitude', 28.1046067)];
+                        }
                     })
                     ->zoom(18)
                     ->autoCenter()  // Auto-center to user's location
@@ -51,6 +71,14 @@ class SocietyForm
                         'OpenStreetMap' => TileLayer::OpenStreetMap,
                         'Satellite' => TileLayer::GoogleSatellite
                     ]),
+                TextEntry::make('log_details')
+                    ->hiddenLabel(true)
+                    ->state(function ($record){
+                        $log = Log::where('model','Society')->where('action','Created')->where('model_id',$record->id)->orderBy('created_at','desc')->first();
+                        if ($log) {
+                            return "Added by " . $log->user->name . " on " . $log->created_at->format('d/m/Y');
+                        }
+                    })->hiddenOn('create'),
             ]);
     }
 }

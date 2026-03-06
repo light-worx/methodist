@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -44,36 +45,38 @@ class MinistersRelationManager extends RelationManager
                     ->tabs([
                         Tab::make('Personal details')
                             ->schema([
-                                Section::make('Personal details')
-                                    ->columnSpanFull()
-                                    ->columns(2)
-                                    ->schema([
-                                        TextInput::make('firstname')->label('First name')
-                                            ->required(),
-                                        TextInput::make('surname')
-                                            ->required(),
-                                        Select::make('title')
-                                            ->selectablePlaceholder(false)
-                                            ->options([
-                                                '' => '',
-                                                'Mr' => 'Mr',
-                                                'Mrs' => 'Mrs',
-                                                'Ms' => 'Ms',
-                                                'Dr' => 'Dr',
-                                                'Rev' => 'Rev',
-                                                'Prof' => 'Prof'
-                                            ]),
-                                        TextInput::make('phone')
-                                            ->tel(),
-                                        FileUpload::make('image')
-                                            ->image()
+                                TextInput::make('firstname')->label('First name')
+                                    ->required(),
+                                TextInput::make('surname')
+                                    ->required(),
+                                Select::make('title')
+                                    ->selectablePlaceholder(false)
+                                    ->options([
+                                        '' => '',
+                                        'Mr' => 'Mr',
+                                        'Mrs' => 'Mrs',
+                                        'Ms' => 'Ms',
+                                        'Dr' => 'Dr',
+                                        'Rev' => 'Rev',
+                                        'Prof' => 'Prof'
                                     ]),
-                            ]),
+                                TextInput::make('phone')
+                                    ->tel(),
+                                FileUpload::make('image')
+                                    ->image(),
+                                TextEntry::make('log_details')
+                                    ->hiddenLabel(true)
+                                    ->state(function ($record){
+                                        $log = Log::where('model','Person')->where('action','Created')->where('model_id',$record->id)->orderBy('created_at','desc')->first();
+                                        if ($log) {
+                                            return "Added by " . $log->user->name . " on " . $log->created_at->format('d/m/Y');
+                                        }
+                                    })->hiddenOn('create'),
+                            ])->columns(2),
                         Tab::make('Clergy details')
                             ->schema([
-                                Section::make('Clergy')
+                                Section::make()
                                     ->relationship('minister')
-                                    ->description('This section relates only to ministers and deacons')
                                     ->columnSpanFull()
                                     ->columns(2)
                                     ->hiddenOn('create')
@@ -271,7 +274,7 @@ class MinistersRelationManager extends RelationManager
                             'firstname'=>$data['firstname'],
                             'title'=>$data['title'],
                             'phone'=>$data['phone'],
-                            'image'=>$data['image'],
+                            'image'=>$data['image']
                         ]);
                         Log::create([
                             'user_id'=>auth()->id(),
@@ -300,7 +303,7 @@ class MinistersRelationManager extends RelationManager
                             ]);
                         }
                     }),
-                Action::make('transfer')->label('Transfer minister / deacon or add as guest')
+                Action::make('transfer')->label('Transfer clergy or add as guest')
                     ->schema([
                         Grid::make(['sm'])
                             ->schema([

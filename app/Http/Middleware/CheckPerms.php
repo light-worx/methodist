@@ -245,35 +245,6 @@ class CheckPerms
         
         $person = Person::findOrFail($personId);
         
-        // Check society-level access first (for preachers)
-        if ($person->society_id) {
-            if ($user->societies && in_array($person->society_id, $user->societies)) {
-                return;
-            }
-            
-            // Check circuit-level access via society
-            if ($user->circuits) {
-                $hasAccess = Society::whereIn('circuit_id', $user->circuits)
-                    ->where('id', $person->society_id)
-                    ->exists();
-                    
-                if ($hasAccess) {
-                    return;
-                }
-            }
-            
-            // Check district-level access via society
-            if ($user->districts) {
-                $hasAccess = Society::whereHas('circuit', function ($query) use ($user) {
-                    $query->whereIn('district_id', $user->districts);
-                })->where('id', $person->society_id)->exists();
-                
-                if ($hasAccess) {
-                    return;
-                }
-            }
-        }
-        
         // Check circuit assignments (for ministers via pivot table)
         if ($user->circuits) {
             $hasAccess = $person->circuits()
@@ -321,14 +292,14 @@ class CheckPerms
         $person = $preacher->person;
         
         // Check direct society access
-        if ($person->society_id && $user->societies && in_array($person->society_id, $user->societies)) {
+        if ($preacher->society_id && $user->societies && in_array($preacher->society_id, $user->societies)) {
             return;
         }
         
         // Check circuit-level access
-        if ($person->society_id && $user->circuits) {
+        if ($preacher->society_id && $user->circuits) {
             $hasAccess = Society::whereIn('circuit_id', $user->circuits)
-                ->where('id', $person->society_id)
+                ->where('id', $preacher->society_id)
                 ->exists();
                 
             if ($hasAccess) {
@@ -337,10 +308,10 @@ class CheckPerms
         }
         
         // Check district-level access
-        if ($person->society_id && $user->districts) {
+        if ($preacher->society_id && $user->districts) {
             $hasAccess = Society::whereHas('circuit', function ($query) use ($user) {
                 $query->whereIn('district_id', $user->districts);
-            })->where('id', $person->society_id)->exists();
+            })->where('id', $preacher->society_id)->exists();
             
             if ($hasAccess) {
                 return;
