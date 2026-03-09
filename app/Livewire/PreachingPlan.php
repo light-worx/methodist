@@ -66,13 +66,12 @@ class PreachingPlan extends Component
                 $this->preachers['Circuit Ministers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
             } elseif (in_array("Guest",json_decode($person->pivot->status))){
                 $this->preachers['Guest Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
-            } elseif (in_array("Preacher",json_decode($person->pivot->status))){
-                $this->preachers['Local Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
             } elseif (in_array("Supernumerary",json_decode($person->pivot->status))){
                 $this->preachers['Supernumerary Ministers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+            }  elseif (json_decode($person->pivot->is_preacher)==1) {
+                $this->preachers['Local Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
             }
         }
-
         // Generate the upcoming 13 Sundays
         $this->generateSundays();
         

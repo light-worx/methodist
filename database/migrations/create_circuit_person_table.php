@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('circuit_id');
             $table->json('societies')->nullable();
             $table->json('status');
+            $table->boolean('is_preacher')->nullable();
         });
     }
     

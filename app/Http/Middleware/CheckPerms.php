@@ -150,7 +150,7 @@ class CheckPerms
     protected function checkCircuitPermission(Request $request, $user): void
     {
         $circuitId = $this->extractIdFromPath($request->path(), 'circuits');
-        
+
         // If no ID (list view), check if user has any circuit-related permissions
         if (!$circuitId) {
             if (!$user->districts && !$user->circuits && !$user->societies) {
@@ -158,7 +158,7 @@ class CheckPerms
             }
             return;
         }
-        
+
         // Check district-level access
         if ($user->districts) {
             $hasAccess = Circuit::whereIn('district_id', $user->districts)
@@ -185,7 +185,6 @@ class CheckPerms
                 return;
             }
         }
-        
         abort(Response::HTTP_FORBIDDEN);
     }
 

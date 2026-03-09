@@ -1201,16 +1201,16 @@
         },
         {
             "name": "eduardoribeirodev/filament-leaflet",
-            "version": "v4.6.0",
+            "version": "v4.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eduardoribeirodev/filament-leaflet.git",
-                "reference": "343d64ee303c9024ce76c6e19817be2b1d817667"
+                "reference": "e5bf5c9486293e042170c0a6d1efe0d0c9fea23a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eduardoribeirodev/filament-leaflet/zipball/343d64ee303c9024ce76c6e19817be2b1d817667",
-                "reference": "343d64ee303c9024ce76c6e19817be2b1d817667",
+                "url": "https://api.github.com/repos/eduardoribeirodev/filament-leaflet/zipball/e5bf5c9486293e042170c0a6d1efe0d0c9fea23a",
+                "reference": "e5bf5c9486293e042170c0a6d1efe0d0c9fea23a",
                 "shasum": ""
             },
             "require": {
@@ -1237,9 +1237,9 @@
             "description": "Um widget de mapa para FilamentPHP.",
             "support": {
                 "issues": "https://github.com/eduardoribeirodev/filament-leaflet/issues",
-                "source": "https://github.com/eduardoribeirodev/filament-leaflet/tree/v4.6.0"
+                "source": "https://github.com/eduardoribeirodev/filament-leaflet/tree/v4.7.0"
             },
-            "time": "2026-03-02T16:42:38+00:00"
+            "time": "2026-03-05T01:23:26+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -12329,6 +12329,6 @@
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

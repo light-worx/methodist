@@ -223,12 +223,15 @@ class PreachersRelationManager extends RelationManager
                         $circuit=Circuit::find($society->circuit_id);
                         if ($preacher->status=="guest"){
                             $status[]="Guest";
+                            DB::table('circuit_person')->insert(
+                                ['person_id' => $person->id, 'circuit_id' => $circuit->id, 'status' => json_encode($status)]
+                            );
                         } else {
-                            $status[]="Preacher";
+                            $status[]="";
+                            DB::table('circuit_person')->insert(
+                                ['person_id' => $person->id, 'circuit_id' => $circuit->id, 'status' => json_encode($status), 'is_preacher' => 1]
+                            );
                         }
-                        DB::table('circuit_person')->insert(
-                            ['person_id' => $person->id, 'circuit_id' => $circuit->id, 'status' => json_encode($status)]
-                        );
                         return $preacher;
                     })
             ])

@@ -44,9 +44,7 @@ class HomeController extends Controller
                     $data['ministers'][$person->surname.$person->firstname]=$person;
                 } elseif ($person->pivot->status){
                     foreach (json_decode($person->pivot->status) as $lead){
-                        if ($lead <> "Preacher"){
-                            $data['leaders'][$lead][$person->surname.$person->firstname]=$person;
-                        }
+                        $data['leaders'][$lead][$person->surname.$person->firstname]=$person;
                     }
                 } 
             }
@@ -530,7 +528,7 @@ class HomeController extends Controller
                 $this->ministers[]=$person;
             } elseif (in_array("Supernumerary",json_decode($person->pivot->status))){
                 $this->supernumeraries[]=$person;
-            } elseif (in_array("Preacher",json_decode($person->pivot->status))){
+            } elseif (json_decode($person->pivot->is_preacher)==1) {
                 $this->localpreachers[]=$person;
             }
             $this->preachers[$person->id] = ['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];

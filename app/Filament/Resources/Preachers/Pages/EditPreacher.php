@@ -23,9 +23,6 @@ class EditPreacher extends EditRecord
                     foreach ($person->circuitroles as $circuitrole) {
                         if ($circuitrole->circuit_id == $circuit) {
                             $status = $circuitrole->status; // must already be an array
-                            if (($key = array_search("Preacher", $status, true)) !== false) {
-                                unset($status[$key]);
-                            }
                             $status = array_values($status); // reindex
                             if (empty($status)) {
                                 $circuitrole->delete();

@@ -32,12 +32,12 @@ class UserForm
                 Select::make('roles')
                     ->selectablePlaceholder(false)
                     ->label('Role')
+                    ->relationship('roles', 'name')
                     ->live()
                     ->preload()
                     ->required()
                     ->options(function () {
                         $user = auth()->user();
-
                         if ($user->hasRole('super_admin')) {
                             return Role::orderBy('name')->pluck('name', 'id');
                         }
