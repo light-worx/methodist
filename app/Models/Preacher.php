@@ -15,7 +15,7 @@ class Preacher extends Model
 
     public function person(): BelongsTo
     {
-        return $this->belongsTo(Person::class);
+        return $this->belongsTo(Person::class)->orderBy('surname');
     }
 
     public function society(): BelongsTo

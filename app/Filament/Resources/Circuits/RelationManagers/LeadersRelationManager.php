@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Circuits\RelationManagers;
 
+use App\Filament\Resources\People\PersonResource;
 use App\Models\Log;
+use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -52,14 +54,30 @@ class LeadersRelationManager extends RelationManager
                         }
                     })->hiddenOn('create'),
                 Select::make('status')
-                    ->relationship('circuitroles','status')
                     ->label('Circuit role')
                     ->multiple()
                     ->options([
                         'Circuit Steward' => 'Circuit Steward',
                         'Circuit Secretary' => 'Circuit Secretary',
-                        'Circuit Treasurer' => 'Circuit Treasurer'
-                    ]),
+                        'Circuit Treasurer' => 'Circuit Treasurer',
+                    ])
+                    ->afterStateHydrated(function ($component, $record) {
+                        $role = $record->circuitroles()
+                            ->where('circuit_id', $this->ownerRecord->id)
+                            ->first();
+
+                        if ($role) {
+                            $component->state($role->status);
+                        }
+                    })
+                    ->dehydrateStateUsing(fn ($state) => $state)
+                    ->saveRelationshipsUsing(function ($record, $state) {
+                        $record->circuitroles()
+                            ->updateOrCreate(
+                                ['circuit_id' => $this->ownerRecord->id],
+                                ['status' => $state]
+                            );
+                    })
             ]);
     }
 
@@ -89,6 +107,9 @@ class LeadersRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->url(fn () => PersonResource::getUrl('create', ['circuit_id' => $this->ownerRecord->id]))
+                    ->label('New circuit leader')
             ])
             ->recordActions([
                 EditAction::make()

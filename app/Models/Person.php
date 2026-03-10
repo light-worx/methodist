@@ -42,7 +42,7 @@ class Person extends Model
 
     public function preacher(): HasOne
     {
-        return $this->HasOne(Preacher::class);
+        return $this->HasOne(Preacher::class)->orderBy('surname');
     }
 
     public function circuitroles(): HasMany

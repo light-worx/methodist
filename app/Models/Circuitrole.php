@@ -13,7 +13,8 @@ class Circuitrole extends Model
     protected $guarded = ['id'];
     protected $casts = [ 
         'status' => 'json',
-        'societies' => 'json'
+        'societies' => 'json',
+        'is_preacher' => 'boolean'
     ];
     public $timestamps = false;
 

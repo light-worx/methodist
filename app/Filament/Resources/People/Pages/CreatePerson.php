@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePerson extends CreateRecord
 {
     protected static string $resource = PersonResource::class;
+
+    protected static ?string $title = 'Add leader';
 }
