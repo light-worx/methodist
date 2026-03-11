@@ -41,7 +41,6 @@ class CircuitResource extends Resource
             RelationManagers\SocietiesRelationManager::class,
             RelationManagers\MinistersRelationManager::class,
             RelationManagers\PreachersRelationManager::class,
-            RelationManagers\LeadersRelationManager::class,
             RelationManagers\MeetingsRelationManager::class
         ];
     }

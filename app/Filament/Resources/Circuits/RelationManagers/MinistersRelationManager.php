@@ -92,8 +92,6 @@ class MinistersRelationManager extends RelationManager
                                             ->multiple()
                                             ->options(setting('district_leadership_roles')),
                                         TextInput::make('ordained')->numeric(),
-                                        Toggle::make('active')
-                                            ->onColor('success'),
                                     ]),
                                     Section::make('Status in this circuit')
                                         ->hiddenOn('create')
@@ -263,9 +261,6 @@ class MinistersRelationManager extends RelationManager
                                 ])
                                 ->multiple()
                                 ->statePath('status'),
-                            Toggle::make('active')
-                                ->default(true)
-                                ->onColor('success'),
                         ])->columns(2)
                     ])
                     ->action(function (array $data, RelationManager $livewire) {

@@ -13,6 +13,7 @@ class Circuit extends Model
     public $table = 'circuits';
     protected $guarded = ['id'];
     protected $casts = [
+        'leaders' => 'array',
         'servicetypes' => 'array',
         'midweeks' => 'array',
         'active' => 'boolean',

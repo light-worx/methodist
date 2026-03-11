@@ -42,15 +42,8 @@ class HomeController extends Controller
             foreach ($data['circuit']->persons as $person){
                 if ($person->minister){
                     $data['ministers'][$person->surname.$person->firstname]=$person;
-                } elseif ($person->pivot->status){
-                    foreach (json_decode($person->pivot->status) as $lead){
-                        $data['leaders'][$lead][$person->surname.$person->firstname]=$person;
-                    }
                 } 
             }
-        }
-        foreach ($data['leaders'] as $ll=>$vv){
-            ksort($data['leaders'][$ll]);
         }
         ksort($data['ministers']);
         $data['lects']=$this->get_lectionary();
@@ -372,30 +365,22 @@ class HomeController extends Controller
             }   
         }
         // Lay leaders
-        $roles = setting('circuit_leadership_roles');
-        foreach ($roles as $role){
-            $leaders=DB::table('persons')->join('circuit_person','persons.id','=','circuit_person.person_id')->where('circuit_person.circuit_id',$this->circuit->id)->whereJsonContains('status',$role)->orderBy('surname')->get();
-            if (count($leaders)){
+        $leaders=$this->circuit->leaders;
+        foreach ($leaders as $role=>$leader){
+            if ($leader){
                 $pdf->SetFont('Helvetica', 'B', 10);
-                if (count($leaders)>1){
-                    $pdf->text($xx,$yy+2,$role . "s");
-                } else {
-                    $pdf->text($xx,$yy+2,$role);
-                }
+                $pdf->text($xx,$yy+2,$role);
                 $yy=$yy+6;
                 $pdf->SetFont('Helvetica', '', 9);    
-                foreach ($leaders as $leader){
-                    $sup="";
-                    if ($leader->phone<>"" and $this->circuit->showphone){
-                        $sup.= " (" . $leader->phone . ")";
-                    }
-                    $pdf->text($xx,$yy,$leader->title . " " . substr($leader->firstname,0,1) . " " . $leader->surname . $sup);
+                $leadernames=explode(",",$leader);
+                foreach ($leadernames as $leadername){
+                    $pdf->text($xx,$yy,$leadername);
                     $yy=$yy+4.5;
                     if ($yy>199) {
                         $yy=36;
                         $xx=$xx+70;
                     }
-                }   
+                }
             }
         }
         $preachers=array();

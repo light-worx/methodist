@@ -53,6 +53,11 @@ class CircuitForm
                             ->required(),
                         Toggle::make('active')->disabled()
                     ]),
+                    Tab::make('Circuit leadership')->schema([
+                        KeyValue::make('leaders')->label('Leaders')
+                            ->keyLabel('Role')
+                            ->valueLabel('Name/s (comma separated)'),
+                    ]),
                     Tab::make('Service settings')->columns(2)->schema([
                         Select::make('midweeks')->label('Midweek services')
                             ->multiple()

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -42,7 +41,7 @@ class Person extends Model
 
     public function preacher(): HasOne
     {
-        return $this->HasOne(Preacher::class)->orderBy('surname');
+        return $this->HasOne(Preacher::class);
     }
 
     public function circuitroles(): HasMany

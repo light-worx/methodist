@@ -18,9 +18,6 @@ class MinistersTable
                     ->searchable(),
                 TextColumn::make('status')
                     ->searchable(),
-                TextColumn::make('active')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('ordained'),
                 TextColumn::make('created_at')
                     ->dateTime()

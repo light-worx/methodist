@@ -93,8 +93,6 @@ class PreachersRelationManager extends RelationManager
                                             return true;
                                         }
                                     }),
-                                Toggle::make('active')
-                                    ->onColor('success'),
                             ]),
                     ])
                 ])
@@ -117,12 +115,7 @@ class PreachersRelationManager extends RelationManager
                 TextColumn::make('status')
                     ->formatStateUsing(function ($state){
                         return ucfirst($state);
-                    }),
-                IconColumn::make('active')
-                    ->boolean()
-                    ->label('Active')
-                    ->trueIcon(Heroicon::OutlinedCheckCircle)
-                    ->falseIcon(Heroicon::OutlinedXCircle)
+                    })
             ])
             ->filters([
                 TrashedFilter::make(),
@@ -196,8 +189,6 @@ class PreachersRelationManager extends RelationManager
                                             ->readonly(function (Get $get){
                                                 return !in_array($get('status'), ['preacher', 'emeritus']);
                                             }),
-                                        Toggle::make('active')
-                                            ->onColor('success'),
                                 ])
                             ])
                         ])

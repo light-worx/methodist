@@ -17,9 +17,6 @@ class MinisterForm
                     ->required(),
                 TextInput::make('status')
                     ->required(),
-                TextInput::make('active')
-                    ->required()
-                    ->numeric(),
                 TextInput::make('leadership'),
                 TextInput::make('ordained'),
             ]);

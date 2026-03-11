@@ -48,8 +48,6 @@ class PreachersTable
                 TextColumn::make('status')
                     ->sortable()
                     ->searchable(),
-                IconColumn::make('active')
-                    ->boolean(),
             ])
             ->filters([
                 //

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('reference');
             $table->integer('plan_month');
             $table->json('servicetypes')->nullable();
+            $table->json('leaders')->nullable();
             $table->json('midweeks')->nullable();
             $table->boolean('showphone')->nullable();
             $table->boolean('setup')->nullable();
