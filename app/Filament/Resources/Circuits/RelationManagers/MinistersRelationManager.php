@@ -174,7 +174,7 @@ class MinistersRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('surname')
+            ->recordTitleAttribute('fullname')
             ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('minister'))
             ->defaultSort('surname')
             ->columns([
@@ -188,8 +188,6 @@ class MinistersRelationManager extends RelationManager
                     ->formatStateUsing(function ($state){
                         return implode(', ',json_decode($state));
                     }),
-                IconColumn::make('minister.active')
-                    ->boolean()
             ])
             ->filters([
                 //
