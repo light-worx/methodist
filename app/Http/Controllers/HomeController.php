@@ -56,12 +56,13 @@ class HomeController extends Controller
         $data['ministers']=array();
         foreach ($data['district']->circuits as $circ){
             foreach ($circ->persons as $person){
-                if ((isset($person->minister)) and ($person->minister->status=="Minister") and ($person->id <> $data['district']->bishop)){
+                if ((isset($person->minister)) and ($person->id <> $data['district']->bishop)){
                     $data['ministers'][$person->surname . $person->firstname . $person->id] = $person;
                 }
             }
         }
         ksort($data['ministers']);
+
         $data['pageName'] = $data['district']->district . ' District';
         return view('web.district',$data);
     }

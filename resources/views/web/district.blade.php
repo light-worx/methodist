@@ -52,19 +52,17 @@
         <div class="tab-pane fade" id="pills-ministers" role="tabpanel" aria-labelledby="pills-ministers-tab">
             <div class="row">
                 @foreach ($ministers as $minister)
-                    @if ($minister->minister->active)
-                        <div class="col text-center">
-                            <a href="{{url('/ministers/' . $minister->id)}}">
-                                @if ($minister->image)
-                                    <img class="rounded" width="100px" src="{{url('/storage/public/' . $minister->image)}}">
-                                @else 
-                                    <img class="rounded" width="100px" src="{{url('/methodist/images/blank.png')}}">
-                                @endif
-                                <br>
-                                <small>{{$minister->firstname}} {{$minister->surname}}</small>
-                            </a>
-                        </div>
-                    @endif
+                    <div class="col text-center">
+                        <a href="{{url('/ministers/' . $minister->id)}}">
+                            @if ($minister->image)
+                                <img class="rounded" width="100px" src="{{url('/storage/public/' . $minister->image)}}">
+                            @else 
+                                <img class="rounded" width="100px" src="{{url('/methodist/images/blank.png')}}">
+                            @endif
+                            <br>
+                            <small>{{$minister->firstname}} {{$minister->surname}}</small>
+                        </a>
+                    </div>
                 @endforeach
             </div>
         </div>
