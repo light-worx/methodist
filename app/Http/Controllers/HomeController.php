@@ -151,12 +151,12 @@ class HomeController extends Controller
     }
 
     public function lectionary(){
-        $data['lects']=json_decode($this->get_lectionary()->body(),true);
+        $data['lects']=$this->get_lectionary();
         return view('web.lectionary',$data);
     }
 
     private function get_lectionary(){
-        return Http::get('https://lectionary.lightworx.co.za/api/index.php');
+        return json_decode(Http::get('https://lectionary.lightworx.co.za/api/index.php')->body(),true);
     }
 
     public function pdf($circuit,$plandate){
