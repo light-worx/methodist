@@ -646,7 +646,7 @@ class HomeController extends Controller
         $circuitroles=$data['minister']->circuitroles;
         foreach ($circuitroles as $role){
             $societies=array();
-            if (isset($role->societies)){
+            if ((isset($role->societies)) and (count($role->societies))){
                 foreach ($role->societies as $soc){
                     $societies[] = Society::find($soc)->society;
                 }
@@ -666,7 +666,10 @@ class HomeController extends Controller
         $district_id=District::whereSlug($district)->first()->id;
         $circuit_id=Circuit::whereSlug($circuit)->where('district_id',$district_id)->first()->id;
         $data['society']=Society::with('circuit','services','preachers.person')->where('circuit_id',$circuit_id)->whereSlug($society)->first();
-        $data['services']=$data['society']->services->pluck('id','servicetime')->toArray();
+        $data['services']=array();
+        if ($data['society']->services) {
+            $data['services'] = $data['society']->services->pluck('id', 'servicetime')->toArray();
+        }
         $jsonid=json_encode($data['society']->id);
         $data['ministers']=DB::table('circuit_person')
             ->join('persons', 'circuit_person.person_id', '=', 'persons.id')
@@ -685,7 +688,9 @@ class HomeController extends Controller
                 $data['upcoming'][$time][$sunday]="";
             }
         }
-        ksort($data['upcoming']);
+        if (isset($data['upcoming'])){
+            ksort($data['upcoming']);
+        }
         foreach ($plans as $plan){
             $data['upcoming'][$plan->service->servicetime][$plan->servicedate]=$plan->person->title . " " . substr($plan->person->firstname,0,1) . " " . $plan->person->surname;
         }

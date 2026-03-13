@@ -24,7 +24,7 @@
                     accessToken: 'pk.eyJ1IjoiYmlzaG9wbSIsImEiOiJjanNjenJ3MHMwcWRyM3lsbmdoaDU3ejI5In0.M1x6KVBqYxC2ro36_Ipz_w'
                 }).addTo(map);
                 @foreach ($circuit->societies as $soc)
-                    var marker = L.marker([{{$soc->latitude}}, {{$soc->longitude}}]).bindPopup('<a href="{{url()->current() . '/' . $soc->id}}">{{$soc->society}}</a>').addTo(map);
+                    var marker = L.marker([{{$soc->latitude}}, {{$soc->longitude}}]).bindPopup('<a href="{{url()->current() . '/' . $soc->slug}}">{{$soc->society}}</a>').addTo(map);
                 @endforeach
                 var markers = [
                 @foreach ($circuit->societies as $soc)
