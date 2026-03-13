@@ -41,7 +41,7 @@
                         <div class="rounded col text-small text-md-start text-center">
                             <a href="{{url('/ministers/' . $minister->id)}}">
                                 @if ($minister->image)
-                                    <img class="rounded" width="100px" src="{{url('/storage/public/' . $minister->image)}}">
+                                    <img class="rounded" width="100px" src="{{asset('storage/' . $minister->image)}}">
                                 @else 
                                     <img class="rounded" width="100px" src="{{url('/methodist/images/blank.png')}}">
                                 @endif
