@@ -14,23 +14,14 @@ class MinistersTable
     {
         return $table
             ->columns([
-                TextColumn::make('person.title')
+                TextColumn::make('person.surname')
+                    ->label('Surname')
                     ->searchable(),
-                TextColumn::make('status')
+                TextColumn::make('person.firstname')
+                    ->label('Firstname')
                     ->searchable(),
-                TextColumn::make('ordained'),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('person.circuits.circuit')
+                    ->searchable(),
             ])
             ->filters([
                 //

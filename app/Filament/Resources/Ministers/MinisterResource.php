@@ -24,11 +24,6 @@ class MinisterResource extends Resource
 
     public static array|string $routeMiddleware = ['checkperms'];
 
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
-
     public static function form(Schema $schema): Schema
     {
         return MinisterForm::configure($schema);
@@ -44,6 +39,13 @@ class MinisterResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+
+        return $user && $user->hasRole('super_admin');
     }
 
     public static function getPages(): array
