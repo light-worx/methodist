@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Circuit;
 use App\Models\Meeting;
+use App\Models\Minister;
 use App\Models\Person;
 use App\Models\Preacher;
 use App\Models\Service;
@@ -31,6 +32,8 @@ class CheckPerms
             $this->checkPersonPermission($request, $user);
         } elseif (str_contains($request->path(), 'preachers')) {
             $this->checkPreacherPermission($request, $user);
+        } elseif (str_contains($request->path(), 'ministers')) {
+            $this->checkMinisterPermission($request, $user);
         } elseif (str_contains($request->path(), 'services')) {
             $this->checkServicePermission($request, $user);
         } elseif (str_contains($request->path(), 'meetings')) {
@@ -311,6 +314,57 @@ class CheckPerms
             $hasAccess = Society::whereHas('circuit', function ($query) use ($user) {
                 $query->whereIn('district_id', $user->districts);
             })->where('id', $preacher->society_id)->exists();
+            
+            if ($hasAccess) {
+                return;
+            }
+        }
+        
+        abort(Response::HTTP_FORBIDDEN);
+    }
+
+    protected function checkMinisterPermission(Request $request, $user): void
+    {
+        $ministerId = $this->extractIdFromPath($request->path(), 'ministers');
+        
+        // If no ID (list view), check if user has any permissions
+        if (!$ministerId) {
+            if (!$user->districts && !$user->circuits && !$user->societies) {
+                abort(Response::HTTP_FORBIDDEN);
+            }
+            return;
+        }
+        
+        $minister = Minister::with('person')->findOrFail($ministerId);
+        
+        // Minister must have an associated person
+        if (!$minister->person) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+        
+        $person = $minister->person;
+        
+        // Check direct society access
+        if ($minister->society_id && $user->societies && in_array($minister->society_id, $user->societies)) {
+            return;
+        }
+        
+        // Check circuit-level access
+        if ($minister->society_id && $user->circuits) {
+            $hasAccess = Society::whereIn('circuit_id', $user->circuits)
+                ->where('id', $minister->society_id)
+                ->exists();
+                
+            if ($hasAccess) {
+                return;
+            }
+        }
+        
+        // Check district-level access
+        if ($minister->society_id && $user->districts) {
+            $hasAccess = Society::whereHas('circuit', function ($query) use ($user) {
+                $query->whereIn('district_id', $user->districts);
+            })->where('id', $minister->society_id)->exists();
             
             if ($hasAccess) {
                 return;

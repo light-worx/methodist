@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Ministers\Schemas;
 
+use App\Models\Circuit;
 use App\Models\Log;
 use App\Models\Society;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -21,103 +23,68 @@ class MinisterForm
     {
         return $schema
             ->components([
-                Tabs::make()
+                Section::make('Personal details')
+                    ->relationship('person')
                     ->columnSpanFull()
-                    ->tabs([
-                        Tab::make('Personal details')
-                            ->schema([
-                                Section::make()
-                                    ->relationship('person')
-                                    ->columnSpanFull()
-                                    ->columns(2)
-                                    ->schema([
-                                        TextInput::make('firstname')->label('First name')
-                                            ->required(),
-                                        TextInput::make('surname')
-                                            ->required(),
-                                        Select::make('title')
-                                            ->selectablePlaceholder(false)
-                                            ->options([
-                                                '' => '',
-                                                'Mr' => 'Mr',
-                                                'Mrs' => 'Mrs',
-                                                'Ms' => 'Ms',
-                                                'Dr' => 'Dr',
-                                                'Rev' => 'Rev',
-                                                'Prof' => 'Prof'
-                                            ]),
-                                        TextInput::make('phone')
-                                            ->tel(),
-                                        FileUpload::make('image')
-                                            ->image(),
-                                        TextEntry::make('log_details')
-                                            ->hiddenLabel(true)
-                                            ->state(function ($record){
-                                                $log = Log::where('model','Person')->where('action','Created')->where('model_id',$record->id)->orderBy('created_at','desc')->first();
-                                                if ($log) {
-                                                    return "Added by " . $log->user->name . " on " . $log->created_at->format('d/m/Y');
-                                                }
-                                            })->hiddenOn('create'),
-                                    ])->columns(2),
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('firstname')->label('First name')
+                            ->required(),
+                        TextInput::make('surname')
+                            ->required(),
+                        Select::make('title')
+                            ->selectablePlaceholder(false)
+                            ->options([
+                                '' => '',
+                                'Mr' => 'Mr',
+                                'Mrs' => 'Mrs',
+                                'Ms' => 'Ms',
+                                'Dr' => 'Dr',
+                                'Rev' => 'Rev',
+                                'Prof' => 'Prof'
                             ]),
-                        Tab::make('Clergy details')
+                        TextInput::make('phone')
+                            ->tel(),
+                        FileUpload::make('image')
+                            ->image(),
+                        Repeater::make('circuitroles')
+                            ->compact()
+                            ->label('Circuit roles')
+                            ->relationship()
                             ->schema([
-                                Select::make('leadership')->label('District leadership roles')
+                                Select::make('circuit_id')
+                                    ->label('Circuit')
+                                    ->searchable()
+                                    ->options(
+                                        Circuit::orderBy('reference')
+                                            ->get()
+                                            ->mapWithKeys(fn ($circuit) => [
+                                                $circuit->id => $circuit->reference . ' ' . $circuit->circuit,
+                                            ])
+                                    ),
+                                Select::make('status')
                                     ->multiple()
-                                    ->options(setting('district_leadership_roles')),
-                                TextInput::make('ordained')->numeric(),
-                                Section::make('Status in this circuit')
-                                    ->hiddenOn('create')
-                                    ->afterHeader([
-                                        Action::make('removeFromCircuit')->label('Remove from this Circuit')
-                                            ->requiresConfirmation()
-                                            ->action(function ($record, $action) { 
-                                                DB::table('circuit_person')
-                                                    ->where('person_id', $record->id)
-                                                    ->where('circuit_id', $record->pivot_circuit_id)
-                                                    ->delete();
-                                                $action->cancelParentActions();
-                                            }),
+                                    ->options([
+                                        'Guest' => 'Guest preacher',
+                                        'Deacon' => 'Circuit deacon',
+                                        'Minister' => 'Circuit minister',
+                                        'Superintendent' => 'Superintendent minister',
+                                        'Supernumerary' => 'Supernumerary minister'
                                     ])
-                                    ->schema([
-                                        Select::make('circuitstatus')->label('Status')
-                                            ->live()
-                                            ->options(function ($record){
-                                                $person = $record;
-                                                if ($person->minister){
-                                                    $options=[
-                                                        'Guest' => 'Guest preacher',
-                                                        'Deacon' => 'Circuit deacon',
-                                                        'Minister' => 'Circuit minister',
-                                                        'Superintendent' => 'Superintendent minister',
-                                                        'Supernumerary' => 'Supernumerary minister'
-                                                    ];
-                                                } elseif ($person->preacher){
-                                                    $options=array_combine(setting('district_leadership_roles'),setting('district_leadership_roles'));
-                                                    $options['Guest'] = 'Guest preacher';
-                                                    $options['Preacher'] = 'Local preacher';
-                                                } else {
-                                                    $options=array_combine(setting('district_leadership_roles'),setting('district_leadership_roles'));
-                                                }
-                                                return $options;
-                                            })
-                                            //->formatStateUsing(fn ($state) => json_decode($state))
-                                            ->multiple()
-                                            ->statePath('status'),
-                                        Select::make('societies')->label('Pastoral oversight')
-                                            ->visible(function ($record){
-                                                if (($record->minister) and ((in_array('Superintendent',json_decode($record->pivot_status))) or (in_array('Minister',json_decode($record->pivot_status))))){
-                                                    return true;
-                                                }
-                                            })
-                                            ->options(function ($record){
-                                                return Society::where('circuit_id',$record->circuit_id)->orderBy('society')->get()->pluck('society','id');
-                                            })
-                                            ->multiple()
-                                            ->statePath('societies'),
-                                    ]),
-                            ])->columns(2)
-                        ])
-                    ]);
+                            ])->columns(2),
+                        TextEntry::make('log_details')
+                            ->hiddenLabel(true)
+                            ->state(function ($record){
+                                $log = Log::where('model','Person')->where('action','Created')->where('model_id',$record->id)->orderBy('created_at','desc')->first();
+                                if ($log) {
+                                    return "Added by " . $log->user->name . " on " . $log->created_at->format('d/m/Y');
+                                }
+                            })->hiddenOn('create'),
+                    ])->columns(2),
+                Select::make('leadership')->label('District leadership roles')
+                    ->multiple()
+                    ->options(setting('district_leadership_roles')),
+                TextInput::make('ordained')->numeric(),
+            ])->columns(2);
     }
 }
