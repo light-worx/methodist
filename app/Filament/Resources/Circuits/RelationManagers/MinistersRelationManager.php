@@ -143,6 +143,7 @@ class MinistersRelationManager extends RelationManager
                                                     return Society::where('circuit_id',$record->circuit_id)->orderBy('society')->get()->pluck('society','id');
                                                 })
                                                 ->multiple()
+                                                ->dehydrateStateUsing(fn ($state) => collect($state)->map(fn ($v) => (string) $v)->values()->all())
                                                 ->statePath('societies'),
                                         ]),                
                                         TextEntry::make('circuitroles')->label('Status in other circuits')
