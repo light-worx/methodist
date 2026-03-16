@@ -14,7 +14,7 @@
         <div class="tab-pane fade show active" id="pills-district" role="tabpanel" aria-labelledby="pills-district-tab">
             @if ($bishop and $bishop->image)
                 <a href="{{url('/ministers/' . $bishop->id)}}">
-                    <img class="rounded" width="100px" src="{{url('/storage/public/' . $bishop->image)}}">
+                    <img class="rounded" width="100px" src="{{asset('/storage/' . $bishop->image)}}">
                 </a>
             @elseif ($bishop)
                 <a href="{{url('/ministers/' . $bishop->id)}}">

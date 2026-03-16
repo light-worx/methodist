@@ -77,7 +77,18 @@ class HomeController extends Controller
     {
         $data['districts']=District::orderBy('id')->get();
         $data['lects']=$this->get_lectionary();
-        return view('web.home',$data);
+        $activedistricts=0;
+        foreach ($data['districts'] as $district){
+            if ($district->active){
+                $activedistricts++;
+                $currentdistrict=$district;
+            }
+        }
+        if ($activedistricts==1){
+            return redirect()->route('district', $currentdistrict->slug);
+        } else {
+            return view('web.home',$data);
+        }
     }
 
     public function ideas(){
