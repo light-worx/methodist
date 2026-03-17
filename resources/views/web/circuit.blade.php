@@ -12,7 +12,8 @@
     </ul>
     <div class="tab-content" id="pills-tabContent">
         <div class="tab-pane fade show active" id="pills-circuit" role="tabpanel" aria-labelledby="pills-circuit-tab">
-            <div style="height:400px" id="map"></div>
+            <a href="{{url('/' . $circuit->district->slug)}}">{{$circuit->district->district}} District</a> &raquo; {{$circuit->circuit}} {{$circuit->reference}}
+            <div style="height:400px" id="map" class="mt-3"></div>
             <script>
                 var map = L.map('map');
                 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {

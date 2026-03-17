@@ -77,6 +77,11 @@ class HomeController extends Controller
     {
         $data['districts']=District::orderBy('id')->get();
         $data['lects']=$this->get_lectionary();
+        $circuitId = $_COOKIE['user_circuit'] ?? null;
+        if ($circuitId) {
+            $circuit = Circuit::with('district')->find($circuitId);
+            return redirect()->route('circuit', ['district' => $circuit->district->slug, 'circuit' => $circuit->slug]);
+        }
         $activedistricts=0;
         foreach ($data['districts'] as $district){
             if ($district->active){
