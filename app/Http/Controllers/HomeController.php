@@ -64,6 +64,13 @@ class HomeController extends Controller
         ksort($data['ministers']);
 
         $data['pageName'] = $data['district']->district . ' District';
+        $districts=District::orderBy('id')->get();
+        $data['activedistricts']=0;
+        foreach ($districts as $district){
+            if ($district->active){
+                $data['activedistricts']++;
+            }
+        }
         return view('web.district',$data);
     }
 

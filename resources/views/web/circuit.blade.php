@@ -9,11 +9,13 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="pills-preaching-tab" data-bs-toggle="pill" data-bs-target="#pills-preaching" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Preaching</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <a href="{{url('/' . $circuit->district->slug)}}" class="nav-link" id="pills-district-tab" type="button" role="tab">District</a>
+        </li>
     </ul>
     <div class="tab-content" id="pills-tabContent">
         <div class="tab-pane fade show active" id="pills-circuit" role="tabpanel" aria-labelledby="pills-circuit-tab">
-            <a href="{{url('/' . $circuit->district->slug)}}">{{$circuit->district->district}} District</a> &raquo; {{$circuit->circuit}} {{$circuit->reference}}
-            <div style="height:400px" id="map" class="mt-3"></div>
+            <div style="height:400px" id="map" class="mt-1"></div>
             <script>
                 var map = L.map('map');
                 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {

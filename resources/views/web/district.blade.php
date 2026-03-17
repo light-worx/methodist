@@ -9,6 +9,11 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-ministers" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Ministers</button>
         </li>
+        @if ($activedistricts >1)
+            <li class="nav-item" role="presentation">
+                <a href="{{url('/')}}" class="nav-link" id="pills-district-tab" type="button" role="tab">Connexion</a>
+            </li>
+        @endif
     </ul>
     <div class="tab-content" id="pills-tabContent">
         <div class="tab-pane fade show active" id="pills-district" role="tabpanel" aria-labelledby="pills-district-tab">
