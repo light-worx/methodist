@@ -284,8 +284,7 @@ class MinistersRelationManager extends RelationManager
                         $minister = $person->minister()->create([
                             'leadership'=>$data['leadership'],
                             'status'=>$data['ministerdeacon'],
-                            'ordained'=>$data['ordained'],
-                            'active'=>$data['active']
+                            'ordained'=>$data['ordained']
                         ]);
                         Log::create([
                             'user_id'=>auth()->id(),
