@@ -24,6 +24,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -191,7 +192,11 @@ class MinistersRelationManager extends RelationManager
                     }),
             ])
             ->filters([
-                //
+                Filter::make('only_stationed_clergy')
+                    ->query(function (Builder $query) {
+                        return $query->whereJsonContains('status', 'Minister')->orWhereJsonContains('status', 'Superintendent')->orWhereJsonContains('status', 'Deacon');
+                    })
+                    ->default()
             ])
             ->headerActions([
                 CreateAction::make('Add a new minister')->label('New minister')
