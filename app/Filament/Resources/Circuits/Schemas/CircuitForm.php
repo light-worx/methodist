@@ -51,7 +51,10 @@ class CircuitForm
                             ->disabled(!auth()->user()->can('Update:District'))
                             ->relationship('district', 'district')
                             ->required(),
-                        Toggle::make('active')->disabled()
+                        Toggle::make('active')->disabled(function (){
+                                return !auth()->user()->can('Update:District');
+                            }
+                        )
                     ]),
                     Tab::make('Circuit leadership')->schema([
                         KeyValue::make('leaders')->label('Leaders')
