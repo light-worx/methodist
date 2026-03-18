@@ -11,6 +11,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -147,27 +148,29 @@ class MinistersRelationManager extends RelationManager
                                                 ->dehydrateStateUsing(fn ($state) => collect($state)->map(fn ($v) => (string) $v)->values()->all())
                                                 ->statePath('societies'),
                                         ]),                
-                                        TextEntry::make('circuitroles')->label('Status in other circuits')
-                                            ->hiddenOn('create')
-                                            ->visible(function ($record){
-                                                if (count($record->circuitroles)>1){
-                                                    return true;
-                                                } else {
-                                                    return false;
-                                                }
-                                            })
-                                            ->columnSpanFull()
-                                            ->listWithLineBreaks()
-                                            ->state(function ($record, RelationManager $livewire){
-                                                $states=[];
-                                                $thiscircuit = $livewire->getOwnerRecord()->id;
-                                                foreach ($record->circuitroles as $role){
-                                                    if ($role->circuit_id !== $thiscircuit){
-                                                        $states[]=$role->circuit->reference . " " . $role->circuit->circuit . " (" . implode(", ",$role->status) . ")";
+                                        Repeater::make('circuitroles')->label('Status in other circuits')->hiddenOn('create')
+                                            ->relationship(
+                                                modifyQueryUsing: function ($query, RelationManager $livewire) {
+                                                    $parentRecord = $livewire->getOwnerRecord();
+                                                    if ($parentRecord) {
+                                                        $query->where('circuit_id', '!=', $parentRecord->id);
                                                     }
+                                                    return $query;
                                                 }
-                                                return $states;
-                                            })
+                                            )
+                                            ->compact()
+                                            ->schema([
+                                                TextEntry::make('circuit_id')
+                                                    ->hiddenLabel()
+                                                    ->getStateUsing(function ($record) {
+                                                        return $record->circuit->circuit . " (" . $record->circuit->reference . ")";
+                                                    }),
+                                                TextEntry::make('status')
+                                                    ->hiddenLabel()
+                                                    ->getStateUsing(function ($record) {
+                                                        return implode(', ',$record->status);
+                                                    })
+                                            ])->columns(2)
                                     ])
                         ])
                     ]);
