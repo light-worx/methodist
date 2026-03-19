@@ -38,6 +38,7 @@ class CircuitsTable
                     }
                 }
             })
+            ->defaultSort('reference')
             ->columns([
                 TextColumn::make('reference')->label('No.')
                     ->searchable()
