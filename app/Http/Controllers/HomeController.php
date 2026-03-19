@@ -529,6 +529,20 @@ class HomeController extends Controller
         }
     }
 
+    public function preacher($society,$servicetime,$servicedate){
+        $service=DB::table('services')->where('society_id',$society)->where('servicetime',str_replace('h',':',$servicetime))->first();
+        if ($service){
+            $plan=Plan::where('service_id',$service->id)->where('servicedate',$servicedate)->first();
+            if ($plan){
+                $person = Person::find($plan->person_id);
+                if ($person){
+                    return $person->firstname . " " . $person->surname;
+                }
+            }
+        }
+        return "";
+    }
+
     private function getrows(){
         $circuit=Circuit::with('societies.services','persons.preacher.society')->where('id',$this->circuit->id)->first();
         $persons=$circuit->persons->sortBy(['surname','firstname']);

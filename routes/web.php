@@ -43,6 +43,7 @@ Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->
     Route::post('/ideas/store', 'storeidea')->name('ideas.store');
     Route::get('/lectionary/{sunday?}','lectionary')->name('lectionary');
     Route::get('/ministers/{id}','minister')->name('minister');
+    Route::get('/preacher/{society}/{servicetime}/{servicedate}','preacher')->name('preacher');
     Route::get('/offline', 'offline')->name('offline');
     Route::get('/admin/reports/plan/edit/{record}/{today?}', ['uses'=>'\App\Http\Controllers\HomeController@editplan','as' => 'admin.plan.edit']);
     Route::get('/plan/{id}/{plandate}', ['uses'=>'\App\Http\Controllers\HomeController@pdf','as' => 'reports.plan']);
