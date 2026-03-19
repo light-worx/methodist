@@ -40,6 +40,7 @@ class SocietyForm
                                     return true;
                                 }
                             })
+                            ->afterStateUpdated(fn (Set $set, ?string $state) => $set('circuit_id', $state))
                             ->default(fn () => request()->query('circuit_id'))
                             ->label('Circuit')
                             ->relationship('circuit', 'circuit'),
