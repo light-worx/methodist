@@ -32,7 +32,14 @@ class SocietyForm
                             ->required(),
                         Hidden::make('circuit_id')->default(fn () => request()->query('circuit_id')),
                         Select::make('circuit')
-                            ->disabled()
+                            ->disabled(function () {
+                                $user = auth()->user();
+                                if ($user->hasRole('super_admin')) {
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            })
                             ->default(fn () => request()->query('circuit_id'))
                             ->label('Circuit')
                             ->relationship('circuit', 'circuit'),
