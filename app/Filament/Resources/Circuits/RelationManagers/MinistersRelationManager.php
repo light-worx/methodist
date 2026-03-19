@@ -117,6 +117,7 @@ class MinistersRelationManager extends RelationManager
                                                             'Guest' => 'Guest preacher',
                                                             'Deacon' => 'Circuit deacon',
                                                             'Minister' => 'Circuit minister',
+                                                            'Retired' => 'Retired deacon',
                                                             'Superintendent' => 'Superintendent minister',
                                                             'Supernumerary' => 'Supernumerary minister'
                                                         ];
@@ -261,6 +262,7 @@ class MinistersRelationManager extends RelationManager
                                     'Deacon' => 'Circuit deacon',
                                     'Guest' => 'Guest preacher',
                                     'Minister' => 'Circuit minister',
+                                    'Retired' => 'Retired deacon',
                                     'Superintendent' => 'Superintendent minister',
                                     'Supernumerary' => 'Supernumerary minister'
                                 ])
@@ -330,6 +332,7 @@ class MinistersRelationManager extends RelationManager
                                                 $options=[
                                                     'Guest' => 'Guest preacher',
                                                     'Minister' => 'Circuit minister',
+                                                    'Retired' => 'Retired deacon',
                                                     'Superintendent' => 'Superintendent minister',
                                                     'Supernumerary' => 'Supernumerary minister'
                                                 ];

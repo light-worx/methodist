@@ -56,7 +56,7 @@ class HomeController extends Controller
         $data['ministers']=array();
         foreach ($data['district']->circuits as $circ){
             foreach ($circ->persons as $person){
-                if ((isset($person->minister)) and ($person->id <> $data['district']->bishop) and (!in_array("Supernumerary",json_decode($person->pivot->status))) and (!in_array("Guest",json_decode($person->pivot->status)))){
+                if ((isset($person->minister)) and ($person->id <> $data['district']->bishop) and (!in_array("Supernumerary",json_decode($person->pivot->status))) and (!in_array("Retired",json_decode($person->pivot->status))) and (!in_array("Guest",json_decode($person->pivot->status)))){
                     $data['ministers'][$person->surname . $person->firstname . $person->id] = $person;
                 }
             }

@@ -68,6 +68,7 @@ class MinisterForm
                                         'Guest' => 'Guest preacher',
                                         'Deacon' => 'Circuit deacon',
                                         'Minister' => 'Circuit minister',
+                                        'Retired' => 'Retired deacon',
                                         'Superintendent' => 'Superintendent minister',
                                         'Supernumerary' => 'Supernumerary minister'
                                     ])
