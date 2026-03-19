@@ -158,6 +158,7 @@ class MinistersRelationManager extends RelationManager
                                                     return $query;
                                                 }
                                             )
+                                            ->addable(false)
                                             ->compact()
                                             ->schema([
                                                 TextEntry::make('circuit_id')
