@@ -11,44 +11,53 @@
         <div class="card shadow-sm">
             <div class="card-body p-4">
 
-                <!-- Tabs -->
+                {{-- ── Tabs ── --}}
                 <ul class="nav nav-tabs mb-4" id="ideasTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list"
-                            type="button" role="tab" aria-controls="list" aria-selected="false">
-                            <i class="bi bi-collection me-1"></i> Ministry ideas
+                        <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
+                                data-bs-target="#list" type="button" role="tab"
+                                aria-controls="list" aria-selected="true">
+                            <i class="bi bi-collection me-1"></i> Ministry Ideas
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add"
-                            type="button" role="tab" aria-controls="add" aria-selected="true">
-                            <i class="bi bi-plus-circle me-1"></i> Add an idea
+                        <button class="nav-link" id="add-tab" data-bs-toggle="tab"
+                                data-bs-target="#add" type="button" role="tab"
+                                aria-controls="add" aria-selected="false">
+                            <i class="bi bi-plus-circle me-1"></i> Add an Idea
                         </button>
                     </li>
                 </ul>
 
                 <div class="tab-content" id="ideasTabContent">
 
-                    <!-- LIST IDEAS TAB -->
+                    {{-- ══════════════════════════════════════════════ --}}
+                    {{-- LIST IDEAS TAB                                 --}}
+                    {{-- ══════════════════════════════════════════════ --}}
                     <div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
                         @if($ideas->isEmpty())
-                            <p class="text-muted text-center my-4">No ideas submitted yet.</p>
+                            <p class="text-muted text-center my-4">No ideas have been published yet.</p>
                         @else
                             <div class="list-group">
                                 @foreach($ideas as $idea)
-                                    <div class="list-group-item">
-                                        <h5 class="mb-1">{{ $idea->description }}</h5>
-                                        <small class="text-muted">Submitted by {{ $idea->email }} ({{ $idea->circuit->circuit ?? 'Unknown Circuit' }})</small>
+                                    <div class="list-group-item list-group-item-action py-3">
+                                        <div class="d-flex w-100 justify-content-between align-items-start">
+                                            <b class="mb-1">{{ $idea->idea }}</b>
+                                            <small class="text-muted ms-2 text-nowrap">
+                                                {{ $idea->circuit->circuit ?? 'Unknown Circuit' }} {{$idea->circuit->reference ?? ''}}
+                                            </small>
+                                        </div>
                                         @if($idea->tags->isNotEmpty())
                                             <div class="mt-2">
                                                 @foreach($idea->tags as $tag)
-                                                    <span class="badge bg-secondary">{{ $tag->name }}</span>
+                                                    <span class="badge bg-secondary me-1">{{ $tag->name }}</span>
                                                 @endforeach
                                             </div>
                                         @endif
                                         @if($idea->image)
                                             <div class="mt-3">
-                                                <img src="{{ asset('storage/' . $idea->image) }}" class="img-thumbnail" style="max-width:200px;">
+                                                <img src="{{ asset('storage/' . $idea->image) }}"
+                                                     class="img-thumbnail" style="max-width: 200px;">
                                             </div>
                                         @endif
                                     </div>
@@ -57,178 +66,272 @@
                         @endif
                     </div>
 
-                    <!-- ADD IDEA TAB -->
+                    {{-- ══════════════════════════════════════════════ --}}
+                    {{-- ADD IDEA TAB                                   --}}
+                    {{-- ══════════════════════════════════════════════ --}}
                     <div class="tab-pane fade" id="add" role="tabpanel" aria-labelledby="add-tab">
 
-                        <form wire:submit.prevent="submit" enctype="multipart/form-data">
-                            <!-- Circuit -->
+                        <form wire:submit.prevent="submit">
+
+                            {{-- Circuit --}}
                             <div class="mb-4">
-                                <label class="form-label">Circuit <span class="text-danger">*</span></label>
-                                <select wire:model="circuit_id" id="circuit_id_select"
-                                    class="form-select @error('circuit_id') is-invalid @enderror">
-                                    <option value="">Select a circuit...</option>
+                                <label class="form-label fw-medium">Circuit <span class="text-danger">*</span></label>
+                                <select wire:model="circuit_id"
+                                        class="form-select @error('circuit_id') is-invalid @enderror">
+                                    <option value="">Select a circuit…</option>
                                     @foreach($circuits as $c)
                                         <option value="{{ $c->id }}">{{ $c->circuit }}</option>
                                     @endforeach
                                 </select>
-                                @error('circuit_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @error('circuit_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
-                            <!-- Email -->
+                            {{-- Email --}}
                             <div class="mb-4">
-                                <label class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" wire:model="email" id="email_input"
-                                    class="form-control @error('email') is-invalid @enderror">
-                                @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label class="form-label fw-medium">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" wire:model.lazy="email"
+                                       class="form-control @error('email') is-invalid @enderror">
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
-                            <!-- Description -->
+                            {{-- Description + AI trigger --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    Describe Your Idea <span class="text-danger">*</span>
+                                    <span class="text-muted fw-normal small">— write in your own words first</span>
+                                </label>
+                                <textarea wire:model="description" rows="6"
+                                          class="form-control @error('description') is-invalid @enderror"
+                                          placeholder="Describe what your church does, how it works in practice, and why it has been valuable…"></textarea>
+                                @error('description')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- AI generate button --}}
                             <div class="mb-4">
-                                <label class="form-label">Description <span class="text-danger">*</span></label>
-                                <textarea wire:model="description" rows="8"
-                                    class="form-control @error('description') is-invalid @enderror"></textarea>
-                                @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <button type="button"
+                                        wire:click="generateAiSuggestions"
+                                        wire:loading.attr="disabled"
+                                        wire:target="generateAiSuggestions"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <span wire:loading.remove wire:target="generateAiSuggestions">
+                                        <i class="bi bi-stars me-1"></i>Get AI suggestions
+                                    </span>
+                                    <span wire:loading wire:target="generateAiSuggestions">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Generating…
+                                    </span>
+                                </button>
+                                <span class="text-muted small ms-2">Suggests a title, refined description and subject tags.</span>
                             </div>
 
-                            @if ($generatingAI)
-                                <div class="alert alert-info py-2">
-                                    <div class="spinner-border spinner-border-sm me-2"></div>Generating AI suggestions...
+                            {{-- AI error --}}
+                            @if($aiError)
+                                <div class="alert alert-warning small py-2 mb-4" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ $aiError }}
                                 </div>
                             @endif
 
-                            @if ($aiTitle || $aiDescription)
-                                <div class="card border-secondary mb-4">
-                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                        <span><i class="bi bi-stars me-1"></i>AI Suggestions</span>
-                                        <button type="button" wire:click="generateAiSuggestions" class="btn btn-sm btn-outline-secondary">
+                            {{-- ── AI Suggestion Panel ── --}}
+                            @if($aiTitle || $aiDescription || count($aiTags))
+                                <div class="card border-primary mb-4">
+                                    <div class="card-header bg-primary bg-opacity-10 text-primary d-flex align-items-center gap-2">
+                                        <i class="bi bi-stars"></i>
+                                        <span class="small fw-semibold text-uppercase">AI Suggestions</span>
+                                        <button type="button" wire:click="generateAiSuggestions"
+                                                wire:loading.attr="disabled" wire:target="generateAiSuggestions"
+                                                class="btn btn-sm btn-outline-primary ms-auto">
                                             <i class="bi bi-arrow-clockwise"></i> Refresh
                                         </button>
                                     </div>
-                                    <div class="card-body">
-                                        @if ($aiTitle)
-                                            <h5 class="fw-bold mb-2">{{ $aiTitle }}</h5>
-                                            <button type="button" wire:click="$set('idea', '{{ addslashes($aiTitle) }}')" class="btn btn-sm btn-outline-primary mb-3">
-                                                <i class="bi bi-check2-circle"></i> Use this as title
-                                            </button>
+                                    <div class="card-body d-flex flex-column gap-3">
+
+                                        {{-- Suggested title --}}
+                                        @if($aiTitle && !$titleAccepted)
+                                            <div class="border rounded p-3 bg-light">
+                                                <p class="text-muted small mb-1 fw-medium">Suggested Title</p>
+                                                <p class="fw-semibold mb-3">{{ $aiTitle }}</p>
+                                                <div class="d-flex gap-2">
+                                                    <button type="button" wire:click="acceptAiTitle"
+                                                            class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-check-lg me-1"></i>Use this title
+                                                    </button>
+                                                    <button type="button" wire:click="rejectAiTitle"
+                                                            class="btn btn-outline-secondary btn-sm">
+                                                        <i class="bi bi-x-lg me-1"></i>Ignore
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @elseif($titleAccepted)
+                                            <div class="d-flex align-items-center gap-2 text-success small fw-medium">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                                Title applied — you can still edit it below.
+                                            </div>
                                         @endif
 
-                                        @if ($aiDescription)
-                                            <p class="text-muted">{{ $aiDescription }}</p>
-                                            <button type="button" wire:click="$set('description', '{{ addslashes($aiDescription) }}')" class="btn btn-sm btn-outline-success">
-                                                <i class="bi bi-arrow-down-circle"></i> Replace my description
-                                            </button>
+                                        {{-- Suggested description --}}
+                                        @if($aiDescription && !$descriptionAccepted)
+                                            <div class="border rounded p-3 bg-light">
+                                                <p class="text-muted small mb-1 fw-medium">Suggested Description</p>
+                                                <p class="small lh-base mb-3">{{ $aiDescription }}</p>
+                                                <div class="d-flex gap-2">
+                                                    <button type="button" wire:click="acceptAiDescription"
+                                                            class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-check-lg me-1"></i>Use this description
+                                                    </button>
+                                                    <button type="button" wire:click="rejectAiDescription"
+                                                            class="btn btn-outline-secondary btn-sm">
+                                                        <i class="bi bi-x-lg me-1"></i>Ignore
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @elseif($descriptionAccepted)
+                                            <div class="d-flex align-items-center gap-2 text-success small fw-medium">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                                Description applied — you can still edit it in the field above.
+                                            </div>
                                         @endif
 
-                                        <small class="text-muted d-block mt-2">
-                                            You can edit your text after applying any suggestion.
-                                        </small>
+                                        {{-- Suggested tags --}}
+                                        @if(count($aiTags))
+                                            <div class="border rounded p-3 bg-light">
+                                                <p class="text-muted small mb-2 fw-medium">Suggested Subjects</p>
+                                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                                    @foreach($aiTags as $aiTag)
+                                                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-medium px-2 py-1"
+                                                              style="font-size: 0.8rem;">
+                                                            {{ $aiTag }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                                <div class="d-flex gap-2 flex-wrap">
+                                                    <button type="button" wire:click="acceptAllAiTags"
+                                                            class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-check-all me-1"></i>Accept all
+                                                    </button>
+                                                    @foreach($aiTags as $aiTag)
+                                                        <button type="button" wire:click="acceptAiTag('{{ $aiTag }}')"
+                                                                class="btn btn-outline-primary btn-sm">
+                                                            + {{ $aiTag }}
+                                                        </button>
+                                                        <button type="button" wire:click="rejectAiTag('{{ $aiTag }}')"
+                                                                class="btn btn-outline-secondary btn-sm">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+
                                     </div>
                                 </div>
                             @endif
 
-                            <button type="button" wire:click="generateAiSuggestions" class="btn btn-outline-secondary btn-sm mb-3">
-                                <i class="bi bi-magic"></i> Refresh AI Suggestions
-                            </button>
-
-                            <!-- Tags -->
+                            {{-- Idea title --}}
                             <div class="mb-4">
-                                <label class="form-label">Subjects <span class="text-danger">*</span></label>
-                                <div class="mb-2">
-                                    @foreach($tags as $i => $tag)
-                                        <span class="badge bg-primary me-1 mb-1">
-                                            {{ $tag }}
-                                            <button type="button" wire:click="removeTag({{ $i }})"
-                                                class="btn-close btn-close-white btn-sm"
-                                                style="font-size: 0.7rem; vertical-align: middle;"></button>
-                                        </span>
-                                    @endforeach
-                                </div>
-                                <div style="position: relative;">
-                                    <input type="text"
-                                           wire:model.live.debounce.300ms="tagInput"
-                                           wire:keydown.enter.prevent="addTag"
-                                           placeholder="Type to search existing subjects or add new ones (press Enter)"
-                                           class="form-control"
-                                           autocomplete="off">
-
-                                    @if($showTagDropdown && !empty($filteredTags))
-                                        <div class="dropdown-menu show w-100"
-                                             style="position: absolute; z-index: 1000; max-height: 200px; overflow-y: auto;">
-                                            @foreach($filteredTags as $tag)
-                                                <button type="button"
-                                                        wire:click="selectTag('{{ $tag['name'] }}')"
-                                                        class="dropdown-item">
-                                                    {{ $tag['name'] }}
-                                                </button>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="form-text">
-                                    Select from existing subjects or type a new one and press Enter.
-                                </div>
-                                @error('tags') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                <label class="form-label fw-medium">
+                                    Idea Title <span class="text-danger">*</span>
+                                    <span class="text-muted fw-normal small">(edit or write your own)</span>
+                                </label>
+                                <input type="text" wire:model.live="idea"
+                                       placeholder="A clear, descriptive title"
+                                       class="form-control @error('idea') is-invalid @enderror">
+                                @error('idea')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
-                            <!-- Image -->
-                            <div class="mb-4">
-                                <label class="form-label">Image (Optional)</label>
-                                <input type="file" wire:model="image"
-                                    class="form-control @error('image') is-invalid @enderror">
-                                @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            {{-- Tags --}}
+                            <div class="mb-4 position-relative">
+                                <label class="form-label fw-medium">
+                                    Subjects <span class="text-danger">*</span>
+                                </label>
 
-                                <div wire:loading wire:target="image" class="mt-2">
-                                    <small class="text-muted">Uploading...</small>
-                                </div>
-
-                                @if ($image)
-                                    <div class="mt-3">
-                                        <img src="{{ $image->temporaryUrl() }}" class="img-thumbnail"
-                                             style="max-width:300px; max-height:300px;">
+                                @if(count($tags))
+                                    <div class="mb-2">
+                                        @foreach($tags as $i => $tag)
+                                            <span class="badge bg-primary me-1 mb-1 d-inline-flex align-items-center gap-1">
+                                                {{ $tag }}
+                                                <button type="button" wire:click="removeTag({{ $i }})"
+                                                        class="btn-close btn-close-white"
+                                                        style="font-size: 0.6rem;"
+                                                        aria-label="Remove {{ $tag }}"></button>
+                                            </span>
+                                        @endforeach
                                     </div>
+                                @endif
+
+                                <input type="text"
+                                       wire:model.live="tagInput"
+                                       wire:keydown.enter.prevent="addTag"
+                                       placeholder="Search or type a subject and press Enter…"
+                                       class="form-control @error('tags') is-invalid @enderror"
+                                       autocomplete="off">
+
+                                @error('tags')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+
+                                @if($showTagDropdown && count($filteredTags))
+                                    <div class="dropdown-menu show w-100 mt-1"
+                                         style="position: absolute; z-index: 1050; max-height: 200px; overflow-y: auto;">
+                                        @foreach($filteredTags as $tag)
+                                            <button type="button"
+                                                    wire:click="selectTag('{{ $tag['name'] }}')"
+                                                    class="dropdown-item small py-2">
+                                                {{ $tag['name'] }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <div class="form-text">Select from existing subjects or type a new one and press Enter.</div>
+                            </div>
+
+                            {{-- Image --}}
+                            <div class="mb-4">
+                                <label class="form-label fw-medium">
+                                    Image <span class="text-muted fw-normal small">(optional)</span>
+                                </label>
+                                <input type="file" wire:model="image" accept="image/*"
+                                       class="form-control @error('image') is-invalid @enderror">
+                                @error('image')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div wire:loading wire:target="image" class="mt-2">
+                                    <small class="text-muted">
+                                        <span class="spinner-border spinner-border-sm me-1"></span>Uploading…
+                                    </small>
+                                </div>
+                                @if($image)
+                                    <img src="{{ $image->temporaryUrl() }}" alt="Preview"
+                                         class="img-thumbnail mt-2" style="max-width: 300px; max-height: 300px;">
                                 @endif
                             </div>
 
+                            {{-- Submit --}}
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <button type="submit" class="btn btn-primary btn-lg px-5"
+                                        wire:loading.attr="disabled">
                                     <span wire:loading.remove wire:target="submit">
                                         <i class="bi bi-send me-2"></i>Submit Ministry Idea
                                     </span>
                                     <span wire:loading wire:target="submit">
-                                        <span class="spinner-border spinner-border-sm me-2"></span>Submitting...
+                                        <span class="spinner-border spinner-border-sm me-2"></span>Submitting…
                                     </span>
                                 </button>
                             </div>
+
                         </form>
-                    </div>
-                </div>
+                    </div>{{-- end add tab --}}
+
+                </div>{{-- end tab-content --}}
             </div>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-document.addEventListener('livewire:load', function () {
-    let aiTimer = null;
-
-    window.addEventListener('trigger-ai-generation', () => {
-        clearTimeout(aiTimer);
-        aiTimer = setTimeout(() => {
-            Livewire.find(document.querySelector('[wire\\:id]').getAttribute('wire:id'))
-                .call('generateAiSuggestions');
-        }, 1500); // wait 1.5 seconds after user stops typing
-    });
-
-    setTimeout(prefillFromCookies, 500);
-
-    document.addEventListener('click', function(e) {
-        const dropdown = document.querySelector('.dropdown-menu.show');
-        const input = document.querySelector('input[wire\\:model\\.live\\.debounce\\.300ms="tagInput"]');
-        if (dropdown && input && !input.contains(e.target) && !dropdown.contains(e.target)) {
-            @this.set('showTagDropdown', false);
-        }
-    });
-});
-</script>
-@endpush

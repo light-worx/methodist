@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Traits\Taggable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Idea extends Model
 {
@@ -16,4 +16,9 @@ class Idea extends Model
         'published' => 'boolean'
     ];  
     public $timestamps = false;
+
+    public function circuit(): BelongsTo
+    {
+        return $this->belongsTo(Circuit::class);
+    }   
 }

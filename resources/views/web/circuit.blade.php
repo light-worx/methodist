@@ -1,4 +1,4 @@
-<x-web pageName="{{$circuit->circuit}} Circuit {{$circuit->reference}}">
+<x-web pageName="{{$circuit?->circuit}} Circuit {{$circuit?->reference}}">
     <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active py-1 px-2" id="pills-circuit-tab" data-bs-toggle="pill" data-bs-target="#pills-circuit" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Circuit</button>
@@ -10,7 +10,7 @@
             <button class="nav-link py-1 px-2" id="pills-preaching-tab" data-bs-toggle="pill" data-bs-target="#pills-preaching" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Preaching</button>
         </li>
         <li class="nav-item" role="presentation">
-            <a href="{{url('/' . $circuit->district->slug)}}" class="nav-link py-1 px-2" id="pills-district-tab" type="button" role="tab">District</a>
+            <a href="{{url('/' . $circuit?->district->slug)}}" class="nav-link py-1 px-2" id="pills-district-tab" type="button" role="tab">District</a>
         </li>
     </ul>
     <div class="tab-content" id="pills-tabContent">
@@ -26,12 +26,16 @@
                     zoomOffset: -1,
                     accessToken: 'pk.eyJ1IjoiYmlzaG9wbSIsImEiOiJjanNjenJ3MHMwcWRyM3lsbmdoaDU3ejI5In0.M1x6KVBqYxC2ro36_Ipz_w'
                 }).addTo(map);
-                @foreach ($circuit->societies as $soc)
-                    var marker = L.marker([{{$soc->latitude}}, {{$soc->longitude}}]).bindPopup('<a href="{{url()->current() . '/' . $soc->slug}}">{{$soc->society}}</a>').addTo(map);
+                @foreach ($circuit?->societies as $soc)
+                    @if ($soc->latitude and $soc->longitude)
+                        var marker = L.marker([{{$soc->latitude}}, {{$soc->longitude}}]).bindPopup('<a href="{{url()->current() . '/' . $soc->slug}}">{{$soc->society}}</a>').addTo(map);
+                    @endif
                 @endforeach
                 var markers = [
-                @foreach ($circuit->societies as $soc)
-                    [{{$soc->latitude}}, {{$soc->longitude}}],
+                @foreach ($circuit?->societies as $soc)
+                    @if ($soc->latitude and $soc->longitude)
+                        [{{$soc->latitude}}, {{$soc->longitude}}],
+                    @endif
                 @endforeach
                 ];
                 var bounds = new L.LatLngBounds(markers);
@@ -78,13 +82,13 @@
         </div>
         <div class="tab-pane fade" id="pills-societies" role="tabpanel" aria-labelledby="pills-societies-tab">
             <ul class="list-unstyled">
-                @foreach ($circuit->societies->sortBy('society') as $society)
-                    <li><a href="{{url('/' . $circuit->district->slug . '/' . $circuit->slug . '/' . $society->slug)}}">{{$society->society}}</a></li>
+                @foreach ($circuit?->societies->sortBy('society') as $society)
+                    <li><a href="{{url('/' . $circuit?->district->slug . '/' . $circuit?->slug . '/' . $society->slug)}}">{{$society->society}}</a></li>
                 @endforeach
             </ul>
         </div>
         <div class="tab-pane fade" id="pills-preaching" role="tabpanel" aria-labelledby="pills-preaching-tab">
-            <h3 class="text-md-start text-center"><a target="_blank" href="{{url('/') . '/plan/' . $circuit->slug . '/' . date('Y-m-d') }}">Preaching plan (PDF)</a></h3>
+            <h3 class="text-md-start text-center"><a target="_blank" href="{{url('/') . '/plan/' . $circuit?->slug . '/' . date('Y-m-d') }}">Preaching plan (PDF)</a></h3>
             Authorised users can <a href="{{url('/admin')}}">login to edit the plan</a>.
             <h3 class="text-md-start text-center my-2">Lectionary readings</h3>
             <livewire:service-details :service="$lects" />
