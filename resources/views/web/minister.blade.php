@@ -10,9 +10,7 @@
     
     @if ($minister->minister->leadership)
         <p class="mt-2"><b>District leadership roles:</b>
-        @foreach ($minister->minister->leadership as $lead)
-            <span class="bg-dark badge text-white text-small mx-3">{{$lead}}</span>
-        @endforeach
+            {{implode(", ", $minister->minister->leadership)}}
         </p>
     @endif
         
