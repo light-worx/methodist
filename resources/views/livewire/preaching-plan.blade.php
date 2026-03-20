@@ -3,35 +3,69 @@
         html, body {
             height: 100%;
             margin: 0;
-            overflow: hidden; /* prevent page scroll */
+            overflow: hidden;
         }
 
         .plan-table-wrap {
-            height: 100vh;   /* fill the screen */
-            overflow: auto;  /* only this scrolls */
+            height: 100vh;
+            overflow: auto;
         }
 
         /* sticky headers */
         .plan-table-wrap thead th {
             position: sticky;
-            z-index: 2;            /* keep above body cells */
+            z-index: 2;
         }
 
-        /* first header row sticks at the very top */
         .plan-table-wrap thead tr:first-child th {
             top: 0;
             z-index: 3;
-            background: #fff;      /* ensure it doesn't show rows underneath */
+            background: #fff;
+            height: 40px; /* fix the height so it never shifts */
         }
 
-        /* second header row sticks below the first */
         .plan-table-wrap thead tr:nth-child(2) th {
-            top: 2rem;             
+            top: 40px; /* must exactly match the height above */
+        }
+
+        /* sticky first column */
+        .plan-table-wrap td:nth-child(1),
+        .plan-table-wrap th:nth-child(1) {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #fff;
+            min-width: 120px;
+            max-width: 120px;
+            width: 120px;
+        }
+
+        /* sticky second column */
+        .plan-table-wrap td:nth-child(2),
+        .plan-table-wrap th:nth-child(2) {
+            position: sticky;
+            left: 120px;
+            z-index: 2;
+            background: #fff;
+            min-width: 80px;
+            border-right: 2px solid #dee2e6;
+        }
+
+        /* top-left corner cells sit above both sticky axes */
+        .plan-table-wrap thead th:nth-child(1),
+        .plan-table-wrap thead th:nth-child(2) {
+            z-index: 4;
+        }
+
+        /* fix Bootstrap stripe bleed-through on sticky columns */
+        .plan-table-wrap tbody tr:nth-child(odd) td:nth-child(1),
+        .plan-table-wrap tbody tr:nth-child(odd) td:nth-child(2) {
+            background: #f2f2f2;
         }
 
         .cell-spinner {
             z-index: 10;
-            pointer-events: none; /* lets the user still interact with selects once they appear */
+            pointer-events: none;
         }
     </style>
     <div class="table-responsive plan-table-wrap">
@@ -48,14 +82,16 @@
                     </th>
                 </tr>
                 <tr>
-                    <th class="bg-dark text-white" colspan="2">
-                        <a style="text-decoration:none" href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '- 3 months'))]) }}">
+                    <th class="bg-dark text-white text-nowrap">
+                        <a class="btn btn-sm btn-secondary" href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '- 3 months'))]) }}">
                             <i class="text-white bi bi-arrow-left h4"></i>
                         </a>
-                        <a href="/plan/{{ $circuit->slug }}/{{ $today }}" class="mx-3 btn btn-sm btn-secondary">View PDF</a>
-                        <a href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '+ 3 months'))]) }}">
+                        <a class="btn btn-sm btn-secondary" href="{{ route('filament.admin.pages.preaching-plan', ['record' => $circuit->id, 'today' => date('Y-m-d',strtotime($firstday . '+ 3 months'))]) }}">
                             <i class="text-white bi bi-arrow-right h4"></i>
                         </a>
+                    </th>
+                    <th class="bg-dark text-white">
+                        <a href="/plan/{{ $circuit->slug }}/{{ $today }}" class="mx-3 btn btn-sm btn-secondary">View</a>
                     </th>
                     @foreach($dates as $date)
                     <th class="bg-dark text-white text-center">
