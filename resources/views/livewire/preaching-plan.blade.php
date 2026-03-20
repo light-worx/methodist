@@ -72,10 +72,10 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th class="bg-white">
-                    <a class="text-black text-decoration-none" href="{{ url('/admin/circuits/' . $circuit->id . '/edit') }}" title="Back to circuit page">
-                        <i class="text-black bi bi-house"></i> Home
-                    </a>
+                    <th class="bg-white" style="position: sticky; left: 0; z-index: 5;">
+                        <a class="text-black text-decoration-none" href="{{ url('/admin/circuits/' . $circuit->id . '/edit') }}" title="Back to circuit page">
+                            <i class="text-black bi bi-house"></i> Home
+                        </a>
                     </th>
                     <th class="bg-white text-center" colspan="100%">
                     {{ $circuit->circuit }} Circuit {{ $circuit->reference }} Preaching plan ({{ $period }})
