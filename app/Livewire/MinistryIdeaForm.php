@@ -27,7 +27,6 @@ class MinistryIdeaForm extends Component
     // ── Data sources ─────────────────────────────────────────────────────────
     public $circuits;
     public $availableTags = [];
-    public $ideas = [];
 
     // ── Tag dropdown ─────────────────────────────────────────────────────────
     public $filteredTags = [];
@@ -41,19 +40,24 @@ class MinistryIdeaForm extends Component
     public $titleAccepted       = false;
     public $descriptionAccepted = false;
 
+    // ── List filtering ───────────────────────────────────────────────────────
+    public string $search       = '';
+    public ?string $filterTag   = null;
+
+    // ── Idea detail view ─────────────────────────────────────────────────────
+    public ?int $viewingIdeaId  = null;
+
     // ─────────────────────────────────────────────────────────────────────────
 
     public function mount($prefilledCircuit = null, $prefilledEmail = null): void
     {
-        // Prefer explicitly passed values, then fall back to saved cookies
+        // user_circuit and user_email are excluded from Laravel's EncryptCookies
+        // middleware in bootstrap/app.php, so request()->cookie() returns the
+        // plain value that the JS layout wrote.
         $this->circuit_id    = $prefilledCircuit ?? request()->cookie('user_circuit');
         $this->email         = $prefilledEmail   ?? request()->cookie('user_email');
         $this->circuits      = Circuit::orderBy('circuit')->get();
         $this->availableTags = Tag::orderBy('name')->get();
-        $this->ideas         = Idea::with(['tags', 'circuit'])
-                                   ->where('published', true)
-                                   ->latest()
-                                   ->get();
     }
 
     // ── AI generation ────────────────────────────────────────────────────────
@@ -328,28 +332,62 @@ PROMPT;
         }
         $idea->tags()->sync($tagIds);
 
-        cookie()->queue(cookie('user_circuit', $this->circuit_id, 525600, '/'));
-        cookie()->queue(cookie('user_email',   $this->email,      525600, '/'));
-
         session()->flash('success', 'Thank you! Your ministry idea has been submitted and will be reviewed before publication.');
 
         $this->reset(['idea', 'description', 'image', 'tags', 'tagInput']);
         $this->resetAi();
+    }
 
-        // Refresh the published ideas list
-        $this->ideas = Idea::with(['tags', 'circuit'])
-                           ->where('published', true)
-                           ->latest()
-                           ->get();
+    // ── List actions ─────────────────────────────────────────────────────────
+
+    public function viewIdea(int $id): void
+    {
+        $this->viewingIdeaId = $id;
+    }
+
+    public function clearDetail(): void
+    {
+        $this->viewingIdeaId = null;
+    }
+
+    public function filterByTag(string $tag): void
+    {
+        $this->filterTag     = $tag;
+        $this->viewingIdeaId = null; // return to list when tag clicked from detail
+    }
+
+    public function clearFilter(): void
+    {
+        $this->filterTag = null;
+        $this->search    = '';
     }
 
     // ── Render ───────────────────────────────────────────────────────────────
 
     public function render()
     {
+        $ideas = Idea::with(['tags', 'circuit'])
+            ->where('published', true)
+            ->when($this->search, fn($q) =>
+                $q->where('idea', 'like', '%' . $this->search . '%')
+            )
+            ->when($this->filterTag, fn($q) =>
+                $q->whereHas('tags', fn($q2) =>
+                    $q2->where('name', $this->filterTag)
+                )
+            )
+            ->latest()
+            ->get();
+
+        $viewingIdea = $this->viewingIdeaId
+            ? Idea::with(['tags', 'circuit'])->find($this->viewingIdeaId)
+            : null;
+
         return view('livewire.ministry-idea-form', [
             'circuits'      => $this->circuits,
             'availableTags' => $this->availableTags,
+            'ideas'         => $ideas,
+            'viewingIdea'   => $viewingIdea,
         ]);
     }
 }

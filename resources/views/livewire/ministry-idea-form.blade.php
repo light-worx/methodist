@@ -1,4 +1,6 @@
-<div class="row justify-content-center">
+<div class="row justify-content-center"
+     x-data="{ activeTab: 'list' }"
+>
     <div class="col-lg-10">
 
         @if(session()->has('success'))
@@ -12,64 +14,152 @@
             <div class="card-body p-4">
 
                 {{-- ── Tabs ── --}}
-                <ul class="nav nav-tabs mb-4" id="ideasTab" role="tablist">
+                <ul class="nav nav-tabs mb-4" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
-                                data-bs-target="#list" type="button" role="tab"
-                                aria-controls="list" aria-selected="true">
+                        <button class="nav-link" role="tab"
+                                :class="{ 'active': activeTab === 'list' }"
+                                @click.prevent="activeTab = 'list'">
                             <i class="bi bi-collection me-1"></i> Ministry Ideas
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="add-tab" data-bs-toggle="tab"
-                                data-bs-target="#add" type="button" role="tab"
-                                aria-controls="add" aria-selected="false">
+                        <button class="nav-link" role="tab"
+                                :class="{ 'active': activeTab === 'add' }"
+                                @click.prevent="activeTab = 'add'">
                             <i class="bi bi-plus-circle me-1"></i> Add an Idea
                         </button>
                     </li>
                 </ul>
 
-                <div class="tab-content" id="ideasTabContent">
+                <div>
 
                     {{-- ══════════════════════════════════════════════ --}}
                     {{-- LIST IDEAS TAB                                 --}}
                     {{-- ══════════════════════════════════════════════ --}}
-                    <div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
-                        @if($ideas->isEmpty())
-                            <p class="text-muted text-center my-4">No ideas have been published yet.</p>
+                    <div x-show="activeTab === 'list'">
+
+                        {{-- ── Detail view ── --}}
+                        @if($viewingIdea)
+                            <div>
+                                <button type="button" wire:click="clearDetail"
+                                        class="btn btn-sm btn-outline-secondary mb-3">
+                                    <i class="bi bi-arrow-left me-1"></i>Back to ideas
+                                </button>
+
+                                <h4 class="mb-1">{{ $viewingIdea->idea }}</h4>
+                                <p class="text-muted small mb-3">
+                                    {{ $viewingIdea->circuit->circuit ?? 'Unknown Circuit' }}
+                                </p>
+
+                                <p class="lh-base">{{ $viewingIdea->description }}</p>
+
+                                @if($viewingIdea->tags->isNotEmpty())
+                                    <div class="mt-3">
+                                        @foreach($viewingIdea->tags as $tag)
+                                            <button type="button"
+                                                    wire:click="filterByTag('{{ $tag->name }}')"
+                                                    class="badge bg-primary text-decoration-none border-0 me-1 mb-1"
+                                                    style="cursor:pointer; font-size: 0.8rem;">
+                                                {{ $tag->name }}
+                                            </button>
+                                        @endforeach
+                                        <p class="text-muted small mt-1">Click a tag to see related ideas.</p>
+                                    </div>
+                                @endif
+
+                                @if($viewingIdea->image)
+                                    <div class="mt-3">
+                                        <img src="{{ asset('storage/' . $viewingIdea->image) }}"
+                                             class="img-fluid rounded" style="max-width: 400px;">
+                                    </div>
+                                @endif
+                            </div>
+
+                        {{-- ── List view ── --}}
                         @else
-                            <div class="list-group">
-                                @foreach($ideas as $idea)
-                                    <div class="list-group-item list-group-item-action py-3">
-                                        <div class="d-flex w-100 justify-content-between align-items-start">
-                                            <b class="mb-1">{{ $idea->idea }}</b>
-                                            <small class="text-muted ms-2 text-nowrap">
-                                                {{ $idea->circuit->circuit ?? 'Unknown Circuit' }} {{$idea->circuit->reference ?? ''}}
-                                            </small>
-                                        </div>
-                                        @if($idea->tags->isNotEmpty())
-                                            <div class="mt-2">
-                                                @foreach($idea->tags as $tag)
-                                                    <span class="badge bg-secondary me-1">{{ $tag->name }}</span>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                        @if($idea->image)
-                                            <div class="mt-3">
-                                                <img src="{{ asset('storage/' . $idea->image) }}"
-                                                     class="img-thumbnail" style="max-width: 200px;">
-                                            </div>
+                            {{-- Search & filter bar --}}
+                            <div class="row g-2 mb-3">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white">
+                                            <i class="bi bi-search text-muted"></i>
+                                        </span>
+                                        <input type="text"
+                                               wire:model.live.debounce.300ms="search"
+                                               placeholder="Search ideas by tag or title…"
+                                               class="form-control border-start-0">
+                                        @if($search)
+                                            <button type="button" wire:click="$set('search', '')"
+                                                    class="btn btn-outline-secondary">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
                                         @endif
                                     </div>
-                                @endforeach
+                                </div>
                             </div>
+
+                            {{-- Active tag filter badge --}}
+                            @if($filterTag)
+                                <div class="mb-3">
+                                    <span class="badge bg-primary me-1" style="font-size: 0.85rem;">
+                                        <i class="bi bi-tag-fill me-1"></i>{{ $filterTag }}
+                                    </span>
+                                    <button type="button" wire:click="clearFilter"
+                                            class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-x-lg me-1"></i>Clear filter
+                                    </button>
+                                </div>
+                            @endif
+
+                            {{-- Ideas list --}}
+                            @if($ideas->isEmpty())
+                                <p class="text-muted text-center my-4">
+                                    @if($search || $filterTag)
+                                        No ideas match your search.
+                                        <button type="button" wire:click="clearFilter" class="btn btn-sm btn-link p-0 ms-1">Clear filters</button>
+                                    @else
+                                        No ideas have been published yet.
+                                    @endif
+                                </p>
+                            @else
+                                <div class="list-group">
+                                    @foreach($ideas as $listedIdea)
+                                        <button type="button"
+                                                wire:click="viewIdea({{ $listedIdea->id }})"
+                                                class="list-group-item list-group-item-action py-3 text-start">
+                                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                                <h6 class="mb-1 fw-semibold">{{ $listedIdea->idea }}</h6>
+                                                <small class="text-muted ms-2 text-nowrap flex-shrink-0">
+                                                    {{ $listedIdea->circuit->circuit ?? '' }}
+                                                </small>
+                                            </div>
+                                            <p class="mb-1 text-muted small text-truncate">
+                                                {{ $listedIdea->description }}
+                                            </p>
+                                            @if($listedIdea->tags->isNotEmpty())
+                                                <div class="mt-1">
+                                                    @foreach($listedIdea->tags as $tag)
+                                                        <span class="badge bg-secondary me-1" style="font-size: 0.7rem;">
+                                                            {{ $tag->name }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </button>
+                                    @endforeach
+                                </div>
+                                <p class="text-muted small mt-2 text-end">
+                                    {{ $ideas->count() }} {{ Str::plural('idea', $ideas->count()) }}
+                                </p>
+                            @endif
                         @endif
-                    </div>
+
+                    </div>{{-- end list tab --}}
 
                     {{-- ══════════════════════════════════════════════ --}}
                     {{-- ADD IDEA TAB                                   --}}
                     {{-- ══════════════════════════════════════════════ --}}
-                    <div class="tab-pane fade" id="add" role="tabpanel" aria-labelledby="add-tab">
+                    <div x-show="activeTab === 'add'">
 
                         <form wire:submit.prevent="submit">
 
@@ -330,7 +420,7 @@
                         </form>
                     </div>{{-- end add tab --}}
 
-                </div>{{-- end tab-content --}}
+                </div>{{-- end tabs --}}
             </div>
         </div>
     </div>
