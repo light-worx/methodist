@@ -7,10 +7,13 @@
     @if ($minister->minister->ordained)
         <p><b>Ordained:</b> {{$minister->minister->ordained}}</p>
     @endif
+    
     @if ($minister->minister->leadership)
+        <p class="mt-2"><b>District leadership roles:</b>
         @foreach ($minister->minister->leadership as $lead)
             <span class="bg-dark badge text-white text-small mx-3">{{$lead}}</span>
         @endforeach
+        </p>
     @endif
         
     @foreach ($minister->circuitroles as $circuit)

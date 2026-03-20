@@ -84,7 +84,11 @@ class MinisterForm
                     ])->columns(2),
                 Select::make('leadership')->label('District leadership roles')
                     ->multiple()
-                    ->options(setting('district_leadership_roles')),
+                    ->options(function ($record) {
+                        return collect(setting('district_leadership_roles'))
+                            ->mapWithKeys(fn ($value) => [$value => $value])
+                            ->toArray();
+                    }),
                 TextInput::make('ordained')->numeric(),
             ])->columns(2);
     }
