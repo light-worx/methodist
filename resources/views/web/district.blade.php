@@ -1,17 +1,17 @@
 <x-web pageName="{{$district->district}} District">
     <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-district" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">District</button>
+            <button class="nav-link active py-1 px-2" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-district" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">District</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-circuits" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Circuits</button>
+            <button class="nav-link py-1 px-2" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-circuits" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Circuits</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-ministers" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Ministers</button>
+            <button class="nav-link py-1 px-2" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-ministers" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Ministers</button>
         </li>
         @if ($activedistricts >1)
             <li class="nav-item" role="presentation">
-                <a href="{{url('/')}}" class="nav-link" id="pills-district-tab" type="button" role="tab">Connexion</a>
+                <a href="{{url('/')}}" class="nav-link py-1 px-2" id="pills-district-tab" type="button" role="tab">Connexion</a>
             </li>
         @endif
     </ul>
