@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Pages\InvitationRegister;
+use App\Http\Controllers\Admin\PushController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -53,3 +54,9 @@ Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->
         Route::get('/{district}/{circuit}/{society}', 'society')->name('society');
     }
 });
+
+// Push notification routes
+Route::post('/push/circuit/{circuitId}',[PushController::class, 'toCircuit'])   ->name('admin.push.circuit');
+Route::post('/push/individual/{prefId}',[PushController::class, 'toIndividual'])->name('admin.push.individual');
+Route::post('/push/broadcast',[PushController::class, 'broadcast'])   ->name('admin.push.broadcast');
+ 

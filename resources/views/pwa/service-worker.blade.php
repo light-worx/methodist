@@ -1,7 +1,7 @@
 const staticCacheName = "pwa-static-v" + new Date().getTime();
 const filesToCache = [
-    "/",                // homepage
-    "/offline",         // offline fallback page (Laravel route)
+    "/",
+    "/offline",
     "{{ asset('methodist/css/bootstrap.min.css') }}",
     "{{ asset('methodist/js/bootstrap.min.js') }}",
     "{{ asset('methodist/images/icons/android/android-launchericon-192-192.png') }}",
@@ -33,10 +33,9 @@ self.addEventListener("activate", event => {
 
 // Fetch: SWR for HTML pages, cache-first (with background update) for assets
 self.addEventListener("fetch", event => {
-    if (event.request.method !== "GET") return; // don’t cache POST etc.
+    if (event.request.method !== "GET") return;
 
     if (event.request.mode === "navigate") {
-        // SWR for dynamic pages
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
                 const fetchPromise = fetch(event.request).then(networkResponse => {
@@ -45,7 +44,6 @@ self.addEventListener("fetch", event => {
                         return networkResponse;
                     });
                 }).catch(() => {
-                    // Offline fallback if no network
                     return caches.match("/offline");
                 });
 
@@ -53,7 +51,6 @@ self.addEventListener("fetch", event => {
             })
         );
     } else {
-        // Static assets (CSS, JS, images) → cache-first with background update
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
                 const fetchPromise = fetch(event.request).then(networkResponse => {
@@ -67,4 +64,54 @@ self.addEventListener("fetch", event => {
             })
         );
     }
+});
+
+// ── Push: display notification from server payload ───────────────────
+self.addEventListener("push", event => {
+    let data = {};
+
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch (e) {
+        data = {
+            title: "Connexion",
+            body:  event.data ? event.data.text() : "",
+        };
+    }
+
+    const title   = data.title  ?? "Connexion";
+    const options = {
+        body:               data.body  ?? "",
+        icon:               data.icon  ?? "/methodist/images/icons/android/android-launchericon-192-192.png",
+        badge:              data.badge ?? "/methodist/images/icons/android/android-launchericon-96-96.png",
+        data:               { url: data.url ?? "/" },
+        vibrate:            [200, 100, 200],
+        requireInteraction: false,
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+// ── Notification click: focus existing window or open a new one ──────
+self.addEventListener("notificationclick", event => {
+    event.notification.close();
+
+    const targetUrl = event.notification.data?.url ?? "/";
+
+    event.waitUntil(
+        clients.matchAll({ type: "window", includeUncontrolled: true }).then(windowClients => {
+            for (const client of windowClients) {
+                if (client.url.includes(self.location.origin) && "focus" in client) {
+                    client.focus();
+                    client.navigate(targetUrl);
+                    return;
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(targetUrl);
+            }
+        })
+    );
 });

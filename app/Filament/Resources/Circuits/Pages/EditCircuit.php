@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Circuits\Pages;
 
+use App\Filament\Actions\SendPushNotificationAction;
 use App\Filament\Pages\PreachingPlan;
 use App\Filament\Resources\Circuits\CircuitResource;
 use Filament\Actions\Action;
@@ -33,6 +34,7 @@ class EditCircuit extends EditRecord
                     'record' => $this->record,
                     'today' => date('Y-m-d'),
                 ])),
+            SendPushNotificationAction::forCircuit(),
             DeleteAction::make(),
         ];
     }

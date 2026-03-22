@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Preachers\Pages;
 
+use App\Filament\Actions\SendPushNotificationAction;
 use App\Filament\Resources\Preachers\PreacherResource;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -15,6 +16,7 @@ class EditPreacher extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            SendPushNotificationAction::forPerson(),
             Action::make('Remove as preacher')
                 ->requiresConfirmation()
                 ->action(function () {
