@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Circuits\RelationManagers;
 
+use App\Filament\Actions\SendPushNotificationAction;
 use App\Filament\Resources\Preachers\PreacherResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -17,8 +18,10 @@ class PreachersRelationManager extends RelationManager
     {
         return $table
             ->headerActions([
+                SendPushNotificationAction::forPerson(),
                 CreateAction::make()
                     ->url(fn () => PreacherResource::getUrl('create', ['circuit_id' => $this->ownerRecord->id])),
             ]);
     }
 }
+ 

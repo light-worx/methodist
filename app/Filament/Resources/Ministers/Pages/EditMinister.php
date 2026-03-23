@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Ministers\Pages;
 
+use App\Filament\Actions\SendPushNotificationAction;
 use App\Filament\Resources\Ministers\MinisterResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -15,6 +16,7 @@ class EditMinister extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            SendPushNotificationAction::forPerson(),
             DeleteAction::make(),
         ];
     }

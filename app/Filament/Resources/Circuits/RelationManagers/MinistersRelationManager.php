@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Circuits\RelationManagers;
 
+use App\Filament\Actions\SendPushNotificationAction;
 use App\Models\Circuitrole;
 use App\Models\Log;
 use App\Models\Person;
@@ -201,6 +202,7 @@ class MinistersRelationManager extends RelationManager
                     ->default()
             ])
             ->headerActions([
+                SendPushNotificationAction::forPerson(),
                 CreateAction::make('Add a new minister')->label('New minister')
                     ->schema([
                         Section::make()->schema([
