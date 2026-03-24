@@ -74,7 +74,6 @@ class SendPushNotificationAction
             ->before(function ($record, Action $action) {
                 // Find the matching user_preference for this person
                 $pref = self::preferenceForPerson($record);
-
                 if (! $pref) {
                     Notification::make()
                         ->title('This person has not registered in the app.')

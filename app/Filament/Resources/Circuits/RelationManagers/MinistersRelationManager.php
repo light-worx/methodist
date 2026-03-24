@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Circuits\RelationManagers;
 
-use App\Filament\Actions\SendPushNotificationAction;
+use App\Filament\Traits\Notifiable;
 use App\Models\Circuitrole;
 use App\Models\Log;
 use App\Models\Person;
@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\DB;
 
 class MinistersRelationManager extends RelationManager
 {
+    use Notifiable;
+
     protected static string $relationship = 'persons';
 
     protected static ?string $title = 'Ministers';
@@ -72,6 +74,7 @@ class MinistersRelationManager extends RelationManager
                                             return "Added by " . $log->user->name . " on " . $log->created_at->format('d/m/Y');
                                         }
                                     })->hiddenOn('create'),
+                                $this->getNotificationAction('minister')
                             ])->columns(2),
                         Tab::make('Clergy details')
                             ->schema([
@@ -202,7 +205,6 @@ class MinistersRelationManager extends RelationManager
                     ->default()
             ])
             ->headerActions([
-                SendPushNotificationAction::forPerson(),
                 CreateAction::make('Add a new minister')->label('New minister')
                     ->schema([
                         Section::make()->schema([
