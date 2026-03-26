@@ -1,4 +1,8 @@
-<x-web pageName="{{$society->society}} Society">
+@extends('vendor.pwa.layouts.app')
+
+@section('content')
+    <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
+    <script src="{{ asset('js/leaflet.js') }}"></script>
     <div style="height:400px" id="map"></div>
     <script>
         var map = L.map('map').setView([{{$society->latitude}}, {{$society->longitude}}], 15);
@@ -64,4 +68,4 @@
             @endforeach
         </table>
     @endif
-</x-layouts.web>
+@endsection

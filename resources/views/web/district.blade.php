@@ -1,4 +1,6 @@
-<x-web pageName="{{$district->district}} District">
+@extends('vendor.pwa.layouts.app')
+
+@section('content')
     <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active py-1 px-2" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-district" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">District</button>
@@ -72,4 +74,4 @@
             </div>
         </div>
     </div>
-</x-layouts.web>
+@endsection

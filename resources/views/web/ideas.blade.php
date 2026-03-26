@@ -1,4 +1,6 @@
-<x-web pageName="Ministry ideas">
+@extends('vendor.pwa.layouts.app')
+
+@section('content')
     <style>
     #stickyAlert {
         position: sticky;
@@ -34,4 +36,4 @@
             });
         });
     </script>
-</x-layouts.web>
+@endsection

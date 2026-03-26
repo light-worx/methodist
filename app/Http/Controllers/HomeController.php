@@ -47,6 +47,7 @@ class HomeController extends Controller
         }
         ksort($data['ministers']);
         $data['lects']=$this->get_lectionary();
+        $data['title'] = $data['circuit']->circuit . ' Circuit ' . $data['circuit']->reference;
         return view('web.circuit',$data);
     }
 
@@ -71,6 +72,7 @@ class HomeController extends Controller
                 $data['activedistricts']++;
             }
         }
+        $data['title'] = $data['district']->district . ' District';
         return view('web.district',$data);
     }
 
@@ -96,6 +98,7 @@ class HomeController extends Controller
                 $currentdistrict=$district;
             }
         }
+        $data['title'] = 'MCSA Connexion';
         if ($activedistricts==1){
             return redirect()->route('district', $currentdistrict->slug);
         } else {
@@ -104,7 +107,8 @@ class HomeController extends Controller
     }
 
     public function ideas(){
-        return view('web.ideas');
+        $data['title'] = 'Ministry Ideas';
+        return view('web.ideas',$data);
     }
 
     public function storeidea(Request $request)
@@ -176,6 +180,7 @@ class HomeController extends Controller
 
     public function lectionary(){
         $data['lects']=$this->get_lectionary();
+        $data['title'] = 'Lectionary Readings';
         return view('web.lectionary',$data);
     }
 
@@ -692,11 +697,13 @@ class HomeController extends Controller
                 $data['societies']=[];
             }
         }
+        $data['title'] = $data['minister']->title . " " . $data['minister']->fullname;
         return view('web.minister',$data);
     }
 
     public function offline(){
-        return view('web.offline');
+        $data['title'] = 'Offline';
+        return view('web.offline',$data);
     }
 
     public function society($district, $circuit, $society){
@@ -731,6 +738,7 @@ class HomeController extends Controller
         foreach ($plans as $plan){
             $data['upcoming'][$plan->service->servicetime][$plan->servicedate]=$plan->person->title . " " . substr($plan->person->firstname,0,1) . " " . $plan->person->surname;
         }
+        $data['title'] = $data['society']->society . " Society";
         return view('web.society',$data);
     }
 

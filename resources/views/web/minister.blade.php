@@ -1,4 +1,6 @@
-<x-web pageName="{{$minister->title}} {{$minister->firstname}} {{$minister->surname}}">
+@extends('vendor.pwa.layouts.app')
+
+@section('content')
     @if ($minister->image)
         <img class="rounded" width="100px" src="{{asset('storage/' . $minister->image)}}">
     @else 
@@ -24,4 +26,4 @@
             </p>
         @endif
     @endforeach
-</x-layouts.web>
+@endsection

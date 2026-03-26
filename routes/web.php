@@ -32,8 +32,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('two-factor.show');
 });
 
-Route::get('/manifest.json', fn() => response()->view('pwa.manifest')->header('Content-Type', 'application/json'));
-Route::get('/service-worker.js', fn () => response()->view('pwa.service-worker')->header('Content-Type', 'application/javascript'));
+//Route::get('/manifest.json', fn() => response()->view('pwa.manifest')->header('Content-Type', 'application/json'));
+//Route::get('/service-worker.js', fn () => response()->view('pwa.service-worker')->header('Content-Type', 'application/javascript'));
 
 Route::get('/register/invite/{token}', InvitationRegister::class)->name('invite.register');
 
@@ -56,7 +56,7 @@ Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->
 });
 
 // Push notification routes
-Route::post('/push/circuit/{circuitId}',[PushController::class, 'toCircuit'])   ->name('admin.push.circuit');
-Route::post('/push/individual/{prefId}',[PushController::class, 'toIndividual'])->name('admin.push.individual');
-Route::post('/push/broadcast',[PushController::class, 'broadcast'])   ->name('admin.push.broadcast');
+// Route::post('/push/circuit/{circuitId}',[PushController::class, 'toCircuit'])   ->name('admin.push.circuit');
+// Route::post('/push/individual/{prefId}',[PushController::class, 'toIndividual'])->name('admin.push.individual');
+// Route::post('/push/broadcast',[PushController::class, 'broadcast'])   ->name('admin.push.broadcast');
  

@@ -1,4 +1,8 @@
-<x-web pageName="{{$circuit?->circuit}} Circuit {{$circuit?->reference}}">
+@extends('vendor.pwa.layouts.app')
+
+@section('content')
+    <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
+    <script src="{{ asset('js/leaflet.js') }}"></script>
     <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active py-1 px-2" id="pills-circuit-tab" data-bs-toggle="pill" data-bs-target="#pills-circuit" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Circuit</button>
@@ -94,5 +98,5 @@
             <livewire:service-details :service="$lects" />
         </div>
     </div>
-</x-layouts.web>
+@endsection
 
