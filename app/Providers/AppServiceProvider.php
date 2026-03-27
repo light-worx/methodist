@@ -14,6 +14,7 @@ use Livewire\Livewire;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
+use Lightworx\FilamentPwa\Facades\PwaFieldOptions;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -57,5 +58,8 @@ class AppServiceProvider extends ServiceProvider
         Livewire::component('preaching-plan', PreachingPlan::class); 
         Livewire::component('service-details', ServiceDetails::class);
         Livewire::component('ministry-idea-form', MinistryIdeaForm::class);
-    }
+        PwaFieldOptions::register('circuit_id', fn(?string $search) =>  
+            Circuit::when($search, fn($q) => $q->where('circuit', 'like', "%{$search}%"))->limit(50)->pluck('circuit', 'id')->toArray()
+        );
+    }   
 }
