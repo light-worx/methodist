@@ -2,10 +2,16 @@
 
 namespace App\Filament\Resources\Ministers\Pages;
 
-use App\Filament\Actions\SendPushNotificationAction;
 use App\Filament\Resources\Ministers\MinisterResource;
+use App\Models\Minister;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Lightworx\FilamentPwa\Facades\PushNotification;
+use Lightworx\FilamentPwa\Models\UserPreference;
 
 class EditMinister extends EditRecord
 {
@@ -16,7 +22,34 @@ class EditMinister extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            SendPushNotificationAction::forPerson(),
+            Action::make('notify')
+                ->visible(function (Minister $record){
+                    $pref=UserPreference::with('pushSubscriptions')->where('phone',$record->person->phone)->get();
+                    if (count($pref)){
+                        return true;
+                    } else {
+                        return false;
+                    }
+                })
+                ->label('Send notification')
+                ->schema([
+                    Textarea::make('message')
+                ])
+                ->action(function (array $data, Minister $record) {
+                    $result = PushNotification::toPhone(
+                        $record->person->phone,
+                        'Message for ' . $record->person->fullname,
+                        $data['message'],
+                        '/'
+                    );
+                    if ($result->noDevices) {
+                        Notification::make()->warning()->title('No registered devices for this number')->send();
+                    } elseif ($result->allDelivered()) {
+                        Notification::make()->success()->title('Notification sent')->send();
+                    } else {
+                        Notification::make()->danger()->title('Delivery failed for some devices')->send();
+                    }
+                }),
             DeleteAction::make(),
         ];
     }

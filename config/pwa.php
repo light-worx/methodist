@@ -7,9 +7,11 @@ return [
     | App Identity
     |--------------------------------------------------------------------------
     */
-    'app_name'    => env('PWA_APP_NAME', env('APP_NAME', 'Connexion')),
+    'app_name'    => env('PWA_APP_NAME', 'Connexion'),
     'app_short'   => env('PWA_APP_SHORT', 'MCSA'),
     'description' => env('PWA_DESCRIPTION', 'A progressive web application'),
+    'icon-192'     => '/methodist/images/icons/android/android-launchericon-192-192.png',
+    'icon-512'     => '/methodist/images/icons/android/android-launchericon-512-512.png',
 
     /*
     |--------------------------------------------------------------------------
@@ -43,9 +45,9 @@ return [
     |--------------------------------------------------------------------------
     */
     'bottom_items' => [
-        ['icon' => 'bi-house',  'route' => 'app.home', 'label' => 'Home'],
-        ['icon' => 'bi-search', 'url'   => '#',        'label' => 'Search'],
-        ['icon' => 'bi-gear',   'url'   => '#',        'label' => 'Settings'],
+        ['icon' => 'bi-house',  'route' => 'app.home', 'label' => ''],
+        ['icon' => 'bi-search', 'url'   => '#',        'label' => ''],
+        ['icon' => 'bi-gear',   'url'   => '#',        'label' => ''],
     ],
 
     /*

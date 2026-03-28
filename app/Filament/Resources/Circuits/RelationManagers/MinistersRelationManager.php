@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Circuits\RelationManagers;
 
-use App\Filament\Traits\Notifiable;
 use App\Models\Circuitrole;
 use App\Models\Log;
 use App\Models\Person;
@@ -30,8 +29,6 @@ use Illuminate\Support\Facades\DB;
 
 class MinistersRelationManager extends RelationManager
 {
-    use Notifiable;
-
     protected static string $relationship = 'persons';
 
     protected static ?string $title = 'Ministers';

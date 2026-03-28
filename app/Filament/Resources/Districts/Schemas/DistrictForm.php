@@ -36,7 +36,6 @@ class DistrictForm
                     ->height(400)
                     ->center(-23.5505, -46.6333)
                     ->zoom(18)
-                    ->autoCenter()  // Auto-center to user's location
                     ->tileLayersUrl([
                         'Mapbox' => 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=' . setting('mapbox_token'),
                         'OpenStreetMap' => TileLayer::OpenStreetMap,
