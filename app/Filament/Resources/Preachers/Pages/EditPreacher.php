@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\Preachers\Pages;
 
-use App\Filament\Actions\SendPushNotificationAction;
 use App\Filament\Resources\Preachers\PreacherResource;
+use App\Models\Preacher;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use Livewire\Livewire;
+use Lightworx\FilamentPwa\Facades\PushNotification;
+use Lightworx\FilamentPwa\Models\UserPreference;
 
 class EditPreacher extends EditRecord
 {
@@ -16,7 +18,34 @@ class EditPreacher extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            SendPushNotificationAction::forPerson(),
+            Action::make('notify')
+                ->visible(function (Preacher $record){
+                    $pref=UserPreference::with('pushSubscriptions')->where('phone',$record->person->phone)->get();
+                    if (count($pref)){
+                        return true;
+                    } else {
+                        return false;
+                    }
+                })
+                ->label('Send notification')
+                ->schema([
+                    Textarea::make('message')
+                ])
+                ->action(function (array $data, Preacher $record) {
+                    $result = PushNotification::toPhone(
+                        $record->person->phone,
+                        'Message for ' . $record->person->fullname,
+                        $data['message'],
+                        '/'
+                    );
+                    if ($result->noDevices) {
+                        Notification::make()->warning()->title('No registered devices for this number')->send();
+                    } elseif ($result->allDelivered()) {
+                        Notification::make()->success()->title('Notification sent')->send();
+                    } else {
+                        Notification::make()->danger()->title('Delivery failed for some devices')->send();
+                    }
+                }),
             Action::make('Remove as preacher')
                 ->requiresConfirmation()
                 ->action(function () {

@@ -1,13 +1,13 @@
 <?php
 
 use App\Filament\Pages\InvitationRegister;
-use App\Http\Controllers\Admin\PushController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use Lightworx\FilamentPwa\Http\Middleware\PwaDeviceMiddleware;
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -38,7 +38,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/register/invite/{token}', InvitationRegister::class)->name('invite.register');
 
 // Website routes
-Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->group(function () {
+Route::middleware(['web',PwaDeviceMiddleware::class])->controller('\App\Http\Controllers\HomeController')->group(function () {
     Route::get('/', 'home')->name('home');
     Route::get('/ideas', 'ideas')->name('ideas');
     Route::post('/ideas/store', 'storeidea')->name('ideas.store');

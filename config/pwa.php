@@ -9,9 +9,10 @@ return [
     */
     'app_name'    => env('PWA_APP_NAME', 'Connexion'),
     'app_short'   => env('PWA_APP_SHORT', 'MCSA'),
-    'description' => env('PWA_DESCRIPTION', 'A progressive web application'),
-    'icon-192'     => '/methodist/images/icons/android/android-launchericon-192-192.png',
-    'icon-512'     => '/methodist/images/icons/android/android-launchericon-512-512.png',
+    'description' => 'The Connexion app helps Methodists to maintain circuit preaching plans and society records',
+    'icon-192'    => '/methodist/images/icons/android/android-launchericon-192-192.png',
+    'icon-512'    => '/methodist/images/icons/android/android-launchericon-512-512.png',
+    'screenshot'  => '/methodist/images/icons/screenshot.png',
 
     /*
     |--------------------------------------------------------------------------
@@ -36,7 +37,9 @@ return [
     |--------------------------------------------------------------------------
     */
     'nav_items' => [
-        ['label' => 'Home', 'icon' => 'bi-house', 'route' => 'app.home'],
+        ['label' => 'Home', 'icon' => 'bi-house', 'route' => 'home'],
+        ['label' => 'Lectionary', 'icon' => 'bi-book', 'route' => 'lectionary'],
+        ['label' => 'Ministry ideas', 'icon' => 'bi-lightbulb', 'route' => 'ideas'],
     ],
 
     /*
@@ -45,9 +48,9 @@ return [
     |--------------------------------------------------------------------------
     */
     'bottom_items' => [
-        ['icon' => 'bi-house',  'route' => 'app.home', 'label' => ''],
-        ['icon' => 'bi-search', 'url'   => '#',        'label' => ''],
-        ['icon' => 'bi-gear',   'url'   => '#',        'label' => ''],
+        ['icon' => 'bi-house', 'url' => '/', 'label' => ''],
+        ['icon' => 'bi-chat-left-text', 'url'   => '/app/messages', 'label' => '', 'badge' => 'messages'],
+        ['icon' => 'bi-lightbulb', 'url' => '/ideas', 'label' => ''],
     ],
 
     /*

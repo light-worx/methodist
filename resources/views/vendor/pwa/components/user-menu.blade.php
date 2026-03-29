@@ -245,7 +245,7 @@ usort($countries, fn($a, $b) =>
 
                     {{-- Number input --}}
                     <input type="tel" id="pref-phone" class="form-control form-control-sm"
-                           placeholder="794999139" autocomplete="tel-national"
+                           placeholder="820000000" autocomplete="tel-national"
                            style="border-radius:0 10px 10px 0; font-size:.85rem;">
 
                     {{-- Hidden input carries the resolved dial code for savePhone() --}}
@@ -411,6 +411,45 @@ usort($countries, fn($a, $b) =>
     @stack('pwa-user-fields')
     @stack('pwa-user-settings')
 
+    {{-- ── Preaching reminders opt-in ────────────────────────────────────── --}}
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="small fw-semibold">
+                    <i class="bi bi-book me-1 text-muted"></i>Preaching reminders
+                </div>
+                <div class="text-muted" style="font-size:.73rem">
+                    Notify me if I'm preaching this weekend
+                </div>
+            </div>
+            <div class="form-check form-switch mb-0 ms-3">
+                <input class="form-check-input" type="checkbox" role="switch"
+                       id="preachingRemindersToggle">
+            </div>
+        </div>
+    </div>
+
+    {{-- ── Inbox link ──────────────────────────────────────────────────── --}}
+    <a href="/app/messages" class="card shadow-sm border-0 mb-3 text-decoration-none"
+       style="display:block; border-radius:14px;">
+        <div class="card-body py-2 px-3 d-flex align-items-center gap-3">
+            <div class="position-relative flex-shrink-0">
+                <i class="bi bi-inbox fs-5 text-muted"></i>
+                <span id="um-unread-badge"
+                      class="position-absolute top-0 start-100 translate-middle
+                             badge rounded-pill bg-primary d-none"
+                      style="font-size:.6rem">0</span>
+            </div>
+            <div class="flex-grow-1">
+                <div class="small fw-semibold text-dark">Messages</div>
+                <div class="text-muted" style="font-size:.73rem" id="um-msg-summary">
+                    Loading…
+                </div>
+            </div>
+            <i class="bi bi-chevron-right text-muted" style="font-size:.75rem"></i>
+        </div>
+    </a>
+
     {{-- ── Push notifications — pinned to bottom ───────────────────────── --}}
     @if(config('pwa.push.enabled', true))
     <div class="mt-auto push-card">
@@ -446,6 +485,13 @@ usort($countries, fn($a, $b) =>
     const CSRF    = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     const STORAGE = 'pwa_device_id';
 
+    // Mirror device_id into a cookie so PHP middleware can read it server-side
+    function writeDeviceIdCookie(id) {
+        try {
+            document.cookie = `pwa_device_id=${encodeURIComponent(id)}; max-age=${60*60*24*365}; path=/; SameSite=Lax`;
+        } catch {}
+    }
+
     // ── Device ID ──────────────────────────────────────────────────────────
     // Returns a stable device identifier.
     // Priority: push subscription endpoint (written by push-notifications.js)
@@ -456,11 +502,20 @@ usort($countries, fn($a, $b) =>
     // to localStorage during checkStatus(). Because that call is async and happens
     // after service worker registration, we poll briefly on first load to let it
     // settle before we send the preferences request with the wrong id.
+    // Resolved id is cached here once resolveDeviceId() completes so that
+    // the synchronous deviceId() always returns a non-empty value after boot.
+    let _resolvedDeviceId = null;
+
     async function resolveDeviceId() {
+        if (_resolvedDeviceId) return _resolvedDeviceId;
+
         const existing = localStorage.getItem(STORAGE);
 
         // If we already have a value that looks like a push endpoint, use it.
-        if (existing && existing.startsWith('https://')) return existing;
+        if (existing && existing.startsWith('https://')) {
+            _resolvedDeviceId = existing;
+            return existing;
+        }
 
         // If push is supported, wait up to 2 s for push-notifications.js to
         // write the endpoint. Poll every 100 ms.
@@ -468,20 +523,33 @@ usort($countries, fn($a, $b) =>
             for (let i = 0; i < 20; i++) {
                 await new Promise(r => setTimeout(r, 100));
                 const settled = localStorage.getItem(STORAGE);
-                if (settled && settled.startsWith('https://')) return settled;
+                if (settled && settled.startsWith('https://')) {
+                    _resolvedDeviceId = settled;
+                    return settled;
+                }
             }
         }
 
         // No push subscription — fall back to existing UUID or create one.
-        if (existing) return existing;
-        const id = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
-        localStorage.setItem(STORAGE, id);
+        const id = existing
+            ?? (crypto.randomUUID?.() ?? Math.random().toString(36).slice(2));
+
+        if (!existing) {
+            localStorage.setItem(STORAGE, id);
+            writeDeviceIdCookie(id);
+        } else {
+            writeDeviceIdCookie(existing);
+        }
+
+        _resolvedDeviceId = id;
         return id;
     }
 
-    // Synchronous version for use after resolveDeviceId() has already run.
+    // Synchronous accessor — safe to call after loadPreferences() has run
+    // because resolveDeviceId() will have cached the value into _resolvedDeviceId.
+    // Falls back to localStorage so it still works if called before boot settles.
     function deviceId() {
-        return localStorage.getItem(STORAGE) ?? '';
+        return _resolvedDeviceId ?? localStorage.getItem(STORAGE) ?? '';
     }
 
     // ── Fetch helper ───────────────────────────────────────────────────────
@@ -646,6 +714,10 @@ usort($countries, fn($a, $b) =>
             state.emailVerified = !!data.email_verified;
             state.phoneVerified = !!data.phone_verified;
             state.verifiedEmail = data.email_verified ? (data.email ?? '') : '';
+
+            // Restore preaching reminders toggle
+            const prToggle = $('preachingRemindersToggle');
+            if (prToggle) prToggle.checked = !!data.preaching_reminders;
 
             applyState();
         } catch (e) {
@@ -916,7 +988,10 @@ usort($countries, fn($a, $b) =>
     async function savePhone() {
         const btn    = $('save-phone-btn');
         const errEl  = $('phone-error');
-        const local  = val('pref-phone').replace(/\D/g, '');
+        // Strip non-digits, then strip a leading zero — many countries write
+        // local numbers with a leading 0 (e.g. 0820000000) which must be
+        // dropped when prepending the international dial code (+27820000000).
+        const local  = val('pref-phone').replace(/\D/g, '').replace(/^0/, '');
 
         hide('phone-error');
 
@@ -1105,6 +1180,23 @@ usort($countries, fn($a, $b) =>
         loadPreferences();
         bindPushToggle();
 
+        // Preaching reminders toggle
+        $('preachingRemindersToggle')?.addEventListener('change', async function () {
+            const checked = this.checked;
+            try {
+                const id = await resolveDeviceId();
+                if (!id) throw new Error('Device ID not available');
+                await post('/app/preferences/preaching-reminders', {
+                    device_id: id,
+                    enabled:   checked,
+                });
+                window.showToast?.(checked ? 'Preaching reminders enabled' : 'Preaching reminders disabled');
+            } catch (e) {
+                this.checked = !checked;   // revert on failure
+                window.showToast?.('Could not update — try again', 'error');
+            }
+        });
+
         $('send-pin-btn')    ?.addEventListener('click',  sendPin);
         $('resend-pin-btn')  ?.addEventListener('click',  sendPin);
         $('verify-pin-btn')  ?.addEventListener('click',  verifyPin);
@@ -1134,6 +1226,39 @@ usort($countries, fn($a, $b) =>
         $('pref-phone')?.addEventListener('input', function () {
             this.value = this.value.replace(/\D/g, '');
         });
+
+        // ── Inbox badge ────────────────────────────────────────────────────
+        loadInboxBadge();
     });
+
+    async function loadInboxBadge() {
+        const badge   = document.getElementById('um-unread-badge');
+        const summary = document.getElementById('um-msg-summary');
+        if (!badge || !summary) return;
+
+        try {
+            const id  = await resolveDeviceId();
+            const res = await fetch('/app/messages/unread?device_id=' + encodeURIComponent(id), {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const unread = data.unread ?? 0;
+            const total  = data.total  ?? 0;
+
+            if (unread > 0) {
+                badge.textContent = unread > 99 ? '99+' : unread;
+                badge.classList.remove('d-none');
+                summary.textContent = `${unread} unread of ${total}`;
+            } else if (total > 0) {
+                badge.classList.add('d-none');
+                summary.textContent = `${total} message${total !== 1 ? 's' : ''}, all read`;
+            } else {
+                badge.classList.add('d-none');
+                summary.textContent = 'No messages yet';
+            }
+        } catch { /* non-fatal */ }
+    }
 })();
 </script>

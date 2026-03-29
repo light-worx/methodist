@@ -34,12 +34,12 @@ class AppServiceProvider extends ServiceProvider
         $router = $this->app['router'];
         $router->aliasMiddleware('adminonly', AdminRoute::class);
         $router->aliasMiddleware('checkperms', CheckPerms::class);
-        View::composer('*', function ($view) {
+        /*View::composer('*', function ($view) {
             $circuits = cache()->remember('all_circuits', now()->addHours(12), function () {
                 return Circuit::orderBy('circuit')->get();
             });
             $view->with('circuits', $circuits);
-        });
+        });*/
         Config::set('livewire.render_on_redirect',false);
         if (Schema::hasTable('filament_settings')){
             Config::set('app.name', setting('site_name'));

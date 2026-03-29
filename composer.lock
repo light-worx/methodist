@@ -1138,16 +1138,16 @@
         },
         {
             "name": "eduardoribeirodev/filament-leaflet",
-            "version": "v4.7.1",
+            "version": "v4.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eduardoribeirodev/filament-leaflet.git",
-                "reference": "360bc39ceb0fb5dc4fa703bf891f7f116e3d32bf"
+                "reference": "5db9453efa83dc9ec93e5c59feb809cc6edc87b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eduardoribeirodev/filament-leaflet/zipball/360bc39ceb0fb5dc4fa703bf891f7f116e3d32bf",
-                "reference": "360bc39ceb0fb5dc4fa703bf891f7f116e3d32bf",
+                "url": "https://api.github.com/repos/eduardoribeirodev/filament-leaflet/zipball/5db9453efa83dc9ec93e5c59feb809cc6edc87b9",
+                "reference": "5db9453efa83dc9ec93e5c59feb809cc6edc87b9",
                 "shasum": ""
             },
             "require": {
@@ -1174,9 +1174,9 @@
             "description": "Um widget de mapa para FilamentPHP.",
             "support": {
                 "issues": "https://github.com/eduardoribeirodev/filament-leaflet/issues",
-                "source": "https://github.com/eduardoribeirodev/filament-leaflet/tree/v4.7.1"
+                "source": "https://github.com/eduardoribeirodev/filament-leaflet/tree/v4.7.2"
             },
-            "time": "2026-03-09T16:13:56+00:00"
+            "time": "2026-03-27T15:07:41+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -3677,12 +3677,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/light-worx/filament-pwa.git",
-                "reference": "d07408e06bebcee8a7e8142417e74e82f3f59ad0"
+                "reference": "ff677359fcd06e269ed30e795ee3b2b9b74c0c41"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/light-worx/filament-pwa/zipball/d07408e06bebcee8a7e8142417e74e82f3f59ad0",
-                "reference": "d07408e06bebcee8a7e8142417e74e82f3f59ad0",
+                "url": "https://api.github.com/repos/light-worx/filament-pwa/zipball/ff677359fcd06e269ed30e795ee3b2b9b74c0c41",
+                "reference": "ff677359fcd06e269ed30e795ee3b2b9b74c0c41",
                 "shasum": ""
             },
             "require": {
@@ -3731,7 +3731,7 @@
                 "issues": "https://github.com/light-worx/filament-pwa/issues",
                 "source": "https://github.com/light-worx/filament-pwa/tree/master"
             },
-            "time": "2026-03-27T12:58:13+00:00"
+            "time": "2026-03-29T08:06:06+00:00"
         },
         {
             "name": "light-worx/filament-settings",

@@ -15,6 +15,17 @@
         console.warn('PWA: vapid-key meta tag missing. Push notifications will not work.');
     }
 
+    // ── Device ID cookie ─────────────────────────────────────────────────────
+    // Writing pwa_device_id to a cookie (in addition to localStorage) lets
+    // PHP middleware read the device identity on every request without an
+    // AJAX call — enabling server-side access to custom_settings, circuit_id etc.
+    function writeDeviceIdCookie(id) {
+        try {
+            const maxAge = 60 * 60 * 24 * 365; // 1 year
+            document.cookie = `pwa_device_id=${encodeURIComponent(id)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+        } catch {}
+    }
+
     // ── Utilities ────────────────────────────────────────────────────────────
 
     function urlBase64ToUint8Array(base64) {
@@ -52,7 +63,10 @@
         // Store the endpoint as the canonical device_id so the user-menu's
         // preference loader finds the same UserPreference row the push
         // subscription is linked to.
-        try { localStorage.setItem('pwa_device_id', subscription.endpoint); } catch {}
+        try {
+            localStorage.setItem('pwa_device_id', subscription.endpoint);
+            writeDeviceIdCookie(subscription.endpoint);
+        } catch {}
 
         return res.json();
     }
@@ -71,18 +85,17 @@
      * the browser retains a PushSubscription across page loads even if
      * the server DB was wiped or the row was deleted.
      */
-    async function isSubscribedOnServer(endpoint) {
+    async function getServerStatus(endpoint) {
         try {
             const res = await fetch('/app/push/status', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
                 body:    JSON.stringify({ endpoint }),
             });
-            if (!res.ok) return false;
-            const data = await res.json();
-            return !!data.subscribed;
+            if (!res.ok) return { subscribed: false, phone_verified: false };
+            return await res.json();
         } catch {
-            return false;
+            return { subscribed: false, phone_verified: false };
         }
     }
 
@@ -141,19 +154,28 @@
             const stored = localStorage.getItem('pwa_device_id');
             if (stored !== sub.endpoint) {
                 localStorage.setItem('pwa_device_id', sub.endpoint);
+                writeDeviceIdCookie(sub.endpoint);
             }
         } catch {}
 
-        // Browser has a subscription — confirm server also has it
-        const serverHasIt = await isSubscribedOnServer(sub.endpoint);
+        // Check whether the server has this subscription AND whether the
+        // device has a verified phone number.
+        const serverStatus = await getServerStatus(sub.endpoint);
 
-        if (!serverHasIt) {
-            // Re-sync: save to server silently
-            try { await saveSubscriptionToServer(sub); } catch { /* non-fatal */ }
+        if (!serverStatus.subscribed) {
+            // Browser has a subscription but server doesn't.
+            // Only re-save if this device has a verified phone — otherwise the
+            // subscription was deliberately cleared or the user hasn't verified yet.
+            if (serverStatus.phone_verified) {
+                try { await saveSubscriptionToServer(sub); } catch { /* non-fatal */ }
+            }
+            // If no verified phone, leave the browser subscription in place
+            // (so the toggle can be enabled later once they verify) but don't
+            // persist it server-side yet.
         }
 
         return {
-            subscribed:  true,
+            subscribed:  serverStatus.subscribed,
             permission:  Notification.permission,
             supported:   true,
         };
