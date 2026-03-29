@@ -71,7 +71,6 @@ class MinistersRelationManager extends RelationManager
                                             return "Added by " . $log->user->name . " on " . $log->created_at->format('d/m/Y');
                                         }
                                     })->hiddenOn('create'),
-                                $this->getNotificationAction('minister')
                             ])->columns(2),
                         Tab::make('Clergy details')
                             ->schema([
