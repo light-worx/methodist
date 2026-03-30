@@ -39,7 +39,7 @@ class EditMinister extends EditRecord
                         $record->person->phone,
                         'Message for ' . $record->person->fullname,
                         $data['message'],
-                        '/'
+                        '/messages'
                     );
                     if ($result->noDevices) {
                         Notification::make()->warning()->title('No registered devices for this number')->send();

@@ -6,29 +6,25 @@
     </button>
 
     {{-- Centre: app title --}}
-    <span class="fs-5 fw-bold">{{ $title ?? config('pwa.app_name') }}</span>
+    <span class="fw-bold">{{ $title ?? config('pwa.app_name') }}</span>
 
     {{-- Right: install + push + user --}}
     <div class="d-flex align-items-center gap-2">
-
         {{-- Install-to-homescreen button (hidden until beforeinstallprompt fires) --}}
         @if(config('pwa.install_prompt', true))
         <button id="installBtn" class="btn btn-outline-secondary btn-sm d-none" aria-label="Install app">
             <i class="bi bi-download"></i>
         </button>
         @endif
-
         {{-- Push notification toggle (hidden until status known) --}}
         @if(config('pwa.push.enabled', true))
         <button id="enable-push" class="btn btn-sm d-none" aria-label="Enable push notifications">
             <i class="bi bi-bell"></i>
         </button>
         @endif
-
         {{-- User settings panel --}}
         <button id="userMenuBtn" class="btn p-1" aria-label="Open user settings">
             <i class="bi bi-person-circle fs-4"></i>
         </button>
-
     </div>
 </header>
