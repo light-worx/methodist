@@ -13,7 +13,10 @@
             @if ($this->getData()['societies'])
                 <p><i>Societies:</i> {!!implode(' ', $this->getData()['societies'])!!}</p>
             @endif
-            <p><br>Let your circuit or district admin know if this needs to be changed.</p>
+            <p><br>Let your circuit or district admin know if this needs to be changed. To get started, click on a red button above to edit that entity, or go directly to a preaching plan via a button below:</p><br>
+            @if ($this->getData()['plans'])
+                <p>{!!implode(' ', $this->getData()['plans'])!!}</p>
+            @endif
         @endif
     </x-filament::section>
 </x-filament-widgets::widget>

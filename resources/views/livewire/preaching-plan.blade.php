@@ -73,7 +73,7 @@
             <thead>
                 <tr>
                     <th class="bg-white" style="position: sticky; left: 0; z-index: 5;">
-                        <a class="text-black text-decoration-none" href="{{ url('/admin/circuits/' . $circuit->id . '/edit') }}" title="Back to circuit page">
+                        <a class="text-black text-decoration-none" href="{{ $home_link }}" title="Back">
                             <i class="text-black bi bi-house"></i> Home
                         </a>
                     </th>
@@ -188,6 +188,6 @@
                     <tr><td class="text-center" colspan="100%">This table is empty because you need to add societies to your circuit and services to your societies.</td></tr>
                 @endforelse
             </tbody>
-        </table>
+        </table><br><br><br><br><br>
     </div>
 </div>

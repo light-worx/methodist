@@ -19,7 +19,8 @@ class UserAccess extends Widget
     public function getData(): array
     {
         $user = Auth::user();
-        
+        $plans = [];
+        $button="fi-color fi-color-primary fi-bg-color-600 hover:fi-bg-color-500 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-0 hover:fi-text-color-0 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md  fi-ac-btn-action";
         if ($user->hasRole('super_admin')) {
             return [
                 'user_name' => $user->name,
@@ -32,19 +33,21 @@ class UserAccess extends Widget
         if ($user->districts){
             $dis=District::whereIn('id',$user->districts)->orderBy('district')->get();
             foreach ($dis as $dd){
-                $districts[]="<a class=\"fi-color fi-color-primary fi-bg-color-600 hover:fi-bg-color-500 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-0 hover:fi-text-color-0 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md  fi-ac-btn-action\" href=\"" . url('/admin/districts') . "/" . $dd->id . "/edit\"><b>" . $dd->district . "</b></a>";
+                $districts[]="<a class=\"" . $button . "\" href=\"" . url('/admin/districts') . "/" . $dd->id . "/edit\"><b>" . $dd->district . "</b></a>";
             }
         }
         if ($user->circuits){
             $cir=Circuit::whereIn('id',$user->circuits)->orderBy('circuit')->get();
             foreach ($cir as $cc){
-                $circuits[]="<a class=\"fi-color fi-color-primary fi-bg-color-600 hover:fi-bg-color-500 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-0 hover:fi-text-color-0 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md  fi-ac-btn-action\" href=\"" . url('/admin/circuits') . "/" . $cc->id . "/edit\"><b>" . $cc->circuit . "</b></a>";
+                $circuits[]="<a class=\"" . $button . "\" href=\"" . url('/admin/circuits') . "/" . $cc->id . "/edit\"><b>" . $cc->circuit . "</b></a>";
+                $plans[$cc->id]="<a class=\"" . $button . "\" href=\"" . url('/admin/preaching-plan') . "?record=" . $cc->id . "&today=" . now()->format('Y-m-d') . "\"><b>" . $cc->circuit . " preaching plan</b></a>";
             }
         }
         if ($user->societies){
             $soc=Society::whereIn('id',$user->societies)->orderBy('society')->get();
             foreach ($soc as $ss){
-                $societies[]="<a class=\"fi-color fi-color-primary fi-bg-color-600 hover:fi-bg-color-500 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-0 hover:fi-text-color-0 dark:fi-text-color-0 dark:hover:fi-text-color-0 fi-btn fi-size-md  fi-ac-btn-action\" href=\"" . url('/admin/societies') . "/" . $ss->id . "/edit\"><b>" . $ss->society . "</b></a>";
+                $societies[]="<a class=\"" . $button . "\" href=\"" . url('/admin/societies') . "/" . $ss->id . "/edit\"><b>" . $ss->society . "</b></a>";
+                $plans[$ss->circuit_id]="<a class=\"" . $button . "\" href=\"" . url('/admin/preaching-plan') . "?record=" . $ss->circuit_id . "&today=" . now()->format('Y-m-d') . "\"><b>" . $ss->circuit->circuit . " preaching plan</b></a>";
             }
         }
         return [
@@ -52,7 +55,8 @@ class UserAccess extends Widget
             'is_super_admin' => false,
             'districts' => $districts ?? [],
             'circuits' => $circuits ?? [],
-            'societies' => $societies ?? []
+            'societies' => $societies ?? [],
+            'plans' => $plans ?? []
         ];
     }
 

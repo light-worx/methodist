@@ -27,6 +27,7 @@ class PreachingPlan extends Component
     public $period;
     public $firstday;
     public $today;
+    public $home_link;
     
     // Service type options
     public $serviceTypes = [];
@@ -83,10 +84,12 @@ class PreachingPlan extends Component
     private function getUserAuthorisedServices()
     {
         $allsocieties=Society::where('circuit_id',$this->circuit->id)->get()->pluck('id');
+        $this->home_link="/admin";
         if (auth()->user()->hasRole('super_admin')){
             return Service::whereIn('society_id',$allsocieties)->get()->pluck('id')->toArray();
         } else if (auth()->user()->circuits){
             if (in_array($this->circuit->id,auth()->user()->circuits)){
+                $this->home_link="/admin/circuits/" . $this->circuit->id . "/edit";
                 return Service::whereIn('society_id',$allsocieties)->get()->pluck('id')->toArray();
             } else {
                 return [];

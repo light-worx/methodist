@@ -24,11 +24,6 @@ class UserForm
                     ->email()
                     ->required()
                     ->maxLength(255),
-                TextInput::make('password')
-                    ->hiddenOn('edit')
-                    ->password()
-                    ->revealable()
-                    ->required(),
                 Select::make('roles')
                     ->selectablePlaceholder(false)
                     ->label('Role')
