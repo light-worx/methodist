@@ -30,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->topNavigation()
+            ->passwordReset()
             ->login()
             ->colors([
                 'primary' => Color::Red,
