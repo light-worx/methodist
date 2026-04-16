@@ -134,14 +134,14 @@ class UserForm
                             return Society::orderBy('society')->get()->map(function ($soc) {
                                 return [
                                     'value' => $soc->id,
-                                    'label' => $soc->society . ' (' . $soc->circuit->circuit . ')'
+                                    'label' => $soc->society . ' (' . $soc->circuit->circuitname . ')'
                                 ];
                             })->pluck('label', 'value');
                         } elseif (auth()->user()->societies) {
                             return Society::whereIn('id', auth()->user()->societies)->orderBy('society')->get()->map(function ($soc) {
                                 return [
                                     'value' => $soc->id,
-                                    'label' => $soc->society . ' (' . $soc->circuit->circuit . ')'
+                                    'label' => $soc->society . ' (' . $soc->circuit->circuitname . ')'
                                 ];
                             })->pluck('label', 'value');
                         } elseif (auth()->user()->circuits) {
@@ -150,7 +150,7 @@ class UserForm
                             })->orderBy('society')->get()->map(function ($soc) {
                                 return [
                                     'value' => $soc->id,
-                                    'label' => $soc->society . ' (' . $soc->circuit->circuit . ')'
+                                    'label' => $soc->society . ' (' . $soc->circuit->circuitname . ')'
                                 ];
                             })->pluck('label', 'value');
                         } elseif (auth()->user()->districts) {
@@ -159,7 +159,7 @@ class UserForm
                             })->orderBy('society')->get()->map(function ($soc) {
                                 return [
                                     'value' => $soc->id,
-                                    'label' => $soc->society . ' (' . $soc->circuit->circuit . ')'
+                                    'label' => $soc->society . ' (' . $soc->circuit->circuitname . ')'
                                 ];
                             })->pluck('label', 'value');
                         } else {
