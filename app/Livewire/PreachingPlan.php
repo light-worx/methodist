@@ -95,7 +95,14 @@ class PreachingPlan extends Component
                 return [];
             }
         } else if (auth()->user()->societies){
-            return Service::whereIn('society_id',auth()->user()->societies)->get()->pluck('id')->toArray();
+            $services = Service::whereIn('society_id',auth()->user()->societies)->get()->pluck('id')->toArray();
+            $authorised=[];
+            foreach ($services as $service){
+                if (!in_array($service,auth()->user()->exclude_services ?? [])){
+                    $authorised[]=$service;
+                }
+            }
+            return $authorised;
         } else {
             return [];
         }

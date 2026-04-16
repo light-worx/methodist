@@ -28,7 +28,8 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'districts',
         'circuits',
-        'societies'
+        'societies',
+        'exclude_services'
     ];
 
     /**
@@ -55,7 +56,8 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'districts' => 'array',
             'circuits' => 'array',
-            'societies' => 'array'
+            'societies' => 'array',
+            'exclude_services' => 'array',
         ];
     }
 

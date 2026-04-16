@@ -7,6 +7,7 @@ use App\Mail\UserInvitationMail;
 use App\Models\Circuit;
 use App\Models\District;
 use App\Models\Invitation;
+use App\Models\Service;
 use App\Models\Society;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -172,6 +173,29 @@ class ListUsers extends ListRecords
                             }
                         })
                         ->searchable(),
+                    Select::make('exclude_services')
+                        ->visible(function (Get $get) {
+                            $roleId = $get('roles');
+                            if (! $roleId) {
+                                return false;
+                            }
+                            return Role::find($roleId)?->name === 'Society user';
+                        })
+                        ->multiple()
+                        ->label('Exclude services')
+                        ->options(function (Get $get) {
+                            $options=[];
+                            $societies=$get('societies') ?? [];
+                            $services = Service::whereHas('society', function ($query) use ($societies) {
+                                $query->whereIn('society_id', $societies);
+                            })->orderBy('servicetime')->get();
+                            foreach ($services as $service){
+                                $options[$service->id] = $service->society->society . ' (' . $service->servicetime . ')';
+                            }
+                            asort($options);
+                            return $options;
+                        })
+                        ->searchable(),
                 ])
                 ->action(function (array $data) {
                     if (!isset($data['districts'])) {
@@ -189,6 +213,7 @@ class ListUsers extends ListRecords
                         'districts' => $data['districts'] ? implode(',', $data['districts']) : null,
                         'circuits' => $data['circuits'] ? implode(',', $data['circuits']) : null,
                         'societies' => $data['societies'] ? implode(',', $data['societies']) : null,
+                        'exclude_services' => $data['exclude_services'] ? implode(',', $data['exclude_services']) : null,
                         'token' => Str::uuid(),
                         'invited_by' => Auth::user()->name,
                         'expires_at' => now()->addDays(7),

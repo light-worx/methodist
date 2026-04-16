@@ -83,18 +83,47 @@ class InvitationRegister extends Page implements HasSchemas
             'role_id' => $this->invitation->role,
             'model_type' => User::class
         ]);
+                
+        if (! empty($this->invitation->societies)) {
+            $societies = $this->invitation->societies;
+
+            if (is_string($societies)) {
+                $societies = explode(',', $societies);
+            }
+
+            $user->societies = array_map('intval', $societies);
+        }
 
         if (! empty($this->invitation->circuits)) {
-            $user->circuits = array_map('intval', (array) $this->invitation->circuits);
-        }
+            $circuits = $this->invitation->circuits;
+
+            if (is_string($circuits)) {
+                $circuits = explode(',', $circuits);
+            }
+
+            $user->circuits = array_map('intval', $circuits);
+        }     
 
         if (! empty($this->invitation->districts)) {
-            $user->districts = array_map('intval', (array) $this->invitation->districts);
+            $districts = $this->invitation->districts;
+
+            if (is_string($districts)) {
+                $districts = explode(',', $districts);
+            }
+
+            $user->districts = array_map('intval', $districts);
         }
 
-        if (! empty($this->invitation->societies)) {
-            $user->societies = array_map('intval', (array) $this->invitation->societies);
+        if (! empty($this->invitation->exclude_services)) {
+            $excludeServices = $this->invitation->exclude_services;
+
+            if (is_string($excludeServices)) {
+                $excludeServices = explode(',', $excludeServices);
+            }
+
+            $user->exclude_services = array_map('intval', $excludeServices);
         }
+
         $user->save();
 
         $this->invitation->update([

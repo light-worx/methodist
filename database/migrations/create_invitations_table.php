@@ -16,7 +16,7 @@ return new class extends Migration
             $table->json('districts')->nullable();
             $table->json('circuits')->nullable();
             $table->json('societies')->nullable();
-
+            $table->json('exclude_services')->nullable();
             $table->string('invited_by')->nullable();
 
             $table->timestamp('expires_at')->nullable();

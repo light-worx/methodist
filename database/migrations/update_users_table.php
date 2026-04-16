@@ -11,6 +11,7 @@ return new class extends Migration
             $table->json('districts')->nullable();
             $table->json('circuits')->nullable();
             $table->json('societies')->nullable();
+            $table->json('exclude_services')->nullable();
         });
     }
 
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->dropColumn('districts');
             $table->dropColumn('circuits');
             $table->dropColumn('societies');
+            $table->dropColumn('exclude_services');
         });
     }
 

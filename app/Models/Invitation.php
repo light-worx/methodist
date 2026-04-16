@@ -13,6 +13,7 @@ class Invitation extends Model
         'accepted_at' => 'datetime',
         'districts' => 'array',
         'circuits' => 'array',
-        'societies' => 'array'
+        'societies' => 'array',
+        'exclude_services' => 'array',
     ];
 }

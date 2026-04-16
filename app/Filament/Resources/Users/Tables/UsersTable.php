@@ -97,6 +97,9 @@ class UsersTable
                     ->state(function ($record){
                         if ($record->societies){
                             $societies = Society::whereIn('id',$record->societies)->get()->pluck('society');
+                            if ($societies->count()>2){
+                                return $societies->take(2)->push(' +' . ($societies->count() - 2) . ' more'); // Show first 2 and indicate more
+                            }
                             return $societies;
                         }
                     })

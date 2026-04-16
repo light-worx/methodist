@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\Circuit;
 use App\Models\District;
+use App\Models\Service;
 use App\Models\Society;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -166,6 +167,22 @@ class UserForm
                             return [];
                         }
                     })
+                    ->searchable(),
+                Select::make('exclude_services')
+                    ->multiple()
+                    ->label('Exclude services')
+                    ->options(function (Get $get) {
+                        $options=[];
+                        $societies=$get('societies') ?? [];
+                        $services = Service::whereHas('society', function ($query) use ($societies) {
+                            $query->whereIn('society_id', $societies);
+                        })->orderBy('servicetime')->get();
+                        foreach ($services as $service){
+                            $options[$service->id] = $service->society->society . ' (' . $service->servicetime . ')';
+                        }
+                        asort($options);
+                        return $options;
+                     })
                     ->searchable(),
             ]);
     }
