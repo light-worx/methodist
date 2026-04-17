@@ -76,6 +76,7 @@ class PreachersRelationManager extends RelationManager
                                     ->options(array_combine(setting('preacher_leadership_roles'),setting('preacher_leadership_roles'))),
                                 Select::make('status')
                                     ->live()
+                                    ->required()
                                     ->options([
                                         'note' => 'Preacher on note',
                                         'trial' => 'Preacher on trial',
@@ -176,6 +177,7 @@ class PreachersRelationManager extends RelationManager
                                             )),
                                         Select::make('status')
                                             ->live()
+                                            ->required()
                                             ->options([
                                                 'note' => 'Preacher on note',
                                                 'trial' => 'Preacher on trial',
@@ -208,8 +210,7 @@ class PreachersRelationManager extends RelationManager
                             'status' => $data['status'],
                             'leadership' => json_encode($data['leadership']),
                             'number' => $data['number'],
-                            'induction' => $data['induction'],
-                            'active' => $data['active']
+                            'induction' => $data['induction']
                         ]);
                         $circuit=Circuit::find($society->circuit_id);
                         if ($preacher->status=="guest"){

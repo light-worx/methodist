@@ -110,6 +110,7 @@ class MinistersRelationManager extends RelationManager
                                         ->schema([
                                             Select::make('circuitstatus')->label('Status')
                                                 ->live()
+                                                ->required()
                                                 ->options(function ($record){
                                                     $person = $record;
                                                     if ($person->minister){

@@ -57,7 +57,7 @@ class SocietyForm
                     ->center(function (){
                         $circuit = Circuit::with(['societies' => function ($q) { $q->whereNotNull('latitude')->whereNotNull('longitude');}])->find(request()->query('circuit_id'));
                         if ($circuit){
-                            if ($circuit->societies){
+                            if (count($circuit->societies)){
                                 $society = $circuit->societies->last();
                                 return [$society->latitude, $society->longitude];
                             } else {
