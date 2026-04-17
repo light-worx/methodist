@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Societies\Schemas;
 use App\Models\Circuit;
 use App\Models\District;
 use App\Models\Log;
+use App\Services\MapCoordinateService;
 use EduardoRibeiroDev\FilamentLeaflet\Enums\TileLayer;
 use EduardoRibeiroDev\FilamentLeaflet\Fields\MapPicker;
 use Filament\Forms\Components\Hidden;
@@ -16,6 +17,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 
 class SocietyForm
 {
@@ -54,23 +56,15 @@ class SocietyForm
                     ]),
                 MapPicker::make('location')
                     ->height(418)
-                    ->center(function (){
-                        $circuit = Circuit::with(['societies' => function ($q) { $q->whereNotNull('latitude')->whereNotNull('longitude');}])->find(request()->query('circuit_id'));
-                        if ($circuit){
-                            if (count($circuit->societies)){
-                                $society = $circuit->societies->last();
-                                return [$society->latitude, $society->longitude];
-                            } else {
-                                $district = District::find($circuit->district_id);
-                                if ($district && $district->latitude && $district->longitude){
-                                    return [$district->latitude, $district->longitude];
-                                } else {
-                                    return [setting('default_latitude', -26.180611), setting('default_longitude', 28.1046067)];
-                                }
-                            }
-                        } else {
-                            return [setting('default_latitude', -26.180611), setting('default_longitude', 28.1046067)];
-                        }
+                    ->default(function () {
+                        return MapCoordinateService::resolve(request()->query('circuit_id'));
+                    })
+                    ->center(function () {
+                        $coords = MapCoordinateService::resolve(request()->query('circuit_id'));
+                        return [
+                            $coords['latitude'],
+                            $coords['longitude'],
+                        ];
                     })
                     ->zoom(18)
                     ->tileLayersUrl([
@@ -87,5 +81,38 @@ class SocietyForm
                         }
                     })->hiddenOn('create'),
             ]);
+    }
+
+    private function getMapCoordinates(): array
+    {
+        $default = [
+            'latitude' => setting('default_latitude', -26.180611),
+            'longitude' => setting('default_longitude', 28.1046067),
+        ];
+        $circuitId = request()->query('circuit_id');
+        if (!$circuitId) {
+            return $default;
+        }
+        $circuit = Circuit::with([
+            'societies' => fn ($q) => $q->whereNotNull('latitude')->whereNotNull('longitude')
+        ])->find($circuitId);
+        if (!$circuit) {
+            return $default;
+        }
+        if ($circuit->societies->isNotEmpty()) {
+            $society = $circuit->societies->last();
+            return [
+                'latitude' => (float) $society->latitude,
+                'longitude' => (float) $society->longitude,
+            ];
+        }
+        $district = District::find($circuit->district_id);
+        if ($district && $district->latitude && $district->longitude) {
+            return [
+                'latitude' => (float) $district->latitude,
+                'longitude' => (float) $district->longitude,
+            ];
+        }
+        return $default;
     }
 }
