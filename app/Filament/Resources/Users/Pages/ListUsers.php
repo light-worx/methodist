@@ -213,7 +213,7 @@ class ListUsers extends ListRecords
                         'districts' => $data['districts'] ? implode(',', $data['districts']) : null,
                         'circuits' => $data['circuits'] ? implode(',', $data['circuits']) : null,
                         'societies' => $data['societies'] ? implode(',', $data['societies']) : null,
-                        'exclude_services' => $data['exclude_services'] ? implode(',', $data['exclude_services']) : null,
+                        'exclude_services' => isset($data['exclude_services']) ? implode(',', $data['exclude_services']) : null,
                         'token' => Str::uuid(),
                         'invited_by' => Auth::user()->name,
                         'expires_at' => now()->addDays(7),
