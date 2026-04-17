@@ -7,12 +7,10 @@ return [
     | App Identity
     |--------------------------------------------------------------------------
     */
-    'app_name'    => env('PWA_APP_NAME', 'Connexion'),
-    'app_short'   => env('PWA_APP_SHORT', 'MCSA'),
-    'description' => 'The Connexion app helps Methodists to maintain circuit preaching plans and society records',
-    'icon-192'    => '/methodist/images/icons/android/android-launchericon-192-192.png',
-    'icon-512'    => '/methodist/images/icons/android/android-launchericon-512-512.png',
-    'screenshot'  => '/methodist/images/icons/screenshot.png',
+    'app_name'    => 'Connexion',
+    'app_short'   => 'Cx',
+    'description' => env('PWA_DESCRIPTION', 'The Connexion app'),
+    'app_route'   => '/',
 
     /*
     |--------------------------------------------------------------------------
@@ -37,9 +35,9 @@ return [
     |--------------------------------------------------------------------------
     */
     'nav_items' => [
-        ['label' => 'Home', 'icon' => 'bi-house', 'route' => 'home'],
-        ['label' => 'Lectionary', 'icon' => 'bi-book', 'route' => 'lectionary'],
-        ['label' => 'Ministry ideas', 'icon' => 'bi-lightbulb', 'route' => 'ideas'],
+        ['label' => 'Home', 'icon' => 'bi-house', 'route' => 'app.home'],
+        ['label' => 'Lectionary', 'icon' => 'bi-book', 'route' => 'app.lectionary'],
+        ['label' => 'Ministry ideas', 'icon' => 'bi-lightbulb', 'route' => 'app.ideas'],
     ],
 
     /*
@@ -47,10 +45,22 @@ return [
     | Bottom toolbar items
     |--------------------------------------------------------------------------
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Bottom toolbar items
+    |
+    | Each item supports:
+    |   icon    => Bootstrap Icons class (bi-*)
+    |   label   => short text below icon
+    |   route   => named Laravel route  (preferred)
+    |   url     => absolute or relative URL
+    |   badge   => 'messages' to show the live unread count bubble,
+    |              or any other string key for future badge types
+    |--------------------------------------------------------------------------
+    */
     'bottom_items' => [
-        ['icon' => 'bi-house', 'url' => '/', 'label' => ''],
-        ['icon' => 'bi-chat-left-text', 'url'   => '/app/messages', 'label' => '', 'badge' => 'messages'],
-        ['icon' => 'bi-lightbulb', 'url' => '/ideas', 'label' => ''],
+        ['icon' => 'bi-house',          'route' => 'app.home',       'label' => 'Home'],
+        ['icon' => 'bi-chat-left-text',  'url'   => '/app/messages',  'label' => 'Messages', 'badge' => 'messages'],
     ],
 
     /*
@@ -90,7 +100,9 @@ return [
         //  'options' => 'dynamic'],
 
         // Dynamic + searchable (AJAX, supports large lists)
-        ['type' => 'select', 'key' => 'circuit_id', 'label' => 'Circuit', 'options' => 'dynamic', 'searchable' => true, 'placeholder' => 'Choose a circuit…'],
+        // ['type' => 'select', 'key' => 'product', 'label' => 'Product',
+        //  'options' => 'dynamic', 'searchable' => true,
+        //  'placeholder' => 'Search products…'],
 
         // Other field types
         // ['type' => 'text',   'key' => 'department', 'label' => 'Department'],
@@ -109,6 +121,56 @@ return [
     */
     'phone_countries' => [],           // empty = all countries
     'phone_default_country' => 'ZA',   // ISO code for the pre-selected country
+
+    /*
+    |--------------------------------------------------------------------------
+    | SMS verification
+    |
+    | driver:   'bulksms' (default) — add more drivers in SmsService.php
+    | bulksms:  API token ID/secret from https://www.bulksms.com
+    |   from:   optional sender ID (max 11 alphanumeric chars)
+    |--------------------------------------------------------------------------
+    */
+    'sms' => [
+        'driver'  => env('PWA_SMS_DRIVER', 'bulksms'),
+        'bulksms' => [
+            'username' => env('PWA_BULKSMS_USERNAME', ''),
+            'password' => env('PWA_BULKSMS_PASSWORD', ''),
+            'from'     => env('PWA_BULKSMS_FROM', ''),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Identity resolution
+    |
+    | After a phone number is verified, the package looks up the user's name
+    | from your app's own model. Configure the model class, the field that
+    | holds the phone number (must be stored in E.164: +27820000000), and
+    | the field (or dot-notation path) that holds the display name.
+    |
+    | not_found_message: shown in the user panel when the phone number is
+    |   verified but no matching record exists in your model.
+    |--------------------------------------------------------------------------
+    */
+    'identity' => [
+        // Eloquent model to look up by verified phone number.
+        // Set to e.g. App\Models\Member::class (or via .env as a string class name).
+        'model'       => 'App\Models\Person',
+        'phone_field' => 'phone',
+        'name_field'  => 'fullname',   // dot-notation supported
+
+        // When true, the SMS PIN is only sent if the phone number already exists
+        // in the model above. Unknown numbers receive a 403 and no SMS is sent.
+        // When false, any number can register; name lookup is enrichment only.
+        'require_known_number' => env('PWA_REQUIRE_KNOWN_NUMBER', true),
+
+        // Message returned to the user when their number is not found.
+        // Used both as the 403 response body (require_known_number=true)
+        // and as the warning shown in the panel after verification (=false).
+        'unknown_message' => env('PWA_IDENTITY_NOT_FOUND',
+            'This number is not registered on this site.'),
+    ],
 
     /*
     |--------------------------------------------------------------------------
