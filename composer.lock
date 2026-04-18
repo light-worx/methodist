@@ -3678,12 +3678,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/light-worx/filament-pwa.git",
-                "reference": "1a7c3bbd4f182b232d3438221deb17e8e11ff832"
+                "reference": "2bf43dad0fb89d02c67b0f32875d4d16c82b50bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/light-worx/filament-pwa/zipball/1a7c3bbd4f182b232d3438221deb17e8e11ff832",
-                "reference": "1a7c3bbd4f182b232d3438221deb17e8e11ff832",
+                "url": "https://api.github.com/repos/light-worx/filament-pwa/zipball/2bf43dad0fb89d02c67b0f32875d4d16c82b50bf",
+                "reference": "2bf43dad0fb89d02c67b0f32875d4d16c82b50bf",
                 "shasum": ""
             },
             "require": {
@@ -3732,7 +3732,7 @@
                 "issues": "https://github.com/light-worx/filament-pwa/issues",
                 "source": "https://github.com/light-worx/filament-pwa/tree/master"
             },
-            "time": "2026-04-17T11:15:35+00:00"
+            "time": "2026-04-18T10:31:46+00:00"
         },
         {
             "name": "light-worx/filament-settings",
@@ -10472,16 +10472,16 @@
         },
         {
             "name": "pestphp/pest",
-            "version": "v4.6.1",
+            "version": "v4.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pestphp/pest.git",
-                "reference": "87db0b484788cfde4778b715bb1fed34133685fa"
+                "reference": "cabff738f72fe121beed6963c1bc4254e204c3d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pestphp/pest/zipball/87db0b484788cfde4778b715bb1fed34133685fa",
-                "reference": "87db0b484788cfde4778b715bb1fed34133685fa",
+                "url": "https://api.github.com/repos/pestphp/pest/zipball/cabff738f72fe121beed6963c1bc4254e204c3d3",
+                "reference": "cabff738f72fe121beed6963c1bc4254e204c3d3",
                 "shasum": ""
             },
             "require": {
@@ -10493,12 +10493,12 @@
                 "pestphp/pest-plugin-mutate": "^4.0.1",
                 "pestphp/pest-plugin-profanity": "^4.2.1",
                 "php": "^8.3.0",
-                "phpunit/phpunit": "^12.5.20",
+                "phpunit/phpunit": "^12.5.22",
                 "symfony/process": "^7.4.8|^8.0.8"
             },
             "conflict": {
                 "filp/whoops": "<2.18.3",
-                "phpunit/phpunit": ">12.5.20",
+                "phpunit/phpunit": ">12.5.22",
                 "sebastian/exporter": "<7.0.0",
                 "webmozart/assert": "<1.11.0"
             },
@@ -10573,7 +10573,7 @@
             ],
             "support": {
                 "issues": "https://github.com/pestphp/pest/issues",
-                "source": "https://github.com/pestphp/pest/tree/v4.6.1"
+                "source": "https://github.com/pestphp/pest/tree/v4.6.2"
             },
             "funding": [
                 {
@@ -10585,7 +10585,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-15T16:03:09+00:00"
+            "time": "2026-04-18T02:32:23+00:00"
         },
         {
             "name": "pestphp/pest-plugin",
@@ -11621,16 +11621,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.20",
+            "version": "12.5.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "c2364520611caa03567a8a020f2d59f3f90b115a"
+                "reference": "e07667405f0f43317a1799d3907c43a123bc5587"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c2364520611caa03567a8a020f2d59f3f90b115a",
-                "reference": "c2364520611caa03567a8a020f2d59f3f90b115a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/e07667405f0f43317a1799d3907c43a123bc5587",
+                "reference": "e07667405f0f43317a1799d3907c43a123bc5587",
                 "shasum": ""
             },
             "require": {
@@ -11644,7 +11644,7 @@
                 "phar-io/manifest": "^2.0.4",
                 "phar-io/version": "^3.2.1",
                 "php": ">=8.3",
-                "phpunit/php-code-coverage": "^12.5.5",
+                "phpunit/php-code-coverage": "^12.5.6",
                 "phpunit/php-file-iterator": "^6.0.1",
                 "phpunit/php-invoker": "^6.0.0",
                 "phpunit/php-text-template": "^5.0.0",
@@ -11652,7 +11652,7 @@
                 "sebastian/cli-parser": "^4.2.0",
                 "sebastian/comparator": "^7.1.6",
                 "sebastian/diff": "^7.0.0",
-                "sebastian/environment": "^8.0.4",
+                "sebastian/environment": "^8.1.0",
                 "sebastian/exporter": "^7.0.2",
                 "sebastian/global-state": "^8.0.2",
                 "sebastian/object-enumerator": "^7.0.0",
@@ -11699,7 +11699,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.20"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.22"
             },
             "funding": [
                 {
@@ -11707,7 +11707,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-04-15T05:05:59+00:00"
+            "time": "2026-04-17T12:51:04+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -12918,6 +12918,6 @@
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

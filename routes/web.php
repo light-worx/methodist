@@ -32,20 +32,17 @@ Route::middleware(['auth'])->group(function () {
         ->name('two-factor.show');
 });
 
-//Route::get('/manifest.json', fn() => response()->view('pwa.manifest')->header('Content-Type', 'application/json'));
-//Route::get('/service-worker.js', fn () => response()->view('pwa.service-worker')->header('Content-Type', 'application/javascript'));
-
 Route::get('/register/invite/{token}', InvitationRegister::class)->name('invite.register');
 
 // Website routes
-Route::middleware(['web',PwaDeviceMiddleware::class])->controller('\App\Http\Controllers\HomeController')->group(function () {
-    Route::get('/', 'home')->name('home');
-    Route::get('/ideas', 'ideas')->name('ideas');
-    Route::post('/ideas/store', 'storeidea')->name('ideas.store');
-    Route::get('/lectionary/{sunday?}','lectionary')->name('lectionary');
-    Route::get('/ministers/{id}','minister')->name('minister');
-    Route::get('/preacher/{society}/{servicetime}/{servicedate}','preacher')->name('preacher');
-    Route::get('/offline', 'offline')->name('offline');
+Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->group(function () {
+    Route::get('/', 'home')->name('app.home');
+    Route::get('/ideas', 'ideas')->name('app.ideas');
+    Route::post('/ideas/store', 'storeidea')->name('app.ideas.store');
+    Route::get('/lectionary/{sunday?}','lectionary')->name('app.lectionary');
+    Route::get('/ministers/{id}','minister')->name('app.minister');
+    Route::get('/preacher/{society}/{servicetime}/{servicedate}','preacher')->name('app.preacher');
+    Route::get('/offline', 'offline')->name('app.offline');
     Route::get('/admin/reports/plan/edit/{record}/{today?}', ['uses'=>'\App\Http\Controllers\HomeController@editplan','as' => 'admin.plan.edit']);
     Route::get('/plan/{id}/{plandate}', ['uses'=>'\App\Http\Controllers\HomeController@pdf','as' => 'reports.plan']);
     if (!str_contains(url()->current(),"admin")){
@@ -54,9 +51,3 @@ Route::middleware(['web',PwaDeviceMiddleware::class])->controller('\App\Http\Con
         Route::get('/{district}/{circuit}/{society}', 'society')->name('society');
     }
 });
-
-// Push notification routes
-// Route::post('/push/circuit/{circuitId}',[PushController::class, 'toCircuit'])   ->name('admin.push.circuit');
-// Route::post('/push/individual/{prefId}',[PushController::class, 'toIndividual'])->name('admin.push.individual');
-// Route::post('/push/broadcast',[PushController::class, 'broadcast'])   ->name('admin.push.broadcast');
- 
