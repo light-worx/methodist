@@ -10,8 +10,6 @@
     const VAPID_KEY   = document.querySelector('meta[name="vapid-key"]')?.content ?? '';
     const CSRF_TOKEN  = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     const APP_VERSION = document.querySelector('meta[name="app-version"]')?.content ?? '1.0.0';
-    const PWA_BASE    = (document.querySelector('meta[name="pwa-base"]')?.content ?? '/app')
-                        .replace(/\/$/, '');
 
     if (!VAPID_KEY) {
         console.warn('PWA: vapid-key meta tag missing. Push notifications will not work.');
@@ -55,7 +53,7 @@
 
     async function saveSubscriptionToServer(subscription) {
         const json = subscription.toJSON();
-        const res  = await fetch(PWA_BASE + '/subscribe', {
+        const res  = await fetch('/app/subscribe', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
             body:    JSON.stringify(json),
@@ -74,7 +72,7 @@
     }
 
     async function removeSubscriptionFromServer(endpoint) {
-        await fetch(PWA_BASE + '/unsubscribe', {
+        await fetch('/app/unsubscribe', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
             body:    JSON.stringify({ endpoint }),
@@ -89,7 +87,7 @@
      */
     async function getServerStatus(endpoint) {
         try {
-            const res = await fetch(PWA_BASE + '/push/status', {
+            const res = await fetch('/app/push/status', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
                 body:    JSON.stringify({ endpoint }),

@@ -7,33 +7,10 @@ return [
     | App Identity
     |--------------------------------------------------------------------------
     */
-    'app_name'    => 'Connexion',
+    'app_name'    => env('PWA_APP_NAME', env('APP_NAME', 'My App')),
     'app_short'   => env('PWA_APP_SHORT', 'App'),
     'description' => env('PWA_DESCRIPTION', 'A progressive web application'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Routing
-    |
-    | prefix  — the URL path segment (or subdomain label) for all PWA routes.
-    |           Default: 'app'  →  your-site.com/app/messages etc.
-    |           Change to e.g. 'pwa' for your-site.com/pwa/messages.
-    |           Set to '' (empty string) to mount routes at the domain root.
-    |
-    | domain  — when set, routes are mounted on a subdomain instead of a path
-    |           prefix. Set to the subdomain label only, not the full domain.
-    |           e.g. 'app' makes routes live at  app.your-site.com/messages
-    |           Leave null (default) to use path-prefix mode.
-    |
-    | Examples:
-    |   Path prefix:   prefix='app', domain=null  → site.com/app/subscribe
-    |   Sub-domain:    prefix='app', domain='app' → app.site.com/subscribe
-    |   Custom prefix: prefix='pwa', domain=null  → site.com/pwa/subscribe
-    |   Root mount:    prefix='',    domain=null  → site.com/subscribe
-    |--------------------------------------------------------------------------
-    */
-    'route_prefix' => env('PWA_ROUTE_PREFIX', ''),
-    'route_domain' => env('PWA_ROUTE_DOMAIN', null),
+    'app_route'   => env('PWA_APP_ROUTE', '/app'),
 
     /*
     |--------------------------------------------------------------------------
@@ -59,8 +36,6 @@ return [
     */
     'nav_items' => [
         ['label' => 'Home', 'icon' => 'bi-house', 'route' => 'app.home'],
-        ['label' => 'Lectionary', 'icon' => 'bi-book', 'route' => 'app.lectionary'],
-        ['label' => 'Ministry ideas', 'icon' => 'bi-lightbulb', 'route' => 'app.ideas'],
     ],
 
     /*
@@ -83,8 +58,7 @@ return [
     */
     'bottom_items' => [
         ['icon' => 'bi-house',          'route' => 'app.home',       'label' => 'Home'],
-        ['icon' => 'bi-chat-left-text',  'route' => 'app.messages',   'label' => 'Messages', 'badge' => 'messages'],
-        ['icon' => 'bi-lightbulb',  'route' => 'app.ideas',   'label' => 'Ideas'],
+        ['icon' => 'bi-chat-left-text',  'url'   => '/app/messages',  'label' => 'Messages', 'badge' => 'messages'],
     ],
 
     /*
@@ -182,7 +156,7 @@ return [
         // Set to e.g. App\Models\Member::class (or via .env as a string class name).
         'model'       => App\Models\Person::class,
         'phone_field' => 'phone',
-        'name_field'  => 'fullname',   // dot-notation supported
+        'name_field'  => 'fullname',
 
         // When true, the SMS PIN is only sent if the phone number already exists
         // in the model above. Unknown numbers receive a 403 and no SMS is sent.

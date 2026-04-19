@@ -154,10 +154,8 @@
 (function () {
     'use strict';
 
-    const CSRF     = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-    const STORAGE  = 'pwa_device_id';
-    const PWA_BASE = (document.querySelector('meta[name="pwa-base"]')?.content ?? '/app')
-                     .replace(/\/$/, '');
+    const CSRF    = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    const STORAGE = 'pwa_device_id';
 
     function deviceId() { return localStorage.getItem(STORAGE) ?? ''; }
 
@@ -216,7 +214,7 @@
     // ── Load messages ──────────────────────────────────────────────────────
     async function loadMessages() {
         try {
-            const data = await api(PWA_BASE + '/messages/list?device_id=' + encodeURIComponent(deviceId()));
+            const data = await api('/app/messages/list?device_id=' + encodeURIComponent(deviceId()));
             messages   = data.messages ?? [];
             renderList();
             updateBadge();
@@ -364,7 +362,7 @@
 
     // ── API actions ────────────────────────────────────────────────────────
     async function markSeen(ids, seen) {
-        await api(PWA_BASE + '/messages/seen', 'POST', { device_id: deviceId(), ids, seen });
+        await api('/app/messages/seen', 'POST', { device_id: deviceId(), ids, seen });
         ids.forEach(id => {
             const m = messages.find(m => m.id === id);
             if (m) m.seen = seen;
@@ -374,7 +372,7 @@
     }
 
     async function deleteMessages(ids) {
-        await api(PWA_BASE + '/messages/delete', 'POST', { device_id: deviceId(), ids });
+        await api('/app/messages/delete', 'POST', { device_id: deviceId(), ids });
         messages = messages.filter(m => !ids.includes(m.id));
         renderList();
         updateBadge();
@@ -386,7 +384,7 @@
 
         sendReplyBtn.disabled = true;
         try {
-            await api(PWA_BASE + '/messages/reply', 'POST', {
+            await api('/app/messages/reply', 'POST', {
                 device_id:  deviceId(),
                 message_id: currentMsg.id,
                 body,
