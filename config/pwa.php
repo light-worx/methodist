@@ -7,10 +7,33 @@ return [
     | App Identity
     |--------------------------------------------------------------------------
     */
-    'app_name'    => env('PWA_APP_NAME', env('APP_NAME', 'My App')),
-    'app_short'   => env('PWA_APP_SHORT', 'App'),
-    'description' => env('PWA_DESCRIPTION', 'A progressive web application'),
-    'app_route'   => env('PWA_APP_ROUTE', '/app'),
+    'app_name'    => 'Connexion',
+    'app_short'   => 'MCSA',
+    'description' => 'Connexion web app',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Routing
+    |
+    | prefix  — the URL path segment (or subdomain label) for all PWA routes.
+    |           Default: 'app'  →  your-site.com/app/messages etc.
+    |           Change to e.g. 'pwa' for your-site.com/pwa/messages.
+    |           Set to '' (empty string) to mount routes at the domain root.
+    |
+    | domain  — when set, routes are mounted on a subdomain instead of a path
+    |           prefix. Set to the subdomain label only, not the full domain.
+    |           e.g. 'app' makes routes live at  app.your-site.com/messages
+    |           Leave null (default) to use path-prefix mode.
+    |
+    | Examples:
+    |   Path prefix:   prefix='app', domain=null  → site.com/app/subscribe
+    |   Sub-domain:    prefix='app', domain='app' → app.site.com/subscribe
+    |   Custom prefix: prefix='pwa', domain=null  → site.com/pwa/subscribe
+    |   Root mount:    prefix='',    domain=null  → site.com/subscribe
+    |--------------------------------------------------------------------------
+    */
+    'route_prefix' => '',
+    'route_domain' => '',
 
     /*
     |--------------------------------------------------------------------------
@@ -36,6 +59,9 @@ return [
     */
     'nav_items' => [
         ['label' => 'Home', 'icon' => 'bi-house', 'route' => 'app.home'],
+        ['label' => 'Ideas', 'icon' => 'bi-lightbulb', 'route' => 'app.ideas'],
+        ['label' => 'Lectionary', 'icon' => 'bi-book', 'route' => 'app.lectionary'],
+
     ],
 
     /*
@@ -58,7 +84,8 @@ return [
     */
     'bottom_items' => [
         ['icon' => 'bi-house',          'route' => 'app.home',       'label' => 'Home'],
-        ['icon' => 'bi-chat-left-text',  'url'   => '/app/messages',  'label' => 'Messages', 'badge' => 'messages'],
+        ['icon' => 'bi-lightbulb',  'route' => 'app.ideas',   'label' => 'Ideas'],
+        ['icon' => 'bi-chat-left-text',  'route' => 'app.messages',   'label' => 'Messages', 'badge' => 'messages'],
     ],
 
     /*
@@ -98,13 +125,15 @@ return [
         //  'options' => 'dynamic'],
 
         // Dynamic + searchable (AJAX, supports large lists)
-        // ['type' => 'select', 'key' => 'product', 'label' => 'Product',
+        ['type' => 'select', 'key' => 'circuit_id', 'label' => 'Circuit',
+         'options' => 'dynamic', 'searchable' => true,
+         'placeholder' => 'Search circuits…'],
         //  'options' => 'dynamic', 'searchable' => true,
         //  'placeholder' => 'Search products…'],
 
         // Other field types
         // ['type' => 'text',   'key' => 'department', 'label' => 'Department'],
-        // ['type' => 'toggle', 'key' => 'dark_mode',  'label' => 'Dark mode'],
+        ['type' => 'toggle', 'key' => 'preaching_reminders',  'label' => 'Send preaching reminders?'],
     ],
 
     /*
@@ -144,7 +173,7 @@ return [
     |
     | After a phone number is verified, the package looks up the user's name
     | from your app's own model. Configure the model class, the field that
-    | holds the phone number (must be stored in E.164: +27820000000), and
+    | holds the phone number (must be stored in E.164: +27794999139), and
     | the field (or dot-notation path) that holds the display name.
     |
     | not_found_message: shown in the user panel when the phone number is
@@ -156,7 +185,7 @@ return [
         // Set to e.g. App\Models\Member::class (or via .env as a string class name).
         'model'       => App\Models\Person::class,
         'phone_field' => 'phone',
-        'name_field'  => 'fullname',
+        'name_field'  => 'fullname',   // dot-notation supported
 
         // When true, the SMS PIN is only sent if the phone number already exists
         // in the model above. Unknown numbers receive a 403 and no SMS is sent.
@@ -177,7 +206,7 @@ return [
     */
     'push' => [
         'enabled'           => env('PWA_PUSH_ENABLED', true),
-        'prompt_on_install' => false,
+        'prompt_on_install' => true,
     ],
 
     /*
@@ -186,5 +215,22 @@ return [
     |--------------------------------------------------------------------------
     */
     'install_prompt' => env('PWA_INSTALL_PROMPT', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Push notification icons
+    |
+    | icon  — shown as the notification image (192×192px recommended).
+    |         Defaults to /pwa/icons/icon-192.png
+    | badge — small monochrome icon shown in the status bar on Android (72×72px).
+    |         Defaults to /pwa/icons/badge-72.png
+    |
+    | Set these to paths within your public directory, e.g.:
+    |   'icon'  => '/images/notification-icon.png',
+    |   'badge' => '/images/notification-badge.png',
+    |--------------------------------------------------------------------------
+    */
+    'push_icon'  => env('PWA_PUSH_ICON',  '/pwa/icons/icon-192.png'),
+    'push_badge' => env('PWA_PUSH_BADGE', '/pwa/icons/badge-72.png'),
 
 ];

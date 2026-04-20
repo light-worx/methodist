@@ -86,8 +86,9 @@ class HomeController extends Controller
     {
         $data['districts']=District::orderBy('id')->get();
         $data['lects']=$this->get_lectionary();
-        if ($request->pwaCircuitId) {
-            $circuit = Circuit::with('district')->find($request->pwaCircuitId);
+        $circuitId = $request->pwaPreference?->getSetting('circuit_id');
+        if ($circuitId) {
+            $circuit = Circuit::with('district')->find($circuitId);
             return redirect()->route('circuit', [
                 'district' => $circuit->district->slug,
                 'circuit'  => $circuit->slug,

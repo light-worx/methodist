@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: [
-            'pwa_device_id'
+            'pwa_device_id',
+        ]);
+        $middleware->web(append: [
+            \Lightworx\FilamentPwa\Http\Middleware\PwaDeviceMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

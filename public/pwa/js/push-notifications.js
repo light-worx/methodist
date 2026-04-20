@@ -10,6 +10,10 @@
     const VAPID_KEY   = document.querySelector('meta[name="vapid-key"]')?.content ?? '';
     const CSRF_TOKEN  = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     const APP_VERSION = document.querySelector('meta[name="app-version"]')?.content ?? '1.0.0';
+    const PWA_BASE    = (document.querySelector('meta[name="pwa-base"]')?.content ?? '/app')
+                        .replace(/\/$/, '');
+    const PUSH_ICON   = document.querySelector('meta[name="pwa-push-icon"]')?.content  ?? '/pwa/icons/icon-192.png';
+    const PUSH_BADGE  = document.querySelector('meta[name="pwa-push-badge"]')?.content ?? '/pwa/icons/badge-72.png';
 
     if (!VAPID_KEY) {
         console.warn('PWA: vapid-key meta tag missing. Push notifications will not work.');
@@ -53,7 +57,7 @@
 
     async function saveSubscriptionToServer(subscription) {
         const json = subscription.toJSON();
-        const res  = await fetch('/app/subscribe', {
+        const res  = await fetch(PWA_BASE + '/subscribe', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
             body:    JSON.stringify(json),
@@ -72,7 +76,7 @@
     }
 
     async function removeSubscriptionFromServer(endpoint) {
-        await fetch('/app/unsubscribe', {
+        await fetch(PWA_BASE + '/unsubscribe', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
             body:    JSON.stringify({ endpoint }),
@@ -87,7 +91,7 @@
      */
     async function getServerStatus(endpoint) {
         try {
-            const res = await fetch('/app/push/status', {
+            const res = await fetch(PWA_BASE + '/push/status', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
                 body:    JSON.stringify({ endpoint }),
@@ -183,53 +187,6 @@
 
     window.pushNotifications = { subscribe, unsubscribe, checkStatus };
 
-    // ── Top-bar push button ──────────────────────────────────────────────────
-
-    async function initTopBarPushButton() {
-        const btn = document.getElementById('enable-push');
-        if (!btn) return;
-
-        const status = await checkStatus();
-
-        if (!status.supported || status.subscribed) {
-            btn.classList.add('d-none');
-            return;
-        }
-
-        if (status.permission === 'denied') {
-            btn.innerHTML = '<i class="bi bi-bell-slash"></i>';
-            btn.title     = 'Notifications blocked — reset in browser settings';
-            btn.classList.remove('d-none');
-            btn.classList.add('btn-outline-secondary');
-            btn.disabled  = true;
-            return;
-        }
-
-        btn.innerHTML = '<i class="bi bi-bell"></i>';
-        btn.title     = 'Enable push notifications';
-        btn.classList.remove('d-none');
-        btn.classList.add('btn-outline-primary');
-
-        btn.addEventListener('click', async () => {
-            btn.disabled = true;
-            try {
-                await subscribe();
-                btn.classList.add('d-none');
-                window.showToast?.('Push notifications enabled');
-            } catch (e) {
-                console.warn('PWA: subscribe failed', e);
-                btn.disabled = false;
-                if (Notification.permission === 'denied') {
-                    btn.innerHTML = '<i class="bi bi-bell-slash"></i>';
-                    btn.title     = 'Notifications blocked — reset in browser settings';
-                    btn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
-                    btn.disabled  = true;
-                }
-                window.showToast?.('Could not enable notifications', 'error');
-            }
-        });
-    }
-
     // ── Install prompt ───────────────────────────────────────────────────────
 
     let deferredInstallPrompt = null;
@@ -263,13 +220,23 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker
             .register('/service-worker.js?v=' + APP_VERSION)
-            .then(async () => {
-                // Run checkStatus immediately after SW registers so it can
-                // write the push endpoint to localStorage as early as possible.
-                // initTopBarPushButton also calls checkStatus but this fires first
-                // and gives the user-menu's resolveDeviceId() a head start.
+            .then(async registration => {
+                // Send app-configured icon paths to the SW so it can use them
+                // as fallbacks when a push payload doesn't include icon/badge.
+                const sw = registration.active
+                        ?? registration.waiting
+                        ?? registration.installing;
+                if (sw) {
+                    sw.postMessage({
+                        type:      'PWA_CONFIG',
+                        pushIcon:  PUSH_ICON,
+                        pushBadge: PUSH_BADGE,
+                    });
+                }
+
+                // Run checkStatus immediately so the push endpoint is written
+                // to localStorage as early as possible.
                 await checkStatus();
-                initTopBarPushButton();
             })
             .catch(err => console.error('PWA: SW registration failed', err));
     }

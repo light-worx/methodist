@@ -49,6 +49,20 @@ usort($countries, fn($a, $b) =>
 
 $unknownNumberMessage = config('pwa.identity.unknown_message',
     'Your number is not yet linked to an account on this site.');
+
+// Base URL for all API calls — read from meta tag set in app.blade.php layout
+// Falls back to computing it directly so the component works even if included standalone
+$pwaPrefix = config('pwa.route_prefix', 'app');
+$pwaDomain = config('pwa.route_domain');
+if ($pwaDomain) {
+    $pwaBase = rtrim(
+        parse_url(config('app.url'), PHP_URL_SCHEME) . '://'
+        . $pwaDomain . '.' . parse_url(config('app.url'), PHP_URL_HOST),
+        '/'
+    );
+} else {
+    $pwaBase = $pwaPrefix !== '' ? rtrim(url($pwaPrefix), '/') : rtrim(url('/'), '/');
+}
 @endphp
 
 <style>
@@ -149,11 +163,7 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
                     <i class="bi bi-check-circle-fill me-1"></i>Verified
                 </span>
             </div>
-            <button id="change-number-btn"
-                    class="btn btn-link btn-sm text-muted p-0 mt-2"
-                    style="font-size:.75rem">
-                <i class="bi bi-pencil me-1"></i>Change number
-            </button>
+
         </div>
     </div>
 
@@ -285,7 +295,7 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
                     @if($fType === 'select' && $isSearchable)
                         <div class="pwa-searchable-select"
                              data-field-key="{{ $fKey }}"
-                             data-options-url="{{ url('/app/field-options/' . $fKey) }}"
+                             data-options-url="{{ $pwaBase }}/field-options/{{ $fKey }}"
                              data-placeholder="{{ $placeholder }}">
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control pwa-search-input"
@@ -345,7 +355,7 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
     @stack('pwa-user-settings')
 
     {{-- ── Inbox link (hidden until phone verified + identity resolved) ─── --}}
-    <a id="inbox-link" href="/app/messages"
+    <a id="inbox-link" href="{{ $pwaBase }}/messages"
        class="card shadow-sm border-0 mb-3 text-decoration-none d-none"
        style="display:none; border-radius:14px;">
         <div class="card-body py-2 px-3 d-flex align-items-center gap-3">
@@ -364,29 +374,54 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
         </div>
     </a>
 
-    {{-- ── Push notifications — pinned to bottom ───────────────────────── --}}
-    @if(config('pwa.push.enabled', true))
+    {{-- ── Push notifications + sign out — pinned to bottom ────────────── --}}
     <div id="push-card" class="mt-auto push-card d-none">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <div class="small fw-semibold">
-                    <i class="bi bi-bell me-1 text-muted"></i>Push notifications
+        @if(config('pwa.push.enabled', true))
+        {{-- Not yet subscribed --}}
+        <div id="push-enable-row" class="d-none">
+            <button id="push-enable-btn"
+                    class="btn btn-primary btn-sm w-100 py-2">
+                <i class="bi bi-bell me-2"></i>Enable push notifications
+            </button>
+            <div id="push-enable-error" class="text-danger small mt-1 d-none"></div>
+        </div>
+
+        {{-- Already subscribed --}}
+        <div id="push-enabled-row" class="d-none">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-bell-fill text-success" style="font-size:1rem"></i>
+                <div class="flex-grow-1">
+                    <div class="small fw-semibold">Push notifications enabled</div>
+                    <div id="push-disable-wrap" class="d-none">
+                        <a href="#" id="push-disable-link"
+                           class="text-muted" style="font-size:.7rem">
+                            Turn off
+                        </a>
+                    </div>
                 </div>
-                <div class="text-muted" style="font-size:.73rem" id="push-status-label">Checking…</div>
-            </div>
-            <div class="form-check form-switch mb-0 ms-3">
-                <input class="form-check-input" type="checkbox" role="switch"
-                       id="pushToggle" disabled>
             </div>
         </div>
-        <div id="push-phone-required" class="d-none mt-1">
-            <small class="text-warning">
-                <i class="bi bi-exclamation-triangle me-1"></i>
-                Requires a verified mobile number.
-            </small>
+
+        {{-- Permission denied --}}
+        <div id="push-blocked-row" class="d-none">
+            <div class="d-flex align-items-center gap-2 text-muted">
+                <i class="bi bi-bell-slash" style="font-size:1rem"></i>
+                <div class="small">
+                    Notifications blocked — reset in your browser settings to enable.
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Sign out — always visible once verified ─────────────────────── --}}
+        <div class="mt-2 pt-2 border-top text-center">
+            <a href="#" id="sign-out-link"
+               class="text-muted"
+               style="font-size:.72rem">
+                <i class="bi bi-box-arrow-right me-1"></i>Sign out
+            </a>
         </div>
     </div>
-    @endif
 
 </div>
 
@@ -394,7 +429,9 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
 (function () {
     'use strict';
 
-    const CSRF    = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    const CSRF     = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    const PWA_BASE = (document.querySelector('meta[name="pwa-base"]')?.content ?? '/app')
+                     .replace(/\/$/, '');
     const STORAGE = 'pwa_device_id';
 
     // ── Cookie helper ──────────────────────────────────────────────────────
@@ -411,22 +448,44 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
         if (_resolvedDeviceId) return _resolvedDeviceId;
 
         const existing = localStorage.getItem(STORAGE);
+
+        // If we already have a push endpoint stored, use it immediately.
         if (existing && existing.startsWith('https://')) {
             _resolvedDeviceId = existing;
+            writeDeviceIdCookie(existing);
             return existing;
         }
 
+        // Only poll for a push endpoint if push is already subscribed in the
+        // browser — avoids a 2-second wait on first-time (unsubscribed) installs.
         if ('serviceWorker' in navigator && 'PushManager' in window) {
-            for (let i = 0; i < 20; i++) {
-                await new Promise(r => setTimeout(r, 100));
-                const settled = localStorage.getItem(STORAGE);
-                if (settled && settled.startsWith('https://')) {
-                    _resolvedDeviceId = settled;
-                    return settled;
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) {
+                    // Push is active — wait briefly for push-notifications.js to
+                    // write the endpoint to localStorage
+                    for (let i = 0; i < 20; i++) {
+                        await new Promise(r => setTimeout(r, 100));
+                        const settled = localStorage.getItem(STORAGE);
+                        if (settled && settled.startsWith('https://')) {
+                            _resolvedDeviceId = settled;
+                            writeDeviceIdCookie(settled);
+                            return settled;
+                        }
+                    }
+                    // Fell through — use the endpoint directly
+                    localStorage.setItem(STORAGE, sub.endpoint);
+                    writeDeviceIdCookie(sub.endpoint);
+                    _resolvedDeviceId = sub.endpoint;
+                    return sub.endpoint;
                 }
-            }
+            } catch { /* SW not ready — fall through to UUID */ }
         }
 
+        // No push subscription — use existing UUID or create a new one.
+        // This will be replaced by the push endpoint after store() merges
+        // the row once push is enabled.
         const id = existing ?? (crypto.randomUUID?.() ?? Math.random().toString(36).slice(2));
         if (!existing) {
             localStorage.setItem(STORAGE, id);
@@ -492,14 +551,14 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
             show('phone-entry-section');
             hide('pin-entry-section');
         }
-        refreshPushToggle();
+        refreshPushUI();
     }
 
     // ── Load preferences ───────────────────────────────────────────────────
     async function loadPreferences() {
         try {
             const id  = await resolveDeviceId();
-            const res = await fetch('/app/preferences?device_id=' + encodeURIComponent(id), {
+            const res = await fetch(PWA_BASE + '/preferences?device_id=' + encodeURIComponent(id), {
                 headers: { 'Accept': 'application/json' }
             });
             if (!res.ok) return;
@@ -564,7 +623,7 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
         });
 
         try {
-            await post('/app/preferences', {
+            await post(PWA_BASE + '/preferences', {
                 device_id:       deviceId(),
                 custom_settings: custom,
             });
@@ -715,7 +774,7 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
 
         try {
             const id = await resolveDeviceId();
-            await post('/app/verify/send-pin', { device_id: id, phone: e164 });
+            await post(PWA_BASE + '/verify/send-pin', { device_id: id, phone: e164 });
 
             // Switch to PIN entry view
             hide('phone-entry-section');
@@ -750,7 +809,7 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
 
         try {
             const id   = await resolveDeviceId();
-            const data = await post('/app/verify/confirm-pin', { device_id: id, pin });
+            const data = await post(PWA_BASE + '/verify/confirm-pin', { device_id: id, pin });
 
             state.phoneVerified    = true;
             state.identityResolved = !!data.resolved_name;
@@ -784,33 +843,29 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
         }
     }
 
-    // ── Push toggle ────────────────────────────────────────────────────────
-    async function refreshPushToggle() {
-        const toggle    = $('pushToggle');
-        const statusLbl = $('push-status-label');
-        if (!toggle) return;
+    // ── Push notifications (one-way enable, hard to turn off) ────────────
+    async function refreshPushUI() {
+        // Push card only visible when phone is verified
+        if (!state.phoneVerified) return;
 
-        if (!state.phoneVerified) {
-            toggle.checked  = false;
-            toggle.disabled = true;
-            show('push-phone-required');
-            return;
-        }
-
-        hide('push-phone-required');
         if (!window.pushNotifications) return;
 
         const status = await window.pushNotifications.checkStatus();
 
-        if (status.permission === 'denied') {
-            if (statusLbl) statusLbl.textContent = 'Blocked — reset in browser settings';
-            toggle.disabled = true;
-            return;
-        }
+        // Show the correct row
+        hide('push-enable-row');
+        hide('push-enabled-row');
+        hide('push-blocked-row');
 
-        toggle.disabled = false;
-        toggle.checked  = status.subscribed;
-        if (statusLbl) statusLbl.textContent = status.subscribed ? 'Enabled' : 'Disabled';
+        if (status.permission === 'denied') {
+            show('push-blocked-row');
+        } else if (status.subscribed) {
+            show('push-enabled-row');
+            // "Turn off" link hidden by default — reveal only after a deliberate
+            // hover/click sequence to make accidental disabling very unlikely
+        } else {
+            show('push-enable-row');
+        }
     }
 
     // ── Searchable select restore ──────────────────────────────────────────
@@ -902,7 +957,7 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
         if (!badge || !summary) return;
         try {
             const id  = await resolveDeviceId();
-            const res = await fetch('/app/messages/unread?device_id=' + encodeURIComponent(id), {
+            const res = await fetch(PWA_BASE + '/messages/unread?device_id=' + encodeURIComponent(id), {
                 headers: { 'Accept': 'application/json' }
             });
             if (!res.ok) return;
@@ -963,27 +1018,97 @@ $unknownNumberMessage = config('pwa.identity.unknown_message',
             this.value = this.value.replace(/\D/g, '');
         });
 
-        // Push toggle
-        $('pushToggle')?.addEventListener('change', async function () {
-            this.disabled = true;
-            const statusLbl = $('push-status-label');
+        // ── Push enable button ─────────────────────────────────────────────
+        $('push-enable-btn')?.addEventListener('click', async function () {
+            const btn    = this;
+            const errEl  = $('push-enable-error');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Enabling…';
+            hide('push-enable-error');
             try {
-                if (this.checked) {
-                    await window.pushNotifications.subscribe();
-                    if (statusLbl) statusLbl.textContent = 'Enabled';
-                    $('enable-push')?.classList.add('d-none');
-                    window.showToast?.('Push notifications enabled');
-                } else {
-                    await window.pushNotifications.unsubscribe();
-                    if (statusLbl) statusLbl.textContent = 'Disabled';
-                    window.showToast?.('Push notifications disabled');
+                await window.pushNotifications.subscribe();
+                hide('push-enable-row');
+                show('push-enabled-row');
+                window.showToast?.('Push notifications enabled');
+            } catch (e) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-bell me-2"></i>Enable push notifications';
+                if (errEl) {
+                    errEl.textContent = Notification.permission === 'denied'
+                        ? 'Notifications are blocked. Reset them in your browser settings.'
+                        : (e.message || 'Could not enable — please try again.');
+                    show('push-enable-error');
                 }
-            } catch {
-                this.checked = !this.checked;
-                window.showToast?.('Could not update — try again', 'error');
-            } finally {
-                this.disabled = false;
+                if (Notification.permission === 'denied') {
+                    hide('push-enable-row');
+                    show('push-blocked-row');
+                }
             }
+        });
+
+        // ── "Turn off" — revealed only after deliberate interaction ────────
+        // The link is hidden; the user must hold the enabled row for 2 seconds
+        // (or long-press on mobile) to reveal it, preventing accidental taps.
+        $('push-enabled-row')?.addEventListener('pointerdown', function () {
+            const wrap = $('push-disable-wrap');
+            if (!wrap) return;
+            this._holdTimer = setTimeout(() => {
+                wrap.classList.remove('d-none');
+            }, 1500);
+        });
+        $('push-enabled-row')?.addEventListener('pointerup',    () => clearTimeout($('push-enabled-row')?._holdTimer));
+        $('push-enabled-row')?.addEventListener('pointerleave', () => clearTimeout($('push-enabled-row')?._holdTimer));
+
+        $('push-disable-link')?.addEventListener('click', async function (e) {
+            e.preventDefault();
+            if (!confirm('Turn off push notifications? You can re-enable them here at any time.')) return;
+            try {
+                await window.pushNotifications.unsubscribe();
+                $('push-disable-wrap')?.classList.add('d-none');
+                hide('push-enabled-row');
+                show('push-enable-row');
+                window.showToast?.('Push notifications turned off');
+            } catch {
+                window.showToast?.('Could not turn off — try again', 'error');
+            }
+        });
+
+        // ── Sign out ───────────────────────────────────────────────────────
+        $('sign-out-link')?.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (!confirm('Sign out? You will need to re-verify your number to use personalised features.')) return;
+
+            // Clear device identity from localStorage and cookie
+            try {
+                localStorage.removeItem('pwa_device_id');
+                document.cookie = 'pwa_device_id=; max-age=0; path=/; SameSite=Lax';
+            } catch {}
+
+            // Reset in-page state
+            state.phoneVerified    = false;
+            state.identityResolved = false;
+            _resolvedDeviceId      = null;
+
+            // Clear displayed values
+            ['identity-name','identity-phone'].forEach(id => { const el = $(id); if (el) el.textContent = ''; });
+            hide('push-enable-error');
+            hide('push-disable-wrap');
+
+            // Reset verification form
+            const phoneEl = $('pref-phone');
+            if (phoneEl) phoneEl.value = '';
+            hide('pin-entry-section');
+            show('phone-entry-section');
+
+            applyState();
+            document.getElementById('menuOverlay')?.click();  // close panel
+            window.showToast?.('Signed out');
+        });
+
+        // Remove the old change-number-btn handler if it still exists
+        // (now handled by sign-out)
+        $('change-number-btn')?.addEventListener('click', () => {
+            $('sign-out-link')?.click();
         });
 
         // Auto-save custom fields on change/blur
