@@ -133,7 +133,7 @@ return [
 
         // Other field types
         // ['type' => 'text',   'key' => 'department', 'label' => 'Department'],
-        ['type' => 'toggle', 'key' => 'preaching_reminders',  'label' => 'Send preaching reminders?'],
+        ['type' => 'toggle', 'key' => 'preaching_reminders',  'label' => 'Send weekly preaching reminders?'],
     ],
 
     /*
@@ -230,7 +230,9 @@ return [
     |   'badge' => '/images/notification-badge.png',
     |--------------------------------------------------------------------------
     */
-    'push_icon'  => env('PWA_PUSH_ICON',  '/pwa/icons/icon-192.png'),
-    'push_badge' => env('PWA_PUSH_BADGE', '/pwa/icons/badge-72.png'),
+    'push_icon'  => '/methodist/images/icons/android/icon-512.png',
+    'push_badge' => '/methodist/images/icons/android/icon-72.png',
+    'screenshot' => '/methodist/images/icons/screenshot.png',
+
 
 ];
