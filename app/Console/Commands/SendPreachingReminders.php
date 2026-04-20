@@ -106,6 +106,7 @@ class SendPreachingReminders extends Command
             ])
             ->orderBy('p.id')
             ->orderBy('pl.servicedate')
+            ->orderBy('svc.servicetime')
             ->get();
 
         if ($rows->isEmpty()) {
@@ -169,7 +170,7 @@ class SendPreachingReminders extends Command
                     phone: $phone,
                     title: $title,
                     body:  $body,
-                    url:   '/dashboard',
+                    url:   '/messages',
                 );
 
                 if ($result->noDevices) {

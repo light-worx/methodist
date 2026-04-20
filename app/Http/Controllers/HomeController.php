@@ -47,7 +47,7 @@ class HomeController extends Controller
         }
         ksort($data['ministers']);
         $data['lects']=$this->get_lectionary();
-        $data['title'] = $data['circuit']->circuit . ' Circuit ' . $data['circuit']->reference;
+        $data['title'] = $data['circuit']->circuit . ' ' . $data['circuit']->reference;
         return view('web.circuit',$data);
     }
 
