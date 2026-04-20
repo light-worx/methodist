@@ -30,6 +30,7 @@ class SendPreachingReminders extends Command
 
     public function handle(): int
     {
+        set_time_limit(1200);
         $dryRun = (bool) $this->option('dry-run');
         $days   = (int)  $this->option('days');
         $today  = Carbon::today();
