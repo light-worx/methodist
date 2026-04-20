@@ -48,7 +48,7 @@
 
                                 <h4 class="mb-1">{{ $viewingIdea->idea }}</h4>
                                 <p class="text-muted small mb-3">
-                                    {{ $viewingIdea->circuit->circuit ?? 'Unknown Circuit' }}
+                                    {{ $viewingIdea->circuit->circuit }} {{ $viewingIdea->circuit->reference}}
                                 </p>
 
                                 <p class="lh-base">{{ $viewingIdea->description }}</p>
@@ -129,9 +129,9 @@
                                                 class="list-group-item list-group-item-action py-3 text-start">
                                             <div class="d-flex w-100 justify-content-between align-items-start">
                                                 <h6 class="mb-1 fw-semibold">{{ $listedIdea->idea }}</h6>
-                                                <small class="text-muted ms-2 text-nowrap flex-shrink-0">
-                                                    {{ $listedIdea->circuit->circuit ?? '' }}
-                                                </small>
+                                                <span class="badge bg-primary me-1" style="font-size: 0.85rem;">
+                                                    {{ $listedIdea->circuit->reference ?? '' }}
+                                                </span>
                                             </div>
                                             <p class="mb-1 text-muted small text-truncate">
                                                 {{ $listedIdea->description }}

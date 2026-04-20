@@ -10,6 +10,7 @@ use App\Models\Circuit;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Lightworx\FilamentPwa\Facades\PushNotification;
 
 class MinistryIdeaForm extends Component
 {
@@ -341,7 +342,12 @@ PROMPT;
         $idea->tags()->sync($tagIds);
 
         session()->flash('success', 'Thank you! Your ministry idea has been submitted and will be reviewed before publication.');
-
+        $result = PushNotification::toPhone(
+                    phone: env('ADMIN_PHONE'),
+                    title: 'New ministry idea submitted',
+                    body:  $idea->idea,
+                    url:   '/',
+                );
         $this->reset(['idea', 'description', 'image', 'tags', 'tagInput']);
         $this->resetAi();
     }
