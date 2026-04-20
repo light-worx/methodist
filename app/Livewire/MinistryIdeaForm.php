@@ -51,11 +51,19 @@ class MinistryIdeaForm extends Component
 
     public function mount($prefilledCircuit = null, $prefilledEmail = null): void
     {
-        // user_circuit and user_email are excluded from Laravel's EncryptCookies
-        // middleware in bootstrap/app.php, so request()->cookie() returns the
-        // plain value that the JS layout wrote.
-        $this->circuit_id    = $prefilledCircuit ?? request()->cookie('user_circuit');
-        $this->email         = $prefilledEmail   ?? request()->cookie('user_email');
+        // Read circuit_id and email from the PWA device preference (custom_settings JSON),
+        // falling back to any explicitly passed parameters.
+        $pwaPreference = request()->pwaPreference;
+        $settings      = $pwaPreference?->custom_settings ?? [];
+
+        // custom_settings may be a JSON string (if not auto-cast) or already an array
+        if (is_string($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
+
+        $this->circuit_id = $prefilledCircuit ?? $settings['circuit_id'] ?? null;
+        $this->email      = $prefilledEmail   ?? $settings['email']      ?? null;
+
         $this->circuits      = Circuit::orderBy('circuit')->get();
         $this->availableTags = Tag::orderBy('name')->get();
     }

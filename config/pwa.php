@@ -132,7 +132,7 @@ return [
         //  'placeholder' => 'Search products…'],
 
         // Other field types
-        // ['type' => 'text',   'key' => 'department', 'label' => 'Department'],
+        ['type' => 'text',   'key' => 'email', 'label' => 'Your email address'],
         ['type' => 'toggle', 'key' => 'preaching_reminders',  'label' => 'Send weekly preaching reminders?'],
     ],
 
