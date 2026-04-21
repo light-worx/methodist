@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class PersonForm
 {
@@ -54,7 +55,7 @@ class PersonForm
                         'Rev' => 'Rev',
                         'Prof' => 'Prof'
                     ]),
-                TextInput::make('phone')->tel(),
+                PhoneInput::make('phone'),
                 FileUpload::make('image')
                     ->image(),
                 Select::make('status')

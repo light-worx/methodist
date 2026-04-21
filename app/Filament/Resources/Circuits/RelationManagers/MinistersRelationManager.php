@@ -26,6 +26,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class MinistersRelationManager extends RelationManager
 {
@@ -59,8 +60,7 @@ class MinistersRelationManager extends RelationManager
                                         'Rev' => 'Rev',
                                         'Prof' => 'Prof'
                                     ]),
-                                TextInput::make('phone')
-                                    ->tel(),
+                                PhoneInput::make('phone'),
                                 FileUpload::make('image')
                                     ->image(),
                                 TextEntry::make('log_details')
@@ -245,7 +245,7 @@ class MinistersRelationManager extends RelationManager
                                     'Minister' => 'Minister',
                                     'Deacon' => 'Deacon'
                                 ]),
-                            TextInput::make('phone')->tel(),
+                            PhoneInput::make('phone'),
                             FileUpload::make('image')
                                 ->image(),
                             Select::make('leadership')->label('District leadership roles')

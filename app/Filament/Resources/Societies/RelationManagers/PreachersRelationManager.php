@@ -29,6 +29,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class PreachersRelationManager extends RelationManager
 {
@@ -60,8 +61,7 @@ class PreachersRelationManager extends RelationManager
                                         'Mrs' => 'Mrs',
                                         'Rev' => 'Rev'
                                     ]),
-                                TextInput::make('phone')
-                                    ->tel(),
+                                PhoneInput::make('phone'),
                                 FileUpload::make('image')
                                     ->image()
                         ])
@@ -158,8 +158,7 @@ class PreachersRelationManager extends RelationManager
                                                 'Mrs' => 'Mrs',
                                                 'Rev' => 'Rev'
                                             ]),
-                                        TextInput::make('person.phone')
-                                            ->tel(),
+                                        PhoneInput::make('person.phone'),
                                         FileUpload::make('person.image')
                                             ->image()
                                     ]),

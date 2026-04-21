@@ -365,7 +365,7 @@ class HomeController extends Controller
             foreach ($this->ministers as $minister){
                 $sup="";
                 if ($minister->phone<>"" and $this->circuit->showphone) {
-                    $sup.= " (" . $minister->phone . ")";
+                    $sup.= " (0" . substr($minister->phone,-10) . ")";
                 }
                 if (is_array(json_decode($minister->pivot->status)) and (in_array("Superintendent",json_decode($minister->pivot->status)))){
                     $sup.= " (Supt)";
@@ -386,7 +386,7 @@ class HomeController extends Controller
             foreach ($this->supernumeraries as $super){
                 $sup="";
                 if ($super->phone<>"" and $this->circuit->showphone){
-                    $sup.= " (" . $super->phone . ")";
+                    $sup.= " (0" . substr($super->phone,-10) . ")";
                 }
                 $pdf->text($xx,$yy,$super->title . " " . substr($super->firstname,0,1) . " " . $super->surname . $sup);
                 $yy=$yy+4.5;
@@ -427,7 +427,7 @@ class HomeController extends Controller
                     $pn=array(
                         'fname'=>$tp,
                         'induction'=>$ps->preacher->induction,
-                        'phone'=>$ps->phone
+                        'phone'=> substr($ps->phone,-10)
                     );
                     if (isset($ps->preacher->society)){
                         $preachers[$ps->preacher->society->society][$ps->preacher->status][]=$pn;
@@ -456,7 +456,7 @@ class HomeController extends Controller
                 foreach ($leaders as $leader){
                     $sup="";
                     if ($leader->phone<>"" and $this->circuit->showphone){
-                        $sup.= " (" . $leader->phone . ")";
+                        $sup.= " (0" . substr($leader->phone,-10) . ")";
                     }
                     $pdf->text($xx,$yy,$leader->title . " " . substr($leader->firstname,0,1) . " " . $leader->surname . $sup);
                     $yy=$yy+4.5;
@@ -483,7 +483,7 @@ class HomeController extends Controller
                     if ($stat <> 'guest'){
                         $fin=$preacher['fname'];
                         if ($preacher['phone'] <> "" and $this->circuit->showphone){
-                            $fin.=" (" . $preacher['phone'] . ")";
+                            $fin.=" (0" . $preacher['phone'] . ")";
                         }
                         if ($stat=="trial"){
                             $fin.=" [Trial]";

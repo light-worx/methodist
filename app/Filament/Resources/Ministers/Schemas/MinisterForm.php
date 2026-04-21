@@ -16,6 +16,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class MinisterForm
 {
@@ -43,8 +44,7 @@ class MinisterForm
                                 'Rev' => 'Rev',
                                 'Prof' => 'Prof'
                             ]),
-                        TextInput::make('phone')
-                            ->tel(),
+                        PhoneInput::make('phone'),
                         FileUpload::make('image')
                             ->image(),
                         Repeater::make('circuitroles')

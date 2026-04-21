@@ -16,6 +16,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Livewire\Livewire;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class PreacherForm
 {
@@ -59,7 +60,7 @@ class PreacherForm
                                                 'Rev' => 'Rev',
                                                 'Prof' => 'Prof'
                                             ]),
-                                        TextInput::make('phone')->tel(),
+                                        PhoneInput::make('phone'),
                                         FileUpload::make('image')
                                             ->image()
                                     ])
