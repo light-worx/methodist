@@ -710,8 +710,15 @@ class HomeController extends Controller
     }
 
     public function society($district, $circuit, $society){
-        $district_id=District::whereSlug($district)->first()->id;
-        $circuit_id=Circuit::whereSlug($circuit)->where('district_id',$district_id)->first()->id;
+        $district=District::whereSlug($district)->first();
+        if ($district->latitude and $district->longitude){
+            $data['dlat']=$district->latitude;
+            $data['dlon']=$district->longitude;
+        } else {
+            $data['dlat']=-26.180404;
+            $data['dlon']=28.107187;
+        }
+        $circuit_id=Circuit::whereSlug($circuit)->where('district_id',$district->id)->first()->id;
         $data['society']=Society::with('circuit','services','preachers.person')->where('circuit_id',$circuit_id)->whereSlug($society)->first();
         $data['services']=array();
         if ($data['society']->services) {
@@ -743,6 +750,25 @@ class HomeController extends Controller
         }
         $data['title'] = $data['society']->society . " Society";
         return view('web.society',$data);
+    }
+
+    public function location(Request $request, Society $society)
+    {
+        $validated = $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $society->update([
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'unverified_location' => true
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Location submitted for review.'
+        ]);
     }
 
 }

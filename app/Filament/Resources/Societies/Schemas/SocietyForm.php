@@ -8,10 +8,12 @@ use App\Models\Log;
 use App\Services\MapCoordinateService;
 use EduardoRibeiroDev\FilamentLeaflet\Enums\TileLayer;
 use EduardoRibeiroDev\FilamentLeaflet\Fields\MapPicker;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -53,6 +55,33 @@ class SocietyForm
                             ->email(),
                         TextInput::make('website')
                             ->url(),
+                        Hidden::make('unverified_location'),
+                        Hidden::make('latitude'),
+                        Hidden::make('longitude'),
+                        TextEntry::make('location_status')
+                            ->hiddenLabel(true)
+                            ->state(function ($record){
+                                if ($record->unverified_location) {
+                                    return "This location has been submitted by a user and needs to be verified";
+                                }
+                            })->hiddenOn('create'),                        
+                        Actions::make([
+                            Action::make('Verify location')
+                                ->action(function (Set $set, $livewire) {
+                                    $set('unverified_location', false);
+                                    $livewire->save();
+                                }),
+                            Action::make('Delete location data')
+                                ->requiresConfirmation() // Good practice for destructive actions
+                                ->action(function (Set $set, $livewire) {
+                                    $set('latitude', '');
+                                    $set('longitude', '');
+                                    $set('unverified_location', false);
+                                    $livewire->save();
+                                })
+                        ])->hiddenOn('create')->visible(function ($record) {
+                            return $record->unverified_location;
+                        }),
                     ]),
                 MapPicker::make('location')
                     ->height(418)

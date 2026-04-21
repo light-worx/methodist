@@ -7,7 +7,6 @@ use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
-use Lightworx\FilamentPwa\Http\Middleware\PwaDeviceMiddleware;
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -49,5 +48,6 @@ Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->
         Route::get('/{district}', 'district')->name('district');
         Route::get('/{district}/{circuit}', 'circuit')->name('circuit');
         Route::get('/{district}/{circuit}/{society}', 'society')->name('society');
+        Route::post('/{society}/location', 'location')->name('society-location');
     }
 });
