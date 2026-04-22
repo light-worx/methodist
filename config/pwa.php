@@ -261,8 +261,4 @@ return [
     'push_icon'  => '/methodist/images/icons/android/icon-512.png',
     'push_badge' => '/methodist/images/icons/android/icon-72.png',
     'screenshot' => '/methodist/images/icons/screenshot.png',
-
 ];
-
-
-    
