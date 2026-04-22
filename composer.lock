@@ -3756,12 +3756,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/light-worx/filament-pwa.git",
-                "reference": "1ef88bcdfc2d96cc84825a3b9425feda96bb49b9"
+                "reference": "86a7b399f594fc9d58a812c8ae7b2d8cf0587212"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/light-worx/filament-pwa/zipball/1ef88bcdfc2d96cc84825a3b9425feda96bb49b9",
-                "reference": "1ef88bcdfc2d96cc84825a3b9425feda96bb49b9",
+                "url": "https://api.github.com/repos/light-worx/filament-pwa/zipball/86a7b399f594fc9d58a812c8ae7b2d8cf0587212",
+                "reference": "86a7b399f594fc9d58a812c8ae7b2d8cf0587212",
                 "shasum": ""
             },
             "require": {
@@ -3810,7 +3810,7 @@
                 "issues": "https://github.com/light-worx/filament-pwa/issues",
                 "source": "https://github.com/light-worx/filament-pwa/tree/master"
             },
-            "time": "2026-04-22T08:57:22+00:00"
+            "time": "2026-04-22T09:15:46+00:00"
         },
         {
             "name": "light-worx/filament-settings",
