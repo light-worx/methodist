@@ -9,7 +9,7 @@ return [
     */
     'app_name'    => 'Connexion',
     'app_short'   => 'Connexion',
-    'description' => 'A free tool for Methodists including resources for leaders and preachers',
+    'description' => 'A free tool for Methodist preachers and leaders',
 
     /*
     |--------------------------------------------------------------------------
