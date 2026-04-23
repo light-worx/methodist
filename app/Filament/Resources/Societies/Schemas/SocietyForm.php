@@ -111,37 +111,4 @@ class SocietyForm
                     })->hiddenOn('create'),
             ]);
     }
-
-    private function getMapCoordinates(): array
-    {
-        $default = [
-            'latitude' => setting('default_latitude', -26.180611),
-            'longitude' => setting('default_longitude', 28.1046067),
-        ];
-        $circuitId = request()->query('circuit_id');
-        if (!$circuitId) {
-            return $default;
-        }
-        $circuit = Circuit::with([
-            'societies' => fn ($q) => $q->whereNotNull('latitude')->whereNotNull('longitude')
-        ])->find($circuitId);
-        if (!$circuit) {
-            return $default;
-        }
-        if ($circuit->societies->isNotEmpty()) {
-            $society = $circuit->societies->last();
-            return [
-                'latitude' => (float) $society->latitude,
-                'longitude' => (float) $society->longitude,
-            ];
-        }
-        $district = District::find($circuit->district_id);
-        if ($district && $district->latitude && $district->longitude) {
-            return [
-                'latitude' => (float) $district->latitude,
-                'longitude' => (float) $district->longitude,
-            ];
-        }
-        return $default;
-    }
 }

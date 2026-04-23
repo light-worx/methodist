@@ -4,48 +4,87 @@
     
     <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
     <script src="{{ asset('js/leaflet.js') }}"></script>
+    @if(!$society->latitude || !$society->longitude)
+        <div class="alert alert-info">
+            We don't have a location for this society yet. If you know the society's location, please add it by clicking the spot on the map below. You can zoom in and out, move around and change to satelite image (using the control in the top right hand corner) to help you find the location.
+        </div>
+    @endif
     <div style="height:400px" id="map"></div>
 
     <script>
-        // 1. Initialize Map Variables
-        var lat = {{ $society->latitude ?? 'null' }};
-        var lng = {{ $society->longitude ?? 'null' }};
-        var map;
+        // 1. Define Tile Layers
+        var accessToken = 'pk.eyJ1IjoiYmlzaG9wbSIsImEiOiJjanNjenJ3MHMwcWRyM3lsbmdoaDU3ejI5In0.M1x6KVBqYxC2ro36_Ipz_w';
 
-        if (lat && lng) {
-            // Display existing location
-            map = L.map('map').setView([lat, lng], 15);
-            L.marker([lat, lng]).addTo(map);
-        } else {
-            // Default view or user location
-            map = L.map('map').setView([{{$dlat}}, {{$dlon}}], 13);
-            map.locate({setView: true, maxZoom: 15});
-
-            // 2. Add Click Listener for New Locations
-            map.on('click', function(e) {
-                var newLat = e.latlng.lat;
-                var newLng = e.latlng.lng;
-
-                // Add a temporary marker
-                var tempMarker = L.marker([newLat, newLng]).addTo(map)
-                    .bindPopup("Saving location...")
-                    .openPopup();
-
-                // 3. Send data to Laravel
-                saveLocation(newLat, newLng, tempMarker);
-            });
-        }
-
-        // Tile Layer
-        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        var streets = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; OpenStreetMap, Imagery © Mapbox',
             maxZoom: 18,
             id: 'mapbox/streets-v11',
             tileSize: 512,
             zoomOffset: -1,
-            accessToken: 'pk.eyJ1IjoiYmlzaG9wbSIsImEiOiJjanNjenJ3MHMwcWRyM3lsbmdoaDU3ejI5In0.M1x6KVBqYxC2ro36_Ipz_w'
-        }).addTo(map);
+            accessToken: accessToken
+        });
 
+        var satellite = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; OpenStreetMap, Imagery © Mapbox',
+            maxZoom: 18,
+            id: 'mapbox/satellite-streets-v11', // Mapbox Satellite with labels
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: accessToken
+        });
+
+        // 2. Initialize Variables
+        var lat = {{ $society->latitude ?? 'null' }};
+        var lng = {{ $society->longitude ?? 'null' }};
+        var map;
+        var markerLayer = L.layerGroup(); // Group to hold our marker(s)
+
+        // 3. Setup Map Logic
+        if (lat && lng) {
+            map = L.map('map', {
+                center: [lat, lng],
+                zoom: 15,
+                layers: [streets, markerLayer] // Load streets and markers by default
+            });
+            L.marker([lat, lng]).addTo(markerLayer);
+        } else {
+            map = L.map('map', {
+                center: [{{$dlat}}, {{$dlon}}],
+                zoom: 13,
+                layers: [streets, markerLayer]
+            });
+            
+            // Attempt to find user location, but fallback to $dlat/$dlon
+            map.locate({setView: true, maxZoom: 15});
+
+            map.on('click', function(e) {
+                var newLat = e.latlng.lat;
+                var newLng = e.latlng.lng;
+
+                // Clear existing temp markers in the layer group before adding a new one
+                markerLayer.clearLayers();
+
+                var tempMarker = L.marker([newLat, newLng]).addTo(markerLayer)
+                    .bindPopup("Saving location...")
+                    .openPopup();
+
+                saveLocation(newLat, newLng, tempMarker);
+            });
+        }
+
+        // 4. Add Layer Control
+        var baseMaps = {
+            "Street View": streets,
+            "Satellite": satellite
+        };
+
+        var overlayMaps = {
+            "Location Marker": markerLayer
+        };
+
+        L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+        // 5. Ajax Save Function
         function saveLocation(latitude, longitude, marker) {
             fetch('{{ route("society-location", $society->id) }}', {
                 method: 'POST',
@@ -62,8 +101,7 @@
             .then(data => {
                 if(data.success) {
                     marker.setPopupContent("Thank you for providing the location! We will review it soon.").openPopup();
-                    // Optionally disable the click listener so they don't spam markers
-                    map.off('click');
+                    map.off('click'); // Prevent further clicks after success
                 }
             })
             .catch(error => {
