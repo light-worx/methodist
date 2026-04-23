@@ -746,7 +746,9 @@ class HomeController extends Controller
             ksort($data['upcoming']);
         }
         foreach ($plans as $plan){
-            $data['upcoming'][$plan->service->servicetime][$plan->servicedate]=$plan->person->name;
+            if (isset($plan->person)){
+                $data['upcoming'][$plan->service->servicetime][$plan->servicedate]=$plan->person->name;
+            }
         }
         $data['title'] = $data['society']->society . " Society";
         return view('web.society',$data);
