@@ -552,11 +552,13 @@ class HomeController extends Controller
         $preachers=array();
         $persons=$circuit->persons->sortBy(['surname','firstname']);
         foreach ($persons as $person){
-            if ((!in_array("Supernumerary",json_decode($person->pivot->status))) and (!in_array("Guest",json_decode($person->pivot->status)))){
+            if ((!in_array("Guest",json_decode($person->pivot->status)))){
                 if (in_array("Superintendent",json_decode($person->pivot->status))){
                     $status = "Superintendent Minister";
                 } elseif (in_array("Minister",json_decode($person->pivot->status))){
                     $status = "Circuit Minister";
+                } elseif (in_array("Supernumerary",json_decode($person->pivot->status))){
+                    $status = "Supernumerary Minister";
                 } elseif (json_decode($person->pivot->is_preacher)==1) {
                     if (($person->preacher) && ($person->preacher->status == "preacher")) {
                         $status = "Local Preacher";
