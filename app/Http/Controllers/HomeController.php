@@ -545,8 +545,9 @@ class HomeController extends Controller
         $pdf->text(35,17.5,$title);
         $pdf->SetFont('Helvetica', '', 12);
         $pdf->text(35,23,"Local Preachers Meeting Register");
-        $pdf->SetFont('Helvetica', '', 12);
         $pdf->SetTitle($title . " Local Preachers Meeting Register");
+        $pdf->text(130,23,"Meeting date:");
+        $pdf->rect(128,17,73,9);
         $pdf->SetAutoPageBreak(true, 0);
         $preachers=array();
         $persons=$circuit->persons->sortBy(['surname','firstname']);
