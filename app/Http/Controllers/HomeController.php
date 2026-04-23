@@ -565,16 +565,18 @@ class HomeController extends Controller
                         $status = "Emeritus preacher";
                     } elseif (($person->preacher) && ($person->preacher->status == "note")) {
                         $status = "Preacher on note";
+                    } elseif (($person->preacher) && ($person->preacher->status == "guest")) {
+                        $status = "Guest preacher";
                     }
-                } else {
-                    $status = "";
                 }
-                $preachers[$person->id] = [
-                    'name' => $person->surname . ", " . $person->title . " " . $person->firstname,
-                    'society' => $person->preacher->society->society ?? "",
-                    'phone' => $person->phone ?? "",
-                    'status' => $status ?? "",
-                ];
+                if ($status<>"Guest preacher"){
+                    $preachers[$person->id] = [
+                        'name' => $person->surname . ", " . $person->title . " " . $person->firstname,
+                        'society' => $person->preacher->society->society ?? "",
+                        'phone' => $person->phone ?? "",
+                        'status' => $status ?? "",
+                    ];
+                }
             }
         }
         $yy = 40;
