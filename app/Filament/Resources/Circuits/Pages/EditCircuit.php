@@ -28,6 +28,10 @@ class EditCircuit extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('Meeting register')
+                ->url(route('reports.register', [
+                    'id' => $this->record
+                ])),
             Action::make('Preaching plan')
                 ->url(fn (): string => PreachingPlan::getUrl([
                     'record' => $this->record,

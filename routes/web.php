@@ -44,6 +44,7 @@ Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->
     Route::get('/offline', 'offline')->name('app.offline');
     Route::get('/admin/reports/plan/edit/{record}/{today?}', ['uses'=>'\App\Http\Controllers\HomeController@editplan','as' => 'admin.plan.edit']);
     Route::get('/plan/{id}/{plandate}', ['uses'=>'\App\Http\Controllers\HomeController@pdf','as' => 'reports.plan']);
+    Route::get('/register/{id}', ['uses'=>'\App\Http\Controllers\HomeController@register','as' => 'reports.register']);
     if (!str_contains(url()->current(),"admin")){
         Route::get('/{district}', 'district')->name('district');
         Route::get('/{district}/{circuit}', 'circuit')->name('circuit');

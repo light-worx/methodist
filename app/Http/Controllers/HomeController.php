@@ -530,6 +530,98 @@ class HomeController extends Controller
         exit;
     }
 
+    public function register($circuit){
+        $circuit=Circuit::with('societies.services','persons.preacher.society')->where('id',$circuit)->first();
+        $pdf = new tFPDF();
+        $page = 1;
+        $pdf->AddPage('P');
+        $imagepath=base_path('/resources/images/mcsa.png');
+        $pdf->Image($imagepath,10,5,19);
+        $pdf->SetFont('Helvetica', 'B', 18);
+        $pdf->text(35,11,"THE METHODIST CHURCH OF SOUTHERN AFRICA");
+        $title=$circuit->circuit . " Circuit " . $circuit->reference;
+        $filename=$circuit->reference . "register_" . date('Y-m-d');
+        $pdf->SetFont('Helvetica', '', 15);
+        $pdf->text(35,17.5,$title);
+        $pdf->SetFont('Helvetica', '', 12);
+        $pdf->text(35,23,"Local Preachers Meeting Register");
+        $pdf->SetFont('Helvetica', '', 12);
+        $pdf->SetTitle($title . " Local Preachers Meeting Register");
+        $pdf->SetAutoPageBreak(true, 0);
+        $preachers=array();
+        $persons=$circuit->persons->sortBy(['surname','firstname']);
+        foreach ($persons as $person){
+            if ((!in_array("Supernumerary",json_decode($person->pivot->status))) and (!in_array("Guest",json_decode($person->pivot->status)))){
+                if (in_array("Superintendent",json_decode($person->pivot->status))){
+                    $status = "Superintendent Minister";
+                } elseif (in_array("Minister",json_decode($person->pivot->status))){
+                    $status = "Circuit Minister";
+                } elseif (json_decode($person->pivot->is_preacher)==1) {
+                    if (($person->preacher) && ($person->preacher->status == "preacher")) {
+                        $status = "Local Preacher";
+                    } elseif (($person->preacher) && ($person->preacher->status == "trial")) {
+                        $status = "Preacher on trial"; 
+                    } elseif (($person->preacher) && ($person->preacher->status == "emeritus")) {
+                        $status = "Emeritus preacher";
+                    } elseif (($person->preacher) && ($person->preacher->status == "note")) {
+                        $status = "Preacher on note";
+                    }
+                } else {
+                    $status = "";
+                }
+                $preachers[$person->id] = [
+                    'name' => $person->surname . ", " . $person->title . " " . $person->firstname,
+                    'society' => $person->preacher->society->society ?? "",
+                    'phone' => $person->phone ?? "",
+                    'status' => $status ?? "",
+                ];
+            }
+        }
+        $yy = 40;
+        $pdf->SetFont('Helvetica', 'B', 11);
+        $pdf->text(10,$yy-6,"Name");
+        $pdf->text(60,$yy-6,"Society");
+        $pdf->text(90,$yy-6,"Status");
+        $pdf->text(140,$yy-6,"Phone");
+        $pdf->text(174,$yy-6,"Signature");
+        $pdf->SetFont('Helvetica', '', 11);
+        foreach ($preachers as $preacher){
+            $pdf->text(10,$yy,$preacher['name']);
+            $pdf->text(60,$yy, $preacher['society']);
+            $pdf->text(90,$yy, $preacher['status']);
+            if ($preacher['phone']){
+                $pdf->text(140,$yy, '0' . substr($preacher['phone'],3));
+            }
+            $pdf->line(9,$yy+2,201,$yy+2);
+            $yy=$yy+6;
+            if ($yy>280) {
+                $page++;
+                $pdf->rect(9,36,192,$yy-40);
+                $pdf->line(165,36,165,$yy-4);
+                $pdf->AddPage('P');
+                $pdf->Image($imagepath,10,5,19);
+                $pdf->SetFont('Helvetica', 'B', 18);
+                $pdf->text(35,11,"THE METHODIST CHURCH OF SOUTHERN AFRICA");
+                $pdf->SetFont('Helvetica', '', 15);
+                $pdf->text(35,17.5,$title);
+                $pdf->SetFont('Helvetica', '', 12);
+                $pdf->text(35,23,"Local Preachers Meeting Register (page " . $page . ")");
+                $pdf->SetFont('Helvetica', 'B', 11);
+                $yy=40;
+                $pdf->text(10,$yy-6,"Name");
+                $pdf->text(60,$yy-6,"Society");
+                $pdf->text(90,$yy-6,"Status");
+                $pdf->text(140,$yy-6,"Phone");
+                $pdf->text(174,$yy-6,"Signature");
+                $pdf->SetFont('Helvetica', '', 11);
+            }
+        }
+        $pdf->rect(9,36,192,$yy-40);
+        $pdf->line(165,36,165,$yy-4);
+        $pdf->Output('I',$filename);
+        exit;
+    }
+
     private function getpreacher($id){
         $preacher = Person::find($id);
         if ($preacher){
