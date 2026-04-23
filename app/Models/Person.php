@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Person extends Model
 {
@@ -26,7 +27,11 @@ class Person extends Model
 
     public function getNameAttribute($value)
     {
-        return $this->title . " " . substr($this->firstname,0,1) . " " . $this->surname;
+        return Str::of($this->title)
+            ->append(' ', substr($this->firstname, 0, 1), '.')
+            ->append(' ', $this->surname)
+            ->squish() // Removes all extra whitespace between words
+            ->trim();
     }
 
     public function getFullnameAttribute($value)
