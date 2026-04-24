@@ -70,7 +70,13 @@ class PreachingPlan extends Component
             } elseif (in_array("Supernumerary",json_decode($person->pivot->status))){
                 $this->preachers['Supernumerary Ministers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
             }  elseif (json_decode($person->pivot->is_preacher)==1) {
-                $this->preachers['Local Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                if ($person->preacher){
+                    if ($person->preacher->status == "guest"){
+                        $this->preachers['Guest Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                    } else {
+                        $this->preachers['Local Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                    }
+                }
             }
         }
         // Generate the upcoming 13 Sundays
