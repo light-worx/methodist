@@ -21,11 +21,11 @@
     </ul>
     <div class="tab-content" id="pills-tabContent">
         <div class="tab-pane fade show active" id="pills-district" role="tabpanel" aria-labelledby="pills-district-tab">
-            @if ($bishop and $bishop->image)
+            @if (isset($bishop) && $bishop->image)
                 <a href="{{url('/ministers/' . $bishop->id)}}">
                     <img class="rounded" width="100px" src="{{asset('/storage/' . $bishop->image)}}">
                 </a>
-            @elseif ($bishop)
+            @elseif (isset($bishop))
                 <a href="{{url('/ministers/' . $bishop->id)}}">
                     <img class="rounded" width="100px"  src="{{url('/methodist/images/blank.png')}}">
                 </a>

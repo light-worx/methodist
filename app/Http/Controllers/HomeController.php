@@ -36,44 +36,54 @@ class HomeController extends Controller
 
     public function circuit($district, $circuit){
         $data['circuit']=Circuit::with('district','societies','persons')->whereSlug($circuit)->first();
-        $data['leaders']=array();
-        $data['ministers']=array();
         if ($data['circuit']){
-            foreach ($data['circuit']->persons as $person){
-                if ($person->minister){
-                    $data['ministers'][$person->surname.$person->firstname]=$person;
-                } 
+            $data['leaders']=array();
+            $data['ministers']=array();
+            if ($data['circuit']){
+                foreach ($data['circuit']->persons as $person){
+                    if ($person->minister){
+                        $data['ministers'][$person->surname.$person->firstname]=$person;
+                    } 
+                }
             }
+            ksort($data['ministers']);
+            $data['lects']=$this->get_lectionary();
+            $data['title'] = $data['circuit']->circuit . ' ' . $data['circuit']->reference;
+            return view('web.circuit',$data);
+        } else {
+            abort(404);
         }
-        ksort($data['ministers']);
-        $data['lects']=$this->get_lectionary();
-        $data['title'] = $data['circuit']->circuit . ' ' . $data['circuit']->reference;
-        return view('web.circuit',$data);
     }
 
     public function district($district){
-        $data['district']=District::with('circuits.societies')->withWhereHas('circuits.persons.minister')->whereSlug($district)->first();
-        $data['bishop']=Person::find($data['district']->bishop);
-        $data['ministers']=array();
-        foreach ($data['district']->circuits as $circ){
-            foreach ($circ->persons as $person){
-                if ((isset($person->minister)) and ($person->id <> $data['district']->bishop) and (!in_array("Supernumerary",json_decode($person->pivot->status))) and (!in_array("Retired",json_decode($person->pivot->status))) and (!in_array("Guest",json_decode($person->pivot->status)))){
-                    $data['ministers'][$person->surname . $person->firstname . $person->id] = $person;
+        $data['district']=District::with('circuits.societies')->with('circuits.persons.minister')->whereSlug($district)->first();
+        if ($data['district']){
+            if ($data['district']->bishop){
+                $data['bishop']=Person::find($data['district']->bishop);
+            }
+            $data['ministers']=array();
+            foreach ($data['district']->circuits as $circ){
+                foreach ($circ->persons as $person){
+                    if ((isset($person->minister)) and ($person->id <> $data['district']->bishop) and (!in_array("Supernumerary",json_decode($person->pivot->status))) and (!in_array("Retired",json_decode($person->pivot->status))) and (!in_array("Guest",json_decode($person->pivot->status)))){
+                        $data['ministers'][$person->surname . $person->firstname . $person->id] = $person;
+                    }
                 }
             }
-        }
-        ksort($data['ministers']);
+            ksort($data['ministers']);
 
-        $data['pageName'] = $data['district']->district . ' District';
-        $districts=District::orderBy('id')->get();
-        $data['activedistricts']=0;
-        foreach ($districts as $district){
-            if ($district->active){
-                $data['activedistricts']++;
+            $data['pageName'] = $data['district']->district . ' District';
+            $districts=District::orderBy('id')->get();
+            $data['activedistricts']=0;
+            foreach ($districts as $district){
+                if ($district->active){
+                    $data['activedistricts']++;
+                }
             }
+            $data['title'] = $data['district']->district . ' District';
+            return view('web.district',$data);
+        } else {
+            abort(404);
         }
-        $data['title'] = $data['district']->district . ' District';
-        return view('web.district',$data);
     }
 
     public function editplan($record,$today=""){
@@ -808,47 +818,60 @@ class HomeController extends Controller
 
     public function society($district, $circuit, $society){
         $district=District::whereSlug($district)->first();
-        if ($district->latitude and $district->longitude){
-            $data['dlat']=$district->latitude;
-            $data['dlon']=$district->longitude;
-        } else {
-            $data['dlat']=-26.180404;
-            $data['dlon']=28.107187;
-        }
-        $circuit_id=Circuit::whereSlug($circuit)->where('district_id',$district->id)->first()->id;
-        $data['society']=Society::with('circuit','services','preachers.person')->where('circuit_id',$circuit_id)->whereSlug($society)->first();
-        $data['services']=array();
-        if ($data['society']->services) {
-            $data['services'] = $data['society']->services->pluck('id', 'servicetime')->toArray();
-        }
-        $jsonid=json_encode($data['society']->id);
-        $data['ministers']=DB::table('circuit_person')
-            ->join('persons', 'circuit_person.person_id', '=', 'persons.id')
-            ->whereJsonContains('societies', [$jsonid])->get();
-        $data['sundays']=array();
-        $data['sundays'][]=date('Y-m-d',strtotime('Sunday'));
-        $data['sundays'][]=date('Y-m-d',604800+strtotime('Sunday'));
-        $plans=Plan::with('service','person')->whereIn('service_id',$data['services'])->whereIn('servicedate',$data['sundays'])->get();
-        if (count($plans)){
-            $data['plans']=true;
-        } else {
-            $data['plans']=false;
-        }
-        foreach ($data['services'] as $time=>$val){
-            foreach ($data['sundays'] as $sunday){
-                $data['upcoming'][$time][$sunday]="";
+        if ($district){
+            if ($district->latitude and $district->longitude){
+                $data['dlat']=$district->latitude;
+                $data['dlon']=$district->longitude;
+            } else {
+                $data['dlat']=-26.180404;
+                $data['dlon']=28.107187;
             }
-        }
-        if (isset($data['upcoming'])){
-            ksort($data['upcoming']);
-        }
-        foreach ($plans as $plan){
-            if (isset($plan->person)){
-                $data['upcoming'][$plan->service->servicetime][$plan->servicedate]=$plan->person->name;
+            $circuit=Circuit::whereSlug($circuit)->where('district_id',$district->id)->first();
+            if ($circuit){
+                $circuit_id=$circuit->id;
+                $data['society']=Society::with('circuit','services','preachers.person')->where('circuit_id',$circuit_id)->whereSlug($society)->first();
+                if ($data['society']){
+                    $data['services']=array();
+                    if ($data['society']->services) {
+                        $data['services'] = $data['society']->services->pluck('id', 'servicetime')->toArray();
+                    }
+                    $jsonid=json_encode($data['society']->id);
+                    $data['ministers']=DB::table('circuit_person')
+                        ->join('persons', 'circuit_person.person_id', '=', 'persons.id')
+                        ->whereJsonContains('societies', [$jsonid])->get();
+                    $data['sundays']=array();
+                    $data['sundays'][]=date('Y-m-d',strtotime('Sunday'));
+                    $data['sundays'][]=date('Y-m-d',604800+strtotime('Sunday'));
+                    $plans=Plan::with('service','person')->whereIn('service_id',$data['services'])->whereIn('servicedate',$data['sundays'])->get();
+                    if (count($plans)){
+                        $data['plans']=true;
+                    } else {
+                        $data['plans']=false;
+                    }
+                    foreach ($data['services'] as $time=>$val){
+                        foreach ($data['sundays'] as $sunday){
+                            $data['upcoming'][$time][$sunday]="";
+                        }
+                    }
+                    if (isset($data['upcoming'])){
+                        ksort($data['upcoming']);
+                    }
+                    foreach ($plans as $plan){
+                        if (isset($plan->person)){
+                            $data['upcoming'][$plan->service->servicetime][$plan->servicedate]=$plan->person->name;
+                        }
+                    }
+                    $data['title'] = $data['society']->society . " Society";
+                    return view('web.society',$data);
+                } else {
+                    abort(404);
+                }
+            } else {
+                abort(404);
             }
+        } else {
+            abort(404);
         }
-        $data['title'] = $data['society']->society . " Society";
-        return view('web.society',$data);
     }
 
     public function location(Request $request, Society $society)
