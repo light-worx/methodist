@@ -41,6 +41,7 @@ Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->
     Route::get('/lectionary/{sunday?}','lectionary')->name('app.lectionary');
     Route::get('/ministers/{id}','minister')->name('app.minister');
     Route::get('/preacher/{society}/{servicetime}/{servicedate}','preacher')->name('app.preacher');
+    Route::get('/preacherid/{society}/{servicetime}/{servicedate}','preacherid')->name('app.preacherid');
     Route::get('/offline', 'offline')->name('app.offline');
     Route::get('/admin/reports/plan/edit/{record}/{today?}', ['uses'=>'\App\Http\Controllers\HomeController@editplan','as' => 'admin.plan.edit']);
     Route::get('/plan/{id}/{plandate}', ['uses'=>'\App\Http\Controllers\HomeController@pdf','as' => 'reports.plan']);
