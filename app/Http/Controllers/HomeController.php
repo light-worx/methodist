@@ -766,8 +766,8 @@ class HomeController extends Controller
         $years=array();
         $years[]=date('Y',strtotime($start));
         $years[]=date('Y',strtotime($end));
-        array_unique($years);
-        $mws = Midweek::whereIn('midweek',$this->circuit->midweeks)->get();
+        $years = array_unique($years);
+        $mws = Midweek::whereIn('midweek', $this->circuit->midweeks ?? [])->get();
         $dates = array();
         foreach ($mws as $mw){
             if ($mw->type=="fixed"){
@@ -779,7 +779,7 @@ class HomeController extends Controller
                             'date' => $temp
                         ];
                     }
-                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0)) and (!in_array($temp,$dates))){
+                    if (($temp>=$start) and ($temp<=$end) and (date('w', strtotime($temp)) > 0) and (!in_array($temp,$dates))){
                         $dates[]=$temp;
                     }
                 }
