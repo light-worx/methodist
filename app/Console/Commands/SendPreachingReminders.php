@@ -14,7 +14,7 @@ class SendPreachingReminders extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'methodist:preaching-reminders
+    protected $signature = 'reminders:preaching
                             {--dry-run : Log what would be sent without dispatching any notifications}
                             {--days=7  : How many days ahead to look for scheduled services (default: 7)}';
 
@@ -30,7 +30,6 @@ class SendPreachingReminders extends Command
 
     public function handle(): int
     {
-        set_time_limit(1200);
         $dryRun = (bool) $this->option('dry-run');
         $days   = (int)  $this->option('days');
         $today  = Carbon::today();
@@ -66,17 +65,24 @@ class SendPreachingReminders extends Command
             ->join('services as svc', 'svc.id', '=', 'pl.service_id')
             ->join('societies as soc', 'soc.id', '=', 'svc.society_id')
             ->join('persons as p', 'p.id', '=', 'pl.person_id')
-            ->join('user_preferences as up', 'up.phone', '=', 'p.phone')
-            // opted in to preaching reminders
-            ->where(
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(up.custom_settings, '$.preaching_reminders'))"),
-                'true'
-            )
-            // has at least one registered device
+            // user_preferences is kept out of the main JOIN to avoid fan-out:
+            // if a person has multiple preference rows (one per device), joining
+            // directly would multiply every plan row by the number of preferences.
+            // Instead we use a nested whereExists that checks both conditions —
+            // opted-in setting AND at least one push subscription — in a subquery.
             ->whereExists(function ($q) {
                 $q->select(DB::raw(1))
-                  ->from('push_subscriptions as ps')
-                  ->whereColumn('ps.user_preference_id', 'up.id');
+                  ->from('user_preferences as up')
+                  ->whereColumn('up.phone', 'p.phone')
+                  ->where(
+                      DB::raw("JSON_UNQUOTE(JSON_EXTRACT(up.custom_settings, '$.preaching_reminders'))"),
+                      'true'
+                  )
+                  ->whereExists(function ($q2) {
+                      $q2->select(DB::raw(1))
+                         ->from('push_subscriptions as ps')
+                         ->whereColumn('ps.user_preference_id', 'up.id');
+                  });
             })
             // is a preacher or a minister (either role qualifies)
             ->where(function ($q) {
