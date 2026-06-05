@@ -78,10 +78,18 @@ class SendPreachingReminders extends Command
                       DB::raw("JSON_UNQUOTE(JSON_EXTRACT(up.custom_settings, '$.preaching_reminders'))"),
                       'true'
                   )
+                  // push_subscriptions now links via user_devices, not directly
+                  // to user_preferences — join through user_devices to check
+                  // that at least one active subscription exists for this person.
                   ->whereExists(function ($q2) {
                       $q2->select(DB::raw(1))
-                         ->from('push_subscriptions as ps')
-                         ->whereColumn('ps.user_preference_id', 'up.id');
+                         ->from('user_devices as ud')
+                         ->whereColumn('ud.user_preference_id', 'up.id')
+                         ->whereExists(function ($q3) {
+                             $q3->select(DB::raw(1))
+                                ->from('push_subscriptions as ps')
+                                ->whereColumn('ps.user_device_id', 'ud.id');
+                         });
                   });
             })
             // is a preacher or a minister (either role qualifies)
