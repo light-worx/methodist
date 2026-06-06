@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Lightworx\FilamentPwa\Facades\PwaFieldOptions;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Request;
+ 
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -48,6 +52,9 @@ class AppServiceProvider extends ServiceProvider
             Config::set('mail.reply_to.address',setting('mail_from_address', ['label' => 'Reply-to address','category' => 'Email']));
             Config::set('mail.reply_to.name',setting('mail_from_name', ['label' => 'Reply-to name','category' => 'Email']));
         }
+        RateLimiter::for('public-api', function (Request $request) {
+            return Limit::perMinute(30)->by($request->ip());
+        });
         Livewire::component('preaching-plan', PreachingPlan::class); 
         Livewire::component('service-details', ServiceDetails::class);
         Livewire::component('ministry-idea-form', MinistryIdeaForm::class);
