@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Society;
 use App\Models\Circuit;
+use App\Models\Midweek;
 use App\Models\Plan;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class SocietyPublicController extends Controller
 {
@@ -63,41 +65,10 @@ class SocietyPublicController extends Controller
             ]);
         }
 
-        // Build every occurrence of each midweek definition within the calendar year
-        $occurrences = [];
-
-        foreach ($midweekDefinitions as $definition) {
-            $dayName = $definition['day']  ?? null;   // e.g. "Wednesday"
-            $time    = $definition['time'] ?? null;   // e.g. "19:00"
-            $type    = $definition['type'] ?? 'Midweek Service';
-
-            if (! $dayName || ! $time) {
-                continue;
-            }
-
-            // Walk through every week in the calendar year and collect matching days
-            $cursor = Carbon::create($year, 1, 1)->startOfDay();
-            $end    = Carbon::create($year, 12, 31)->endOfDay();
-
-            // Advance to the first occurrence of the target weekday
-            while ($cursor->dayName !== $dayName) {
-                $cursor->addDay();
-            }
-
-            while ($cursor->lte($end)) {
-                $occurrences[] = [
-                    'date'         => $cursor->toDateString(),          // YYYY-MM-DD
-                    'day'          => $cursor->format('l'),              // "Wednesday"
-                    'time'         => $time,                             // "19:00"
-                    'service_type' => $type,
-                ];
-                $cursor->addWeek();
-            }
-        }
-
-        // Sort by date then time
-        usort($occurrences, fn($a, $b) =>
-            strcmp($a['date'] . $a['time'], $b['date'] . $b['time'])
+        $occurrences = $this->calculate_midweeks(
+            Carbon::parse("$year-01-01")->startOfDay(),
+            Carbon::parse("$year-12-31")->endOfDay(), 
+            $midweekDefinitions
         );
 
         return response()->json([
@@ -120,7 +91,7 @@ class SocietyPublicController extends Controller
      *              → plans   (service_id)  filtered by servicedate year
      *              → persons (person_id)   for the preacher's name
      *
-     * @param  string  $societySlug  The slug of the society (from societies.slug)
+     * @param  string  $id           The id of the society (from societies.id)
      * @param  int     $year         The calendar year, e.g. 2025
      */
     public function preachers(string $id, int $year): JsonResponse
@@ -188,5 +159,36 @@ class SocietyPublicController extends Controller
             'year'         => $year,
             'appointments' => $appointments,
         ]);
+    }
+
+    private function calculate_midweeks($start,$end, $circuitmws){
+        $years=array();
+        $years[]=date('Y',strtotime($start));
+        $years[]=date('Y',strtotime($end));
+        array_unique($years);
+        $mws = Midweek::whereIn('midweek',$circuitmws)->get();
+        $dates = array();
+        foreach ($mws as $mw){
+            if ($mw->type=="fixed"){
+                foreach ($years as $yr){
+                    $temp=date('Y-m-d',strtotime($yr . '-' . $mw->month . '-' . $mw->day));
+                    if (($temp>=$start) and ($temp<=$end) and (date('w',strtotime($temp)>0) and (!in_array($temp,$dates)))){
+                        $dates[$mw->midweek]=$temp;
+                    }
+                }
+            } else {
+                foreach ($years as $yr){
+                    $easter = DB::table('eastersundays')
+                        ->whereYear('eastersunday', $yr)
+                        ->value('eastersunday');
+                    $temp=Carbon::parse($easter)->addDays($mw->offset)->format('Y-m-d');
+                    if (($temp>=$start) and ($temp<=$end) and (!in_array($temp,$dates))){
+                        $dates[$mw->midweek]=$temp;
+                    }
+                }
+            }
+        }
+        asort($dates);
+        return $dates;
     }
 }
