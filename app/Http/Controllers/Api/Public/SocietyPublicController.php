@@ -140,7 +140,7 @@ class SocietyPublicController extends Controller
             ->get()
             ->map(function ($row) {
                 $name = trim(
-                    collect([$row->title, $row->firstname, $row->surname])
+                    collect([$row->firstname, $row->surname])
                         ->filter()
                         ->implode(' ')
                 );
