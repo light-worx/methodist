@@ -804,22 +804,39 @@ class HomeController extends Controller
         return $dates;
     }
 
-    public function minister($id){
-        $data['minister']=Person::with('minister','circuitroles.circuit')->whereId($id)->first();
-        $circuitroles=$data['minister']->circuitroles;
-        foreach ($circuitroles as $role){
-            $societies=array();
-            if ((isset($role->societies)) and (count($role->societies))){
-                foreach ($role->societies as $soc){
+    public function minister($id)
+    {
+        $data['minister'] = Person::with('minister', 'circuitroles.circuit.district')
+            ->whereId($id)
+            ->first();
+
+        if (!$data['minister']) {
+            abort(404);
+        }
+
+        // Only consider roles belonging to active districts
+        $circuitroles = $data['minister']->circuitroles->filter(
+            fn($role) => $role->circuit?->district?->active
+        );
+
+        if ($circuitroles->isEmpty()) {
+            abort(404);
+        }
+
+        foreach ($circuitroles as $role) {
+            $societies = [];
+            if (isset($role->societies) && count($role->societies)) {
+                foreach ($role->societies as $soc) {
                     $societies[] = Society::find($soc)->society;
                 }
-                $data['societies'][$role->circuit_id]=$societies;
+                $data['societies'][$role->circuit_id] = $societies;
             } else {
-                $data['societies']=[];
+                $data['societies'] = [];
             }
         }
+
         $data['title'] = $data['minister']->title . " " . $data['minister']->fullname;
-        return view('web.minister',$data);
+        return view('web.minister', $data);
     }
 
     public function offline(){

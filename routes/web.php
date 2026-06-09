@@ -39,17 +39,21 @@ Route::middleware(['web'])->controller('\App\Http\Controllers\HomeController')->
     Route::get('/ideas', 'ideas')->name('app.ideas');
     Route::post('/ideas/store', 'storeidea')->name('app.ideas.store');
     Route::get('/lectionary/{sunday?}','lectionary')->name('app.lectionary');
-    Route::get('/ministers/{id}','minister')->name('app.minister');
-    Route::get('/preacher/{society}/{servicetime}/{servicedate}','preacher')->name('app.preacher');
-    Route::get('/preacherid/{society}/{servicetime}/{servicedate}','preacherid')->name('app.preacherid');
+    Route::middleware('district.active')->group(function () {
+        Route::get('/ministers/{id}','minister')->name('app.minister');
+        Route::get('/preacher/{society}/{servicetime}/{servicedate}','preacher')->name('app.preacher');
+        Route::get('/preacherid/{society}/{servicetime}/{servicedate}','preacherid')->name('app.preacherid');
+    });
     Route::get('/offline', 'offline')->name('app.offline');
     Route::get('/admin/reports/plan/edit/{record}/{today?}', ['uses'=>'\App\Http\Controllers\HomeController@editplan','as' => 'admin.plan.edit']);
     Route::get('/plan/{id}/{plandate}', ['uses'=>'\App\Http\Controllers\HomeController@pdf','as' => 'reports.plan']);
     Route::get('/register/{id}', ['uses'=>'\App\Http\Controllers\HomeController@register','as' => 'reports.register']);
     if (!str_contains(url()->current(),"admin")){
-        Route::get('/{district}', 'district')->name('district');
-        Route::get('/{district}/{circuit}', 'circuit')->name('circuit');
-        Route::get('/{district}/{circuit}/{society}', 'society')->name('society');
-        Route::post('/{society}/location', 'location')->name('society-location');
+        Route::middleware('district.active')->group(function () {
+            Route::get('/{district}', 'district')->name('district');
+            Route::get('/{district}/{circuit}', 'circuit')->name('circuit');
+            Route::get('/{district}/{circuit}/{society}', 'society')->name('society');
+            Route::post('/{society}/location', 'location')->name('society-location');
+        });
     }
 });

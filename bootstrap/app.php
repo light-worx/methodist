@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \Lightworx\FilamentPwa\Http\Middleware\PwaDeviceMiddleware::class,
         ]);
+        $middleware->alias([
+            'district.active' => \App\Http\Middleware\CheckDistrictActive::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
