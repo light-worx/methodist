@@ -365,8 +365,12 @@ class HomeController extends Controller
         $pdf->SetFont('Helvetica', '', 10);
         $pdf->text($xx,$yy,"Presiding Bishop: " . setting('presiding_bishop'));
         $pdf->text($xx,$yy+4.5,"General Secretary: " . setting('general_secretary'));
-        $bishop=Person::find($this->circuit->district->bishop);
-        $pdf->text($xx,$yy+9,"District Bishop: " . $bishop->name);
+        if ($this->circuit->district->bishop){
+            $bishop=Person::find($this->circuit->district->bishop->name);
+        } else {
+            $bishop="";
+        }
+        $pdf->text($xx,$yy+9,"District Bishop: " . $bishop);
         $yy=$yy+20;
         $pdf->SetFont('Helvetica', 'B', 10);
         $pdf->text($xx,$yy-4.5,"Circuit Ministers");
