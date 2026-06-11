@@ -170,6 +170,7 @@ class SocietyPublicController extends Controller
             ->where('plans.servicedate', $servicedate)
             ->where('services.servicetime', $servicetime)
             ->select([
+                'persons.id',
                 'persons.title',
                 'persons.firstname',
                 'persons.surname',
