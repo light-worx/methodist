@@ -177,15 +177,11 @@ class SocietyPublicController extends Controller
             ->first();
         if ($preacher){
             return response()->json([
-                'title'      => $preacher->title,
-                'firstname'  => $preacher->firstname,
-                'surname'    => $preacher->surname
+                'preacher'      => $preacher
             ]);
         } else {
             return response()->json([
-                'title'      => '',
-                'firstname'  => '',
-                'surname'    => ''
+                'preacher' => []
             ]);
         }
     }
