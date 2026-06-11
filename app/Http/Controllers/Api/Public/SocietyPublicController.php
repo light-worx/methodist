@@ -161,6 +161,35 @@ class SocietyPublicController extends Controller
         ]);
     }
 
+    public function preacher($societyId, $servicedate, $servicetime): JsonResponse {
+        $servicetime=str_replace('h',':',$servicetime);
+        $preacher = Plan::query()
+            ->join('services', 'plans.service_id', '=', 'services.id')
+            ->join('persons',  'plans.person_id',  '=', 'persons.id')
+            ->where('services.society_id', $societyId)
+            ->where('plans.servicedate', $servicedate)
+            ->where('services.servicetime', $servicetime)
+            ->select([
+                'persons.title',
+                'persons.firstname',
+                'persons.surname',
+            ])
+            ->first();
+        if ($preacher){
+            return response()->json([
+                'title'      => $preacher->title,
+                'firstname'  => $preacher->firstname,
+                'surname'    => $preacher->surname
+            ]);
+        } else {
+            return response()->json([
+                'title'      => '',
+                'firstname'  => '',
+                'surname'    => ''
+            ]);
+        }
+    }
+
     private function calculate_midweeks($start,$end, $circuitmws){
         $years=array();
         $years[]=date('Y',strtotime($start));

@@ -40,9 +40,9 @@ Route::prefix('public')
          *   }
          */
         Route::get(
-            'societies/{societySlug}/midweeks/{year}',
+            'societies/{societyId}/midweeks/{year}',
             [SocietyPublicController::class, 'midweeks']
-        )->where(['societySlug' => '[a-z0-9\-]+', 'year' => '[0-9]{4}']);
+        )->where(['societyId' => '[0-9\-]+', 'year' => '[0-9]{4}']);
 
 
         /*
@@ -70,8 +70,10 @@ Route::prefix('public')
          *   }
          */
         Route::get(
-            'societies/{societySlug}/preachers/{year}',
+            'societies/{societyId}/preachers/{year}',
             [SocietyPublicController::class, 'preachers']
-        )->where(['societySlug' => '[a-z0-9\-]+', 'year' => '[0-9]{4}']);
+        )->where(['societyId' => '[0-9\-]+', 'year' => '[0-9]{4}']);
+
+        Route::get('preacher/{societyId}/{servicedate}/{servicetime}',[SocietyPublicController::class, 'preacher']);
 
     });
