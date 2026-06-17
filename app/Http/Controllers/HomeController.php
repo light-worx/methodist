@@ -366,7 +366,7 @@ class HomeController extends Controller
         $pdf->text($xx,$yy,"Presiding Bishop: " . setting('presiding_bishop'));
         $pdf->text($xx,$yy+4.5,"General Secretary: " . setting('general_secretary'));
         if ($this->circuit->district->bishop){
-            $bishop=Person::find($this->circuit->district->bishop->name);
+            $bishop=Person::find($this->circuit->district->bishop)->name;
         } else {
             $bishop="";
         }
