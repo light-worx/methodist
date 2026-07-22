@@ -124,8 +124,6 @@
                                             >
                                                 <i class="bi bi-lightning-fill small" style="color: #ffc107 !important;"></i>
                                             </span>
-                                        @else
-                                            <i class="bi bi-lightning-fill small text-muted" title="Can't bulk-fill — this service already has preachers assigned"></i>
                                         @endif
                                     </span>
                                 </td>
@@ -207,7 +205,7 @@
                         @if($fillingService === $service['id'])
                         <tr wire:key="fillrow-{{ $service['id'] }}">
                             <td></td>
-                            <td class="small text-muted">Fill quarter:</td>
+                            <td class="small text-muted">Fill whole quarter:</td>
                             <td colspan="100%">
                                 <div class="d-flex gap-2 align-items-center" x-data="{}" @click.outside="$wire.cancelFillQuarter()">
                                     <select x-ref="fillServiceType_{{ $service['id'] }}" class="form-select form-select-sm w-auto">
