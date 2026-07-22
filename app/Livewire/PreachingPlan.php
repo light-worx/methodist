@@ -28,7 +28,10 @@ class PreachingPlan extends Component
     public $firstday;
     public $today;
     public $home_link;
-    
+
+    // Fill-quarter state
+    public $fillingService = null;
+
     // Service type options
     public $serviceTypes = [];
     public $authorisedServices = [];
@@ -218,10 +221,13 @@ class PreachingPlan extends Component
         
         // Load actual schedule data
         if ($this->serviceids){
-            $scheduleData = Plan::with('person')->whereIn('service_id', $this->serviceids)
+            $scheduleData = Plan::with('person')
+                ->whereIn('service_id', $this->serviceids)
                 ->whereIn('servicedate', $this->dates)
-                ->where('person_id','>',0)->orWhere('servicetype','<>','')
-                ->with('person')
+                ->where(function ($query) {
+                    $query->where('person_id', '>', 0)
+                          ->orWhere('servicetype', '<>', '');
+                })
                 ->get();
             
             foreach ($scheduleData as $item) {
@@ -327,6 +333,110 @@ class PreachingPlan extends Component
             $this->selectedPreacherId = null;
             $this->selectedServiceType = null;
         }
+    }
+
+    /**
+     * Whether this service row still has no preacher assigned on any date
+     * in the current quarter, and is therefore eligible for a bulk fill.
+     */
+    public function rowIsFillable($service_id)
+    {
+        if (!isset($this->schedule[$service_id])) {
+            return true;
+        }
+
+        foreach ($this->schedule[$service_id] as $entry) {
+            if (!empty($entry['preacher_id'])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function startFillQuarter($service_id)
+    {
+        // wire:click passes this in as a string; cast to int so strict
+        // comparisons against $service['id'] elsewhere (int, from the DB)
+        // match correctly.
+        $service_id = (int) $service_id;
+
+        if (!in_array($service_id, $this->authorisedServices)) {
+            session()->flash('message', 'You do not have permission to edit this service.');
+            return;
+        }
+
+        if (!$this->rowIsFillable($service_id)) {
+            // Row already has assignments - bulk fill is no longer available
+            return;
+        }
+
+        // Close any open single-cell editor first
+        $this->editingCell = null;
+
+        $this->fillingService = $service_id;
+    }
+
+    public function cancelFillQuarter()
+    {
+        $this->fillingService = null;
+    }
+
+    public function applyFillQuarter($preacherId, $serviceType = null)
+    {
+        if (!$this->fillingService || !$preacherId) {
+            return;
+        }
+
+        if (!in_array($this->fillingService, $this->authorisedServices)) {
+            session()->flash('message', 'You do not have permission to edit this service.');
+            $this->cancelFillQuarter();
+            return;
+        }
+
+        if (!$this->rowIsFillable($this->fillingService)) {
+            session()->flash('message', 'This service already has some preachers assigned, so it can no longer be bulk-filled.');
+            $this->cancelFillQuarter();
+            return;
+        }
+
+        $service_id = $this->fillingService;
+
+        // Find the preacher's display name from the already-loaded lists
+        $preacherName = 'Unknown';
+        foreach ($this->preachers as $group) {
+            if (isset($group[$preacherId])) {
+                $preacherName = $group[$preacherId]['name'];
+                break;
+            }
+        }
+
+        foreach ($this->dates as $date) {
+            // Belt-and-braces: never overwrite a date that already has a preacher
+            if (!empty($this->schedule[$service_id][$date]['preacher_id'])) {
+                continue;
+            }
+
+            $thisServiceType = $serviceType
+                ?: ($this->schedule[$service_id][$date]['servicetype'] ?? null);
+
+            Plan::where('service_id', $service_id)->where('servicedate', $date)->delete();
+
+            Plan::create([
+                'service_id'  => $service_id,
+                'servicedate' => $date,
+                'person_id'   => $preacherId,
+                'servicetype' => $thisServiceType,
+            ]);
+
+            $this->schedule[$service_id][$date] = [
+                'preacher_id'   => $preacherId,
+                'preacher_name' => $preacherName,
+                'servicetype'   => $thisServiceType,
+            ];
+        }
+
+        $this->cancelFillQuarter();
     }
     
     public function render()

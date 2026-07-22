@@ -47,7 +47,10 @@
             left: 120px;
             z-index: 2;
             background: #fff;
-            min-width: 80px;
+            min-width: 0;
+            white-space: nowrap;
+            padding-left: 0.35rem;
+            padding-right: 0.35rem;
             border-right: 2px solid #dee2e6;
         }
 
@@ -107,7 +110,25 @@
                     @foreach ($times as $time=>$service)
                         <tr>
                             @if(in_array($service['id'], $authorisedServices))
-                                <td>{{ $society }}</td><td>{{ $time }}</td>
+                                <td>{{ $society }}</td>
+                                <td>
+                                    <span class="d-inline-flex align-items-center" style="gap: 2px;">
+                                        <span>{{ $time }}</span>
+                                        @if($this->rowIsFillable($service['id']))
+                                            <span
+                                                x-data="{}"
+                                                @click="$wire.startFillQuarter('{{ $service['id'] }}')"
+                                                class="cursor-pointer"
+                                                style="line-height: 1;"
+                                                title="Fill whole quarter with one preacher"
+                                            >
+                                                <i class="bi bi-lightning-fill small" style="color: #ffc107 !important;"></i>
+                                            </span>
+                                        @else
+                                            <i class="bi bi-lightning-fill small text-muted" title="Can't bulk-fill — this service already has preachers assigned"></i>
+                                        @endif
+                                    </span>
+                                </td>
                             @else
                                 <td style="background-color: #ccc;">{{ $society }}</td><td style="background-color: #ccc;">{{ $time }}</td>
                             @endif
@@ -183,6 +204,46 @@
                                 </td>
                             @endforeach
                         </tr>
+                        @if($fillingService === $service['id'])
+                        <tr wire:key="fillrow-{{ $service['id'] }}">
+                            <td></td>
+                            <td class="small text-muted">Fill quarter:</td>
+                            <td colspan="100%">
+                                <div class="d-flex gap-2 align-items-center" x-data="{}" @click.outside="$wire.cancelFillQuarter()">
+                                    <select x-ref="fillServiceType_{{ $service['id'] }}" class="form-select form-select-sm w-auto">
+                                        <option value="">-- keep existing service type --</option>
+                                        @foreach($serviceTypes as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+
+                                    <select
+                                        @change="
+                                            let text = $event.target.selectedOptions[0].text;
+                                            let preacherId = $event.target.value;
+                                            let serviceType = $refs['fillServiceType_{{ $service['id'] }}'].value;
+                                            if (preacherId && confirm('Fill the entire quarter (' + {{ count($dates) }} + ' dates) for this service with ' + text + '?')) {
+                                                $wire.applyFillQuarter(preacherId, serviceType);
+                                            }
+                                            $event.target.value = '';
+                                        "
+                                        class="form-select form-select-sm w-auto"
+                                    >
+                                        <option value="">-- Select preacher to fill quarter --</option>
+                                        @foreach($preachers as $cat => $preachertype)
+                                            <optgroup label="{{ $cat }}">
+                                                @foreach ($preachertype as $preacher)
+                                                    <option value="{{ $preacher['id'] }}">{{ $preacher['name'] }}</option>
+                                                @endforeach
+                                            </optgroup>
+                                        @endforeach
+                                    </select>
+
+                                    <span x-data="{}" @click="$wire.cancelFillQuarter()" class="btn btn-sm btn-link cursor-pointer">Cancel</span>
+                                </div>
+                            </td>
+                        </tr>
+                        @endif
                     @endforeach
                 @empty
                     <tr><td class="text-center" colspan="100%">This table is empty because you need to add societies to your circuit and services to your societies.</td></tr>
