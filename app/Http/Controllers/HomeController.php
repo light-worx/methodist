@@ -379,7 +379,7 @@ class HomeController extends Controller
             foreach ($this->ministers as $minister){
                 $sup="";
                 if ($minister->phone<>"" and $this->circuit->showphone) {
-                    $sup.= " (0" . substr($minister->phone,-10) . ")";
+                    $sup.= " (0" . substr($minister->phone,-9) . ")";
                 }
                 if (is_array(json_decode($minister->pivot->status)) and (in_array("Superintendent",json_decode($minister->pivot->status)))){
                     $sup.= " (Supt)";
@@ -400,7 +400,7 @@ class HomeController extends Controller
             foreach ($this->supernumeraries as $super){
                 $sup="";
                 if ($super->phone<>"" and $this->circuit->showphone){
-                    $sup.= " (0" . substr($super->phone,-10) . ")";
+                    $sup.= " (0" . substr($super->phone,-9) . ")";
                 }
                 $pdf->text($xx,$yy,$super->title . " " . substr($super->firstname,0,1) . " " . $super->surname . $sup);
                 $yy=$yy+4.5;
@@ -441,7 +441,7 @@ class HomeController extends Controller
                     $pn=array(
                         'fname'=>$tp,
                         'induction'=>$ps->preacher->induction,
-                        'phone'=> substr($ps->phone,-10),
+                        'phone'=> substr($ps->phone,-9),
                         'active'=>$ps->preacher->active
                     );
                     if (isset($ps->preacher->society)){
@@ -471,7 +471,7 @@ class HomeController extends Controller
                 foreach ($leaders as $leader){
                     $sup="";
                     if ($leader->phone<>"" and $this->circuit->showphone){
-                        $sup.= " (0" . substr($leader->phone,-10) . ")";
+                        $sup.= " (0" . substr($leader->phone,-9) . ")";
                     }
                     $pdf->text($xx,$yy,$leader->title . " " . substr($leader->firstname,0,1) . " " . $leader->surname . $sup);
                     $yy=$yy+4.5;
