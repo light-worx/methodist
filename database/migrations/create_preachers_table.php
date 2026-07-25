@@ -17,6 +17,7 @@ return new class extends Migration
             $table->json('leadership')->nullable();
             $table->string('induction', 10)->nullable();
             $table->string('number', 20)->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->timestamp('deleted_at')->nullable();

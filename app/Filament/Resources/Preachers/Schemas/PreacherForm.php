@@ -96,6 +96,7 @@ class PreacherForm
                                     ->options(array_combine(setting('preacher_leadership_roles'),setting('preacher_leadership_roles'))),
                                 TextInput::make('induction')->label('Year of induction'),
                                 TextInput::make('number')->label('Preacher number (optional)'),
+                                Toggle::make('active'),
                             ])->columns(2)
                     ])        
             ]);

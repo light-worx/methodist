@@ -411,7 +411,7 @@ class HomeController extends Controller
             }   
         }
         // Lay leaders
-        $leaders=$this->circuit->leaders;
+        $leaders=$this->circuit->leaders ?? [];
         foreach ($leaders as $role=>$leader){
             if ($leader){
                 $pdf->SetFont('Helvetica', 'B', 10);
@@ -441,7 +441,8 @@ class HomeController extends Controller
                     $pn=array(
                         'fname'=>$tp,
                         'induction'=>$ps->preacher->induction,
-                        'phone'=> substr($ps->phone,-10)
+                        'phone'=> substr($ps->phone,-10),
+                        'active'=>$ps->preacher->active
                     );
                     if (isset($ps->preacher->society)){
                         $preachers[$ps->preacher->society->society][$ps->preacher->status][]=$pn;
@@ -509,7 +510,11 @@ class HomeController extends Controller
                         if ($stat=="emeritus"){
                             $fin.="*";
                         }
+                        if ($preacher['active']<>1){
+                            $pdf->SetTextColor(155,155,155);
+                        }
                         $pdf->text($xx,$yy,$fin);
+                        $pdf->SetTextColor(0,0,0);
                         $yy=$yy+4.5;
                         if ($yy>199) {
                             $yy=32;
@@ -540,6 +545,10 @@ class HomeController extends Controller
                 }
             }   
         }
+        $pdf->text(240,195,'* Emeritus');
+        $pdf->SetTextColor(155,155,155);
+        $pdf->text(240,199,'Grey text: Inactive preachers');
+        $pdf->SetTextColor(0,0,0);
         $pdf->Output('I',$filename);
         exit;
     }
