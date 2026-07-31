@@ -62,6 +62,7 @@ class PreachingPlan extends Component
         // Get all preachers
         $persons=$this->circuit->persons->sortBy(['surname','firstname']);
         $this->preachers['Circuit Ministers']=array();
+        $this->preachers['Bishop']=array();
         $this->preachers['Local Preachers']=array();
         $this->preachers['Supernumerary Ministers']=array();
         $this->preachers['Guest Preachers']=array();
