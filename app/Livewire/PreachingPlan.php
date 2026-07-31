@@ -82,6 +82,26 @@ class PreachingPlan extends Component
                 }
             }
         }
+
+        $bishopId = $this->circuit->district->bishop ?? null;
+        if ($bishopId) {
+            $alreadyIncluded = isset($this->preachers['Circuit Ministers'][$bishopId])
+                || isset($this->preachers['Guest Preachers'][$bishopId])
+                || isset($this->preachers['Supernumerary Ministers'][$bishopId])
+                || isset($this->preachers['Local Preachers'][$bishopId]);
+
+            if (!$alreadyIncluded) {
+                $bishop = \App\Models\Person::find($bishopId);
+
+                if ($bishop) {
+                    $this->preachers['Bishop'][$bishop->id] = [
+                        'name' => substr($bishop->firstname, 0, 1) . " " . $bishop->surname,
+                        'id' => $bishop->id,
+                    ];
+                }
+            }
+        }
+
         // Generate the upcoming 13 Sundays
         $this->generateSundays();
         
@@ -307,8 +327,9 @@ class PreachingPlan extends Component
                 $preacher = $this->preachers['Supernumerary Ministers'][$this->selectedPreacherId];
             } elseif (isset($this->preachers['Guest Preachers'][$this->selectedPreacherId])){
                 $preacher = $this->preachers['Guest Preachers'][$this->selectedPreacherId];
+            }  elseif (isset($this->preachers['Bishop'][$this->selectedPreacherId])){
+                $preacher = $this->preachers['Bishop'][$this->selectedPreacherId];
             }
-            
             $this->schedule[$service_id][$date] = [
                 'preacher_id' => $this->selectedPreacherId,
                 'preacher_name' => $preacher['name'] ?? 'Unknown',
