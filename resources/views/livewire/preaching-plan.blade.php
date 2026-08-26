@@ -71,6 +71,12 @@
             pointer-events: none;
         }
     </style>
+    @if (session()->has('message'))
+        <div class="alert alert-warning alert-dismissible fade show m-2" role="alert">
+            {{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <div class="table-responsive plan-table-wrap">
         <table class="table table-striped">
             <thead>
@@ -124,6 +130,8 @@
                                             >
                                                 <i class="bi bi-lightning-fill small" style="color: #ffc107 !important;"></i>
                                             </span>
+                                        @else
+                                            <i class="bi bi-lightning-fill small text-muted" title="Can't bulk-fill — this service already has preachers assigned"></i>
                                         @endif
                                     </span>
                                 </td>
@@ -163,7 +171,12 @@
                                                 @foreach($preachers as $cat=>$preachertype)
                                                     <optgroup label="{{$cat}}">
                                                         @foreach ($preachertype as $preacher)
-                                                            <option value="{{ $preacher['id'] }}">{{ $preacher['name'] }}</option>
+                                                            <option
+                                                                value="{{ $preacher['id'] }}"
+                                                                @if(in_array($preacher['id'], $clashingPreacherIds)) disabled @endif
+                                                            >
+                                                                {{ $preacher['name'] }}@if(in_array($preacher['id'], $clashingPreacherIds)) (clash) @endif
+                                                            </option>
                                                         @endforeach
                                                     </optgroup>
                                                 @endforeach
@@ -205,7 +218,7 @@
                         @if($fillingService === $service['id'])
                         <tr wire:key="fillrow-{{ $service['id'] }}">
                             <td></td>
-                            <td class="small text-muted">Fill whole quarter:</td>
+                            <td class="small text-muted">Fill quarter:</td>
                             <td colspan="100%">
                                 <div class="d-flex gap-2 align-items-center" x-data="{}" @click.outside="$wire.cancelFillQuarter()">
                                     <select x-ref="fillServiceType_{{ $service['id'] }}" class="form-select form-select-sm w-auto">
@@ -220,7 +233,7 @@
                                             let text = $event.target.selectedOptions[0].text;
                                             let preacherId = $event.target.value;
                                             let serviceType = $refs['fillServiceType_{{ $service['id'] }}'].value;
-                                            if (preacherId && confirm('Fill the entire quarter (' + {{ count($dates) }} + ' dates) for this service with ' + text + '?')) {
+                                            if (preacherId && confirm('Fill the entire quarter (' + {{ count($dates) }} + ' dates) for this service with ' + text + '? Only empty dates will be filled - nothing already assigned will be changed.')) {
                                                 $wire.applyFillQuarter(preacherId, serviceType);
                                             }
                                             $event.target.value = '';

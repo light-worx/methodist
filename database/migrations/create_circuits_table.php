@@ -22,6 +22,9 @@ return new class extends Migration
             $table->boolean('showphone')->nullable();
             $table->boolean('setup')->nullable();
             $table->boolean('active');
+            $table->integer('clash_window')->nullable()->default(90);
+            $table->string('plan_orientation', 20)->default('landscape');
+            $table->string('preacher_numbers', 20)->default('names');
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->timestamp('deleted_at')->nullable();

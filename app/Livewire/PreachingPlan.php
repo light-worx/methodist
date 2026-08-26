@@ -32,6 +32,12 @@ class PreachingPlan extends Component
     // Fill-quarter state
     public $fillingService = null;
 
+    // service_id => ['society_id' => .., 'time' => 'HH:MM'] lookup, used for clash detection
+    public $serviceMeta = [];
+
+    // person_ids that clash with the service/date currently being edited
+    public $clashingPreacherIds = [];
+
     // Service type options
     public $serviceTypes = [];
     public $authorisedServices = [];
@@ -56,13 +62,16 @@ class PreachingPlan extends Component
                 $this->services[$society->society][$service->servicetime]['id']=$service->id;
                 $this->services[$society->society][$service->servicetime]['time']=$service->servicetime;
                 $this->serviceids[]=$service->id;
+                $this->serviceMeta[$service->id] = [
+                    'society_id' => $society->id,
+                    'time' => $service->servicetime,
+                ];
             }
             ksort($this->services[$society->society]);
         }
         // Get all preachers
         $persons=$this->circuit->persons->sortBy(['surname','firstname']);
         $this->preachers['Circuit Ministers']=array();
-        $this->preachers['Bishop']=array();
         $this->preachers['Local Preachers']=array();
         $this->preachers['Supernumerary Ministers']=array();
         $this->preachers['Guest Preachers']=array();
@@ -83,26 +92,6 @@ class PreachingPlan extends Component
                 }
             }
         }
-
-        $bishopId = $this->circuit->district->bishop ?? null;
-        if ($bishopId) {
-            $alreadyIncluded = isset($this->preachers['Circuit Ministers'][$bishopId])
-                || isset($this->preachers['Guest Preachers'][$bishopId])
-                || isset($this->preachers['Supernumerary Ministers'][$bishopId])
-                || isset($this->preachers['Local Preachers'][$bishopId]);
-
-            if (!$alreadyIncluded) {
-                $bishop = \App\Models\Person::find($bishopId);
-
-                if ($bishop) {
-                    $this->preachers['Bishop'][$bishop->id] = [
-                        'name' => substr($bishop->firstname, 0, 1) . " " . $bishop->surname,
-                        'id' => $bishop->id,
-                    ];
-                }
-            }
-        }
-
         // Generate the upcoming 13 Sundays
         $this->generateSundays();
         
@@ -268,6 +257,86 @@ class PreachingPlan extends Component
         }
     }
     
+    /**
+     * How close together (in minutes) two services at different societies
+     * need to be, on the same date, to count as a clash for one preacher.
+     */
+    private function clashWindowMinutes()
+    {
+        return (int) ($this->circuit->clash_window ?? 90);
+    }
+
+    /**
+     * Turn a free-text servicetime (e.g. "08:30") into minutes-since-midnight.
+     * Returns null if it can't be parsed, so callers can skip the check
+     * gracefully rather than false-positive on odd data.
+     */
+    private function minutesFromTimeString($time)
+    {
+        if (!$time) {
+            return null;
+        }
+        $ts = strtotime($time);
+        if ($ts === false) {
+            return null;
+        }
+        return ((int) date('H', $ts) * 60) + (int) date('i', $ts);
+    }
+
+    /**
+     * Which preachers (person_ids) cannot be assigned to $service_id on
+     * $date because they already have a service at a DIFFERENT society
+     * on that date whose start time falls within the clash window.
+     * Services at the same society are always exempt.
+     *
+     * Checked system-wide (not just this circuit) since guest/travelling
+     * preachers can clash with bookings in other circuits' plans too.
+     */
+    public function getClashingPreacherIds($service_id, $date)
+    {
+        $service_id = (int) $service_id;
+
+        if (!isset($this->serviceMeta[$service_id])) {
+            return [];
+        }
+
+        $targetSocietyId = $this->serviceMeta[$service_id]['society_id'];
+        $targetMinutes = $this->minutesFromTimeString($this->serviceMeta[$service_id]['time']);
+
+        if ($targetMinutes === null) {
+            return [];
+        }
+
+        $window = $this->clashWindowMinutes();
+
+        $otherPlans = Plan::query()
+            ->join('services', 'services.id', '=', 'plans.service_id')
+            ->where('plans.servicedate', $date)
+            ->where('plans.service_id', '<>', $service_id)
+            ->whereNotNull('plans.person_id')
+            ->select('plans.person_id', 'services.society_id', 'services.servicetime')
+            ->get();
+
+        $clashing = [];
+
+        foreach ($otherPlans as $row) {
+            if ((int) $row->society_id === (int) $targetSocietyId) {
+                continue; // same society - not a clash, however close together
+            }
+
+            $otherMinutes = $this->minutesFromTimeString($row->servicetime);
+            if ($otherMinutes === null) {
+                continue;
+            }
+
+            if (abs($targetMinutes - $otherMinutes) < $window) {
+                $clashing[] = $row->person_id;
+            }
+        }
+
+        return array_values(array_unique($clashing));
+    }
+
     public function startEditing($service_id, $date)
     {
         // Check if user is authorized to edit this service
@@ -280,6 +349,7 @@ class PreachingPlan extends Component
         $this->editingCell = "$service_id-$date";
         $this->selectedPreacherId = $this->schedule[$service_id][$date]['preacher_id'] ?? null;
         $this->selectedServiceType = $this->schedule[$service_id][$date]['servicetype'] ?? '';
+        $this->clashingPreacherIds = $this->getClashingPreacherIds($service_id, $date);
 
         // Dispatch browser event to set up outside click detection
         $this->dispatch('cell-editing-started', ['cellId' => $this->editingCell]);
@@ -308,6 +378,17 @@ class PreachingPlan extends Component
         }
         $service_id=substr($this->editingCell,0,strpos($this->editingCell,"-"));
         $date=substr($this->editingCell,1+strpos($this->editingCell,"-"));
+
+        if ($this->selectedPreacherId) {
+            $clashes = $this->getClashingPreacherIds($service_id, $date);
+            if (in_array((int) $this->selectedPreacherId, $clashes)) {
+                session()->flash('message', 'That preacher already has a service at another society within the clash window on this date, so they can\'t be assigned here.');
+                // Revert to whatever was actually saved before, don't touch the database
+                $this->selectedPreacherId = $this->schedule[$service_id][$date]['preacher_id'] ?? null;
+                return;
+            }
+        }
+
         $del=Plan::where('service_id',$service_id)->where('servicedate',$date)->delete();
         // Update the database
         if ($this->selectedPreacherId and $this->selectedServiceType){
@@ -328,9 +409,8 @@ class PreachingPlan extends Component
                 $preacher = $this->preachers['Supernumerary Ministers'][$this->selectedPreacherId];
             } elseif (isset($this->preachers['Guest Preachers'][$this->selectedPreacherId])){
                 $preacher = $this->preachers['Guest Preachers'][$this->selectedPreacherId];
-            }  elseif (isset($this->preachers['Bishop'][$this->selectedPreacherId])){
-                $preacher = $this->preachers['Bishop'][$this->selectedPreacherId];
             }
+            
             $this->schedule[$service_id][$date] = [
                 'preacher_id' => $this->selectedPreacherId,
                 'preacher_name' => $preacher['name'] ?? 'Unknown',
@@ -354,6 +434,7 @@ class PreachingPlan extends Component
             $this->editingCell = null;
             $this->selectedPreacherId = null;
             $this->selectedServiceType = null;
+            $this->clashingPreacherIds = [];
         }
     }
 
@@ -406,6 +487,8 @@ class PreachingPlan extends Component
 
     public function applyFillQuarter($preacherId, $serviceType = null)
     {
+        $preacherId = (int) $preacherId;
+
         if (!$this->fillingService || !$preacherId) {
             return;
         }
@@ -433,9 +516,20 @@ class PreachingPlan extends Component
             }
         }
 
+        $filledCount = 0;
+        $clashSkippedCount = 0;
+
         foreach ($this->dates as $date) {
             // Belt-and-braces: never overwrite a date that already has a preacher
             if (!empty($this->schedule[$service_id][$date]['preacher_id'])) {
+                continue;
+            }
+
+            // Skip (don't fill) any date where this preacher already has a
+            // service at another society within the clash window
+            $clashes = $this->getClashingPreacherIds($service_id, $date);
+            if (in_array($preacherId, $clashes)) {
+                $clashSkippedCount++;
                 continue;
             }
 
@@ -456,9 +550,18 @@ class PreachingPlan extends Component
                 'preacher_name' => $preacherName,
                 'servicetype'   => $thisServiceType,
             ];
+
+            $filledCount++;
         }
 
         $this->cancelFillQuarter();
+
+        if ($clashSkippedCount > 0) {
+            session()->flash(
+                'message',
+                "Filled {$filledCount} date(s). Skipped {$clashSkippedCount} date(s) where {$preacherName} already has a service at another society within the clash window - please fill those manually with someone else."
+            );
+        }
     }
     
     public function render()

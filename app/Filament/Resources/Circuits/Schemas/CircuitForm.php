@@ -80,7 +80,24 @@ class CircuitForm
                                 '2' => 'February',
                                 '3' => 'March'
                             ]),
-                        ]),
+                        Select::make('plan_orientation')->label('Plan orientation')
+                            ->default('landscape')
+                            ->options([
+                                'landscape' => 'Landscape',
+                                'portrait' => 'Portrait'
+                            ]),
+                        Select::make('preacher_numbers')->label('Preacher names / numbers')
+                            ->default('names')
+                            ->options([
+                                'names' => 'Names',
+                                'numbers' => 'Numbers',
+                                'both' => 'Both'
+                            ]),
+                        TextInput::make('clash_window')->label('Clash window (minutes)')
+                            ->numeric()
+                            ->default(90)
+                            ->helperText('The number of minutes before and after a service that a preacher is considered to be unavailable for another service.')
+                    ]),
                 ]),
             ]);
     }
