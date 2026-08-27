@@ -199,7 +199,6 @@ class MinistersRelationManager extends RelationManager
                     ->query(function (Builder $query) {
                         return $query->whereJsonContains('status', 'Minister')->orWhereJsonContains('status', 'Superintendent')->orWhereJsonContains('status', 'Deacon');
                     })
-                    ->default()
             ])
             ->headerActions([
                 CreateAction::make('Add a new minister')->label('New minister')
