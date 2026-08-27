@@ -129,7 +129,7 @@ class SocietyForm
                     ->hiddenLabel(true)
                     ->state(function ($record){
                         $log = Log::where('model','Society')->where('action','Created')->where('model_id',$record->id)->orderBy('created_at','desc')->first();
-                        if ($log) {
+                        if (($log) && ($log->user)) {
                             return "Added by " . $log->user->name . " on " . $log->created_at->format('d/m/Y');
                         }
                     })->hiddenOn('create'),
