@@ -207,18 +207,15 @@ class HomeController extends Controller
         $this->getdates();
         $rows=$this->getrows($this->circuit->id,$this->dates);
 
-        // Orientation comes from the circuit setting, defaulting to landscape
         $orientation = ($this->circuit->plan_orientation === 'portrait') ? 'P' : 'L';
 
         $pdf = new tFPDF();
         $pdf->AddPage($orientation);
 
-        // Derive layout anchors from the actual page size instead of
-        // hardcoding them, so the same drawing code works in either orientation
         $pageWidth  = $pdf->GetPageWidth();
         $pageHeight = $pdf->GetPageHeight();
-        $rightEdge  = $pageWidth - 10;   // 10mm margin, matching the existing left margin
-        $wrapY      = $pageHeight - 11;  // bottom-of-content threshold (was hardcoded 199)
+        $rightEdge  = $pageWidth - 10;
+        $gridBottom = $pageHeight - 20;
 
         $imagepath=base_path('/resources/images/mcsa.png');
         $pdf->Image($imagepath,10,5,19);
@@ -239,135 +236,103 @@ class HomeController extends Controller
         $pdf->text(35,23,$startdate . " - " . $enddate . "");
         $pdf->SetTitle($title);
 
-        // Legend - anchored to the right edge of the page, whatever that is
-        $yadd=0;
+        // Legend - orientation-specific placement
+        $gridStartY = 33;
         if ($this->circuit->servicetypes){
-            $stypes=$this->circuit->servicetypes;    
+            $stypes=$this->circuit->servicetypes;
             ksort($stypes);
-            $i=1;
-            if (count($stypes) % 2 == 0){
-                $stheight=count($stypes)*2;
-            } else {
-                $stheight=(count($stypes)+1)*2;
-            }
-            $legendWidth = 87;
-            $legendX = $rightEdge - $legendWidth;
-            $pdf->rect($legendX,5,$legendWidth,$stheight);
-            foreach ($stypes as $key=>$val){
-                if ($i % 2 == 0){
-                    $xadd=43;
-                } else {
-                    $yadd=$yadd+3;
-                    $xadd=0;
-                }
-                $pdf->SetFont('Helvetica', 'B', 8);
-                $pdf->text($legendX+1+$xadd,5+$yadd,$key);
-                $pdf->SetFont('Helvetica', '', 8);
-                $pdf->text($legendX+9+$xadd,5+$yadd,$val);
-                $i++;
-            }
-        }
-        $pdf->SetAutoPageBreak(true, 0);
-        $pdf->SetFont('Helvetica', 'B', 9);
-        $xx=51;
-        $x=$xx;
-        $yy=33;
-        $y=$yy;
-        $xgap = ($rightEdge-$xx)/count($this->dates);
-        foreach ($this->dates as $col){
-            if (date('w',strtotime($col))=="0"){
-                $pdf->setxy($xx,$yy-3);
-            } else {
-                $tmw=$this->calculate_midweeks($startdate, $enddate, $col);
-                $pdf->setxy($xx,$yy-2);
-                $font=8;
-                $size="unknown";
-                do {
-                    $pdf->SetFont('Helvetica', '', $font);
-                    $width=$pdf->GetStringWidth($tmw['midweek']);
-                    if ($width < $xgap){
-                        $pdf->cell($xgap+1,0,$tmw['midweek'],0,0,'C');
-                        $size="known";
-                        $font=8;
-                    } else {
-                        $font=$font-0.5;
-                    }
-                } while ($size=="unknown");
-                $pdf->SetFont('Helvetica', 'B', 9);                    
-                $pdf->setxy($xx,$yy-6);
-            }
-            $pdf->cell($xgap,0,date('j M',strtotime($col)),0,0,'C');
-            $xx=$xx + $xgap;
-        }
-        $maxx=$xx;
-        $ycount=count($rows);
-        foreach ($rows as $rr){
-            $ycount=$ycount+count($rr)-1;
-        }
-        if ($ycount>0){
-            $ygap = (190-$yy)/$ycount;
-        } else {
-            $ygap = 25;
-        }
-        if ($ygap > 12){
-            $ygap=12;
-        }
-        foreach ($rows as $soc=>$row){
-            $pdf->line(10,$yy,$maxx,$yy);
-            $pdf->text(12,1+$yy+$ygap/2*count($row),$soc);
-            $first=true;
-            foreach ($row as $service=>$plans){
-                if (!$first){
-                    $pdf->line(35,$yy,$maxx,$yy);
-                } else {
-                    $first=false;
-                }
-                $pdf->text($x-12,1+$yy+$ygap/2,$service);
-                $xp=$x;
-                foreach ($plans as $plan){
-                    $font=8;
-                    $size="unknown";
-                    $pdf->SetFont('Helvetica', '', 8);
-                    if ($plan['servicetype']==""){
-                        $pdf->setxy($xp,$yy + $ygap/2);
-                    } else {
-                        $pdf->setxy($xp,$yy+ $ygap*3/4);
-                    }
-                    if ($plan['preacher']<>""){
-                        do {
-                            $pdf->SetFont('Helvetica', '', $font);
-                            $width=$pdf->GetStringWidth($this->getpreacher($plan['preacher']));
-                            if ($width < $xgap){
-                                $pdf->cell($xgap,0,$this->getpreacher($plan['preacher']),0,0,'C');
-                                $size="known";
-                                $font=8;
-                            } else {
-                                $font=$font-0.5;
-                            }
-                        } while ($size=="unknown");
-                    }
-                    $pdf->SetFont('Helvetica', 'B', 9);
-                    $pdf->setxy($xp,1+$yy+$ygap/4);
-                    $pdf->cell($xgap,0,$plan['servicetype'],0,0,'C');
-                    $xp=$xp+$xgap;
-                }
-                $yy=$yy+$ygap;
-                $pdf->SetFont('Helvetica', 'B', 9);
-            }
-        }
-        $maxy=$yy;
-        $pdf->line(10,$yy,$maxx,$yy);
-        $pdf->line(10,$maxy,10,$y);
-        $pdf->line(35,$maxy,35,$y);
-        foreach ($this->dates as $c2){
-            $pdf->line($x,$maxy,$x,$y);
-            $x=$x+$xgap;
-        }
-        $pdf->line($x,$maxy,$x,$y);
 
-        // Second page
+            if ($orientation === 'P'){
+                $legendY = 27;
+                $columns = 2;
+                $columnWidth = ($rightEdge - 10) / $columns;
+                $legendRows = (int) ceil(count($stypes) / $columns);
+                $legendHeight = $legendRows * 4;
+
+                $pdf->rect(10, $legendY, $rightEdge - 10, $legendHeight);
+
+                $i = 0;
+                foreach ($stypes as $key=>$val){
+                    $col = $i % $columns;
+                    $legendRow = intdiv($i, $columns);
+                    $entryX = 11 + ($col * $columnWidth);
+                    $entryY = $legendY + 3 + ($legendRow * 4);
+                    $pdf->SetFont('Helvetica', 'B', 8);
+                    $pdf->text($entryX, $entryY, $key);
+                    $pdf->SetFont('Helvetica', '', 8);
+                    $pdf->text($entryX + 10, $entryY, $val);
+                    $i++;
+                }
+
+                // Midweek columns draw as high as $yy-6, so clear that plus a margin
+                $gridStartY = max(33, $legendY + $legendHeight + 8);
+            } else {
+                $yadd=0;
+                $i=1;
+                if (count($stypes) % 2 == 0){
+                    $stheight=count($stypes)*2;
+                } else {
+                    $stheight=(count($stypes)+1)*2;
+                }
+                $legendWidth = 87;
+                $legendX = $rightEdge - $legendWidth;
+                $pdf->rect($legendX,5,$legendWidth,$stheight);
+                foreach ($stypes as $key=>$val){
+                    if ($i % 2 == 0){
+                        $xadd=43;
+                    } else {
+                        $yadd=$yadd+3;
+                        $xadd=0;
+                    }
+                    $pdf->SetFont('Helvetica', 'B', 8);
+                    $pdf->text($legendX+1+$xadd,5+$yadd,$key);
+                    $pdf->SetFont('Helvetica', '', 8);
+                    $pdf->text($legendX+9+$xadd,5+$yadd,$val);
+                    $i++;
+                }
+            }
+        }
+
+        // Decide whether the grid needs a second page. A row becomes
+        // unreadably squashed below about 6mm tall, so work out how many
+        // rows comfortably fit in the space actually available, and split
+        // if there are more services than that. This comes out different
+        // for landscape vs portrait automatically, since portrait's taller
+        // page gives more room to work with.
+        $minRowHeightMM = 6;
+        $ycount = $this->countPlanRows($rows);
+        $rowThreshold = max(1, (int) floor(($gridBottom - $gridStartY) / $minRowHeightMM));
+
+        if ($ycount > $rowThreshold){
+            [$rowsPage1, $rowsPage2] = $this->splitRowsByThreshold($rows, $rowThreshold);
+        } else {
+            $rowsPage1 = $rows;
+            $rowsPage2 = [];
+        }
+
+        $this->drawPlanGridPage($pdf, $rowsPage1, $rightEdge, $gridStartY, $gridBottom, $startdate, $enddate);
+
+        if (!empty($rowsPage2)){
+            $pdf->AddPage($orientation);
+            $pageWidth  = $pdf->GetPageWidth();
+            $pageHeight = $pdf->GetPageHeight();
+            $rightEdge  = $pageWidth - 10;
+            $gridBottom = $pageHeight - 20;
+
+            $pdf->Image($imagepath,10,5,19);
+            $pdf->SetFont('Helvetica', 'B', 18);
+            $pdf->text(35,11,"THE METHODIST CHURCH OF SOUTHERN AFRICA");
+            $pdf->SetFont('Helvetica', '', 15);
+            $pdf->text(35,17.5,$title);   
+            $pdf->SetFont('Helvetica', '', 12);
+            $pdf->text(35,23,$startdate . " - " . $enddate . " (continued)");
+
+            $this->drawPlanGridPage($pdf, $rowsPage2, $rightEdge, 33, $gridBottom, $startdate, $enddate);
+        }
+
+        // Ministers / local preachers / meetings page - page 3 if the grid
+        // split, otherwise page 2, same as before either way.
         $pdf->AddPage($orientation);
-        // Recompute in case orientation-specific metrics ever differ page to page
         $pageWidth  = $pdf->GetPageWidth();
         $pageHeight = $pdf->GetPageHeight();
         $rightEdge  = $pageWidth - 10;
@@ -431,7 +396,6 @@ class HomeController extends Controller
                 }
             }   
         }
-        // Lay leaders
         $leaders=$this->circuit->leaders ?? [];
         foreach ($leaders as $role=>$leader){
             if ($leader){
@@ -476,7 +440,6 @@ class HomeController extends Controller
         $pdf->text($xx,$yy+2,"LOCAL PREACHERS");
         $yy=$yy+4.5;
 
-        // Preacher leaders
         $roles = setting('preacher_leadership_roles');
         foreach ($roles as $role){
             $leaders=Person::whereHas('circuits',function ($q) { $q->where('circuits.id',$this->circuit->id); })->withWhereHas('preacher', function($q) use($role) { $q->whereJsonContains('leadership',$role); })->orderBy('surname')->get();
@@ -566,7 +529,6 @@ class HomeController extends Controller
             }   
         }
 
-        // Footnotes - anchored relative to the right edge, same offsets as before
         $footnoteX = $rightEdge - 47;
         $pdf->text($footnoteX,$pageHeight-15,'* Emeritus');
         $pdf->SetTextColor(155,155,155);
@@ -680,10 +642,10 @@ class HomeController extends Controller
         }
 
         $name = substr($preacher->firstname,0,1) . " " . $preacher->surname;
-        $mode = $this->circuit->preacher_numbers ?? 'names';
+        $mode = $this->circuit->preacher_numbers ?? 'name';
         $number = optional($preacher->preacher)->number;
 
-        if ($mode === 'numbers'){
+        if ($mode === 'number'){
             return $number ?: '';
         }
 
@@ -693,6 +655,169 @@ class HomeController extends Controller
 
         // 'name' (default)
         return $name;
+    }
+
+    /**
+     * Total number of individual service-rows across all societies -
+     * i.e. how many horizontal rows the grid needs, regardless of dates.
+     */
+    private function countPlanRows($rows)
+    {
+        $count = count($rows);
+        foreach ($rows as $services) {
+            $count += count($services) - 1;
+        }
+        return $count;
+    }
+
+    /**
+     * Split $rows (society => service => plans) into two pages' worth,
+     * keeping each society's services together as a group. The first
+     * society always goes on page 1, however large, so nothing is stranded.
+     */
+    private function splitRowsByThreshold($rows, $threshold)
+    {
+        $page1 = [];
+        $page2 = [];
+        $runningCount = 0;
+        $onPage1 = true;
+
+        foreach ($rows as $society => $services) {
+            $societyRowCount = count($services);
+
+            if ($onPage1 && $runningCount > 0 && ($runningCount + $societyRowCount) > $threshold) {
+                $onPage1 = false;
+            }
+
+            if ($onPage1) {
+                $page1[$society] = $services;
+                $runningCount += $societyRowCount;
+            } else {
+                $page2[$society] = $services;
+            }
+        }
+
+        return [$page1, $page2];
+    }
+
+    /**
+     * Draws one page's worth of the preaching plan grid: the date-column
+     * header row and the society/service/preacher body beneath it.
+     * Called once, or twice if the plan spills onto a second grid page.
+     */
+    private function drawPlanGridPage($pdf, $rowsForPage, $rightEdge, $gridStartY, $gridBottom, $startdate, $enddate)
+    {
+        $pdf->SetAutoPageBreak(true, 0);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $xx=51;
+        $x=$xx;
+        $yy=$gridStartY;
+        $y=$yy;
+        $xgap = ($rightEdge-$xx)/count($this->dates);
+
+        foreach ($this->dates as $col){
+            if (date('w',strtotime($col))=="0"){
+                $pdf->setxy($xx,$yy-3);
+            } else {
+                $tmw=$this->calculate_midweeks($startdate, $enddate, $col);
+                $pdf->setxy($xx,$yy-2);
+                $font=8;
+                $size="unknown";
+                do {
+                    $pdf->SetFont('Helvetica', '', $font);
+                    $width=$pdf->GetStringWidth($tmw['midweek']);
+                    if ($width < $xgap || $font <= 4){
+                        $pdf->cell($xgap+1,0,$tmw['midweek'],0,0,'C');
+                        $size="known";
+                        $font=8;
+                    } else {
+                        $font=$font-0.5;
+                    }
+                } while ($size=="unknown");
+                $pdf->SetFont('Helvetica', 'B', 9);
+                $pdf->setxy($xx,$yy-6);
+            }
+            $pdf->cell($xgap,0,date('j M',strtotime($col)),0,0,'C');
+            $xx=$xx + $xgap;
+        }
+        $maxx=$xx;
+
+        $ycount = $this->countPlanRows($rowsForPage);
+        if ($ycount>0){
+            $ygap = ($gridBottom-$yy)/$ycount;
+        } else {
+            $ygap = 25;
+        }
+        if ($ygap > 12){
+            $ygap=12;
+        }
+
+        foreach ($rowsForPage as $soc=>$row){
+            $pdf->line(10,$yy,$maxx,$yy);
+            $pdf->text(12,1+$yy+$ygap/2*count($row),$soc);
+            $first=true;
+            foreach ($row as $service=>$plans){
+                if (!$first){
+                    $pdf->line(35,$yy,$maxx,$yy);
+                } else {
+                    $first=false;
+                }
+                $pdf->text($x-12,1+$yy+$ygap/2,$service);
+                $xp=$x;
+                foreach ($plans as $plan){
+                    $font=8;
+                    $size="unknown";
+                    $pdf->SetFont('Helvetica', '', 8);
+                    if ($plan['servicetype']==""){
+                        $pdf->setxy($xp,$yy + $ygap/2);
+                    } else {
+                        $pdf->setxy($xp,$yy+ $ygap*3/4);
+                    }
+                    if ($plan['preacher']<>""){
+                        do {
+                            $pdf->SetFont('Helvetica', '', $font);
+                            $width=$pdf->GetStringWidth($this->getpreacher($plan['preacher']));
+                            if ($width < $xgap || $font <= 4){
+                                $pdf->cell($xgap,0,$this->getpreacher($plan['preacher']),0,0,'C');
+                                $size="known";
+                                $font=8;
+                            } else {
+                                $font=$font-0.5;
+                            }
+                        } while ($size=="unknown");
+                    }
+                    if ($plan['servicetype'] <> ""){
+                        $stfont=9;
+                        $stsize="unknown";
+                        do {
+                            $pdf->SetFont('Helvetica', 'B', $stfont);
+                            $stwidth=$pdf->GetStringWidth($plan['servicetype']);
+                            if ($stwidth < $xgap || $stfont <= 4){
+                                $stsize="known";
+                            } else {
+                                $stfont=$stfont-0.5;
+                            }
+                        } while ($stsize=="unknown");
+                    } else {
+                        $pdf->SetFont('Helvetica', 'B', 9);
+                    }
+                    $pdf->setxy($xp,1+$yy+$ygap/4);
+                    $pdf->cell($xgap,0,$plan['servicetype'],0,0,'C');
+                    $xp=$xp+$xgap;
+                }
+                $yy=$yy+$ygap;
+                $pdf->SetFont('Helvetica', 'B', 9);
+            }
+        }
+        $maxy=$yy;
+        $pdf->line(10,$yy,$maxx,$yy);
+        $pdf->line(10,$maxy,10,$y);
+        $pdf->line(35,$maxy,35,$y);
+        foreach ($this->dates as $c2){
+            $pdf->line($x,$maxy,$x,$y);
+            $x=$x+$xgap;
+        }
+        $pdf->line($x,$maxy,$x,$y);
     }
 
     public function preacher($society,$servicetime,$servicedate){

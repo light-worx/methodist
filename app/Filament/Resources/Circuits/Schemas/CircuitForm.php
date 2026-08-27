@@ -89,8 +89,8 @@ class CircuitForm
                         Select::make('preacher_numbers')->label('Preacher names / numbers')
                             ->default('names')
                             ->options([
-                                'names' => 'Names',
-                                'numbers' => 'Numbers',
+                                'name' => 'Names',
+                                'number' => 'Numbers',
                                 'both' => 'Both'
                             ]),
                         TextInput::make('clash_window')->label('Clash window (minutes)')
