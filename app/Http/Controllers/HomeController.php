@@ -206,8 +206,20 @@ class HomeController extends Controller
         $this->circuit=Circuit::whereSlug($circuit)->first();
         $this->getdates();
         $rows=$this->getrows($this->circuit->id,$this->dates);
+
+        // Orientation comes from the circuit setting, defaulting to landscape
+        $orientation = ($this->circuit->plan_orientation === 'portrait') ? 'P' : 'L';
+
         $pdf = new tFPDF();
-        $pdf->AddPage('L');
+        $pdf->AddPage($orientation);
+
+        // Derive layout anchors from the actual page size instead of
+        // hardcoding them, so the same drawing code works in either orientation
+        $pageWidth  = $pdf->GetPageWidth();
+        $pageHeight = $pdf->GetPageHeight();
+        $rightEdge  = $pageWidth - 10;   // 10mm margin, matching the existing left margin
+        $wrapY      = $pageHeight - 11;  // bottom-of-content threshold (was hardcoded 199)
+
         $imagepath=base_path('/resources/images/mcsa.png');
         $pdf->Image($imagepath,10,5,19);
         $pdf->SetFont('Helvetica', 'B', 18);
@@ -227,7 +239,7 @@ class HomeController extends Controller
         $pdf->text(35,23,$startdate . " - " . $enddate . "");
         $pdf->SetTitle($title);
 
-        // Legend
+        // Legend - anchored to the right edge of the page, whatever that is
         $yadd=0;
         if ($this->circuit->servicetypes){
             $stypes=$this->circuit->servicetypes;    
@@ -238,7 +250,9 @@ class HomeController extends Controller
             } else {
                 $stheight=(count($stypes)+1)*2;
             }
-            $pdf->rect(200,5,87,$stheight);
+            $legendWidth = 87;
+            $legendX = $rightEdge - $legendWidth;
+            $pdf->rect($legendX,5,$legendWidth,$stheight);
             foreach ($stypes as $key=>$val){
                 if ($i % 2 == 0){
                     $xadd=43;
@@ -247,9 +261,9 @@ class HomeController extends Controller
                     $xadd=0;
                 }
                 $pdf->SetFont('Helvetica', 'B', 8);
-                $pdf->text(201+$xadd,5+$yadd,$key);
+                $pdf->text($legendX+1+$xadd,5+$yadd,$key);
                 $pdf->SetFont('Helvetica', '', 8);
-                $pdf->text(209+$xadd,5+$yadd,$val);
+                $pdf->text($legendX+9+$xadd,5+$yadd,$val);
                 $i++;
             }
         }
@@ -259,7 +273,7 @@ class HomeController extends Controller
         $x=$xx;
         $yy=33;
         $y=$yy;
-        $xgap = (287-$xx)/count($this->dates);
+        $xgap = ($rightEdge-$xx)/count($this->dates);
         foreach ($this->dates as $col){
             if (date('w',strtotime($col))=="0"){
                 $pdf->setxy($xx,$yy-3);
@@ -350,8 +364,15 @@ class HomeController extends Controller
             $x=$x+$xgap;
         }
         $pdf->line($x,$maxy,$x,$y);
+
         // Second page
-        $pdf->AddPage('L');
+        $pdf->AddPage($orientation);
+        // Recompute in case orientation-specific metrics ever differ page to page
+        $pageWidth  = $pdf->GetPageWidth();
+        $pageHeight = $pdf->GetPageHeight();
+        $rightEdge  = $pageWidth - 10;
+        $wrapY      = $pageHeight - 11;
+
         $pdf->Image($imagepath,10,5,19);
         $pdf->SetFont('Helvetica', 'B', 18);
         $pdf->text(35,11,"THE METHODIST CHURCH OF SOUTHERN AFRICA");
@@ -386,7 +407,7 @@ class HomeController extends Controller
                 }
                 $pdf->text($xx,$yy,$minister->title . " " . substr($minister->firstname,0,1) . " " . $minister->surname . $sup);
                 $yy=$yy+4.5;
-                if ($yy>199) {
+                if ($yy>$wrapY) {
                     $yy=36;
                     $xx=$xx+70;
                 }
@@ -404,7 +425,7 @@ class HomeController extends Controller
                 }
                 $pdf->text($xx,$yy,$super->title . " " . substr($super->firstname,0,1) . " " . $super->surname . $sup);
                 $yy=$yy+4.5;
-                if ($yy>199) {
+                if ($yy>$wrapY) {
                     $yy=36;
                     $xx=$xx+70;
                 }
@@ -422,7 +443,7 @@ class HomeController extends Controller
                 foreach ($leadernames as $leadername){
                     $pdf->text($xx,$yy,$leadername);
                     $yy=$yy+4.5;
-                    if ($yy>199) {
+                    if ($yy>$wrapY) {
                         $yy=36;
                         $xx=$xx+70;
                     }
@@ -475,14 +496,13 @@ class HomeController extends Controller
                     }
                     $pdf->text($xx,$yy,$leader->title . " " . substr($leader->firstname,0,1) . " " . $leader->surname . $sup);
                     $yy=$yy+4.5;
-                    if ($yy>199) {
+                    if ($yy>$wrapY) {
                         $yy=36;
                         $xx=$xx+70;
                     }
                 }   
             }
         }
-        //    $yy=$yy+2.5;
         $pdf->SetFont('Helvetica', '', 9);
         $psociety="";
         foreach ($preachers as $psoc=>$statuses){
@@ -516,7 +536,7 @@ class HomeController extends Controller
                         $pdf->text($xx,$yy,$fin);
                         $pdf->SetTextColor(0,0,0);
                         $yy=$yy+4.5;
-                        if ($yy>199) {
+                        if ($yy>$wrapY) {
                             $yy=32;
                             $xx=$xx+70;
                         }
@@ -538,16 +558,19 @@ class HomeController extends Controller
                     }
                     $pdf->text($xx,$yy,date('d M H:i',strtotime($meeting->meetingdate)) . " " . $meeting->description . $sup);
                     $yy=$yy+4.5;
-                    if ($yy>199) {
+                    if ($yy>$wrapY) {
                         $yy=36;
                         $xx=$xx+70;
                     }
                 }
             }   
         }
-        $pdf->text(240,195,'* Emeritus');
+
+        // Footnotes - anchored relative to the right edge, same offsets as before
+        $footnoteX = $rightEdge - 47;
+        $pdf->text($footnoteX,$pageHeight-15,'* Emeritus');
         $pdf->SetTextColor(155,155,155);
-        $pdf->text(240,199,'Grey text: Inactive preachers');
+        $pdf->text($footnoteX,$wrapY,'Grey text: Inactive preachers');
         $pdf->SetTextColor(0,0,0);
         $pdf->Output('I',$filename);
         exit;

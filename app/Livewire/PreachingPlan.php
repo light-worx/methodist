@@ -77,17 +77,17 @@ class PreachingPlan extends Component
         $this->preachers['Guest Preachers']=array();
         foreach ($persons as $person){
             if ((in_array("Minister",json_decode($person->pivot->status))) or (in_array("Superintendent",json_decode($person->pivot->status)))){
-                $this->preachers['Circuit Ministers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                $this->preachers['Circuit Ministers'][$person->id]=['name' => $this->formatPreacherDisplayName($person),'id' => $person->id];
             } elseif (in_array("Guest",json_decode($person->pivot->status))){
-                $this->preachers['Guest Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                $this->preachers['Guest Preachers'][$person->id]=['name' => $this->formatPreacherDisplayName($person),'id' => $person->id];
             } elseif (in_array("Supernumerary",json_decode($person->pivot->status))){
-                $this->preachers['Supernumerary Ministers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                $this->preachers['Supernumerary Ministers'][$person->id]=['name' => $this->formatPreacherDisplayName($person),'id' => $person->id];
             }  elseif (json_decode($person->pivot->is_preacher)==1) {
                 if ($person->preacher){
                     if ($person->preacher->status == "guest"){
-                        $this->preachers['Guest Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                        $this->preachers['Guest Preachers'][$person->id]=['name' => $this->formatPreacherDisplayName($person),'id' => $person->id];
                     } else {
-                        $this->preachers['Local Preachers'][$person->id]=['name' => substr($person->firstname,0,1) . " " . $person->surname,'id' => $person->id];
+                        $this->preachers['Local Preachers'][$person->id]=['name' => $this->formatPreacherDisplayName($person),'id' => $person->id];
                     }
                 }
             }
@@ -231,7 +231,7 @@ class PreachingPlan extends Component
         
         // Load actual schedule data
         if ($this->serviceids){
-            $scheduleData = Plan::with('person')
+            $scheduleData = Plan::with('person.preacher')
                 ->whereIn('service_id', $this->serviceids)
                 ->whereIn('servicedate', $this->dates)
                 ->where(function ($query) {
@@ -242,7 +242,7 @@ class PreachingPlan extends Component
             
             foreach ($scheduleData as $item) {
                 if (($item->person_id) and ($item->person)){
-                    $preachername=substr($item->person->firstname,0,1) . " " . $item->person->surname;
+                    $preachername=$this->formatPreacherDisplayName($item->person);
                 } else {
                     $preachername="";
                 }
@@ -260,10 +260,35 @@ class PreachingPlan extends Component
     /**
      * How close together (in minutes) two services at different societies
      * need to be, on the same date, to count as a clash for one preacher.
+     * Configurable per-circuit via circuits.clash_window; falls back to 90.
      */
     private function clashWindowMinutes()
     {
         return (int) ($this->circuit->clash_window ?? 90);
+    }
+
+    /**
+     * Format a person's display name for the preaching plan according to
+     * this circuit's preacher_numbers setting ('name', 'number', 'both').
+     * Only preachers with a number recorded on their preacher record are
+     * affected - ministers etc. without one always show as name.
+     */
+    private function formatPreacherDisplayName($person)
+    {
+        $name = substr($person->firstname, 0, 1) . " " . $person->surname;
+        $mode = $this->circuit->preacher_numbers ?? 'name';
+        $number = optional($person->preacher)->number;
+
+        if (!$number || $mode === 'name') {
+            return $name;
+        }
+
+        if ($mode === 'number') {
+            return $number;
+        }
+
+        // 'both'
+        return $number . ' - ' . $name;
     }
 
     /**
