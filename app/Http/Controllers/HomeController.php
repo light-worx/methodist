@@ -674,10 +674,25 @@ class HomeController extends Controller
     }
 
     private function getpreacher($id){
-        $preacher = Person::find($id);
-        if ($preacher){
-            return substr($preacher->firstname,0,1) . " " . $preacher->surname;
+        $preacher = Person::with('preacher')->find($id);
+        if (!$preacher){
+            return '';
         }
+
+        $name = substr($preacher->firstname,0,1) . " " . $preacher->surname;
+        $mode = $this->circuit->preacher_numbers ?? 'names';
+        $number = optional($preacher->preacher)->number;
+
+        if ($mode === 'numbers'){
+            return $number ?: '';
+        }
+
+        if ($mode === 'both'){
+            return $number ? ($number . ' - ' . $name) : $name;
+        }
+
+        // 'name' (default)
+        return $name;
     }
 
     public function preacher($society,$servicetime,$servicedate){
