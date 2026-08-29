@@ -794,10 +794,32 @@ class HomeController extends Controller
                 $pdf->text($x-12,1+$yy+$ygap/2,$service);
                 $xp=$x;
                 foreach ($plans as $plan){
+                    // Preacher name - single centered line
                     $font=8;
                     $size="unknown";
                     $pdf->SetFont('Helvetica', '', 8);
-                    $mode = $this->circuit->preacher_numbers ?? 'name';
+                    if (($plan['servicetype']=="") && ($this->circuit->preacher_numbers !== 'both')){
+                        $pdf->setxy($xp,$yy + $ygap/2);
+                    } else {
+                        $pdf->setxy($xp,$yy+ $ygap*3/4);
+                    }
+                    if ($plan['preacher']<>""){
+                        do {
+                            $pdf->SetFont('Helvetica', '', $font);
+                            $width=$pdf->GetStringWidth($this->getpreacher($plan['preacher']));
+                            if ($width < $xgap || $font <= 4){
+                                $pdf->cell($xgap,0,$this->getpreacher($plan['preacher']),0,0,'C');
+                                $size="known";
+                                $font=8;
+                            } else {
+                                $font=$font-0.5;
+                            }
+                        } while ($size=="unknown");
+                    }
+
+                    // Top line: service type (left-aligned if a number is also
+                    // being shown, centered otherwise), plus, in 'both' mode,
+                    // the preacher's number right-aligned in the top-right corner.
                     $numberText = ($plan['preacher'] <> "") ? $this->getPreacherNumber($plan['preacher']) : '';
                     $topY = 1+$yy+$ygap/4;
 

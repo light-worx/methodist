@@ -279,7 +279,7 @@ class PreachingPlan extends Component
         $mode = $this->circuit->preacher_numbers ?? 'name';
         $number = optional($person->preacher)->number;
 
-        if (!$number || $mode === 'name') {
+        if ($mode === 'name') {
             return $name;
         }
 
@@ -288,7 +288,7 @@ class PreachingPlan extends Component
         }
 
         // 'both'
-        return $number . ' - ' . $name;
+        return $name  . ' - ' . $number;
     }
 
     /**
