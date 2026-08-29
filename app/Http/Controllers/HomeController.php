@@ -28,6 +28,7 @@ class HomeController extends Controller
     public $ministers;
     public $supernumeraries;
     public $localpreachers;
+    private $preacherDataCache = [];
 
     public function __construct()
     {
@@ -635,26 +636,54 @@ class HomeController extends Controller
         exit;
     }
 
+    private function loadPreacherData($id)
+    {
+        if (!array_key_exists($id, $this->preacherDataCache)) {
+            $preacher = Person::with('preacher')->find($id);
+            if ($preacher) {
+                $this->preacherDataCache[$id] = [
+                    'name'   => substr($preacher->firstname, 0, 1) . " " . $preacher->surname,
+                    'number' => optional($preacher->preacher)->number,
+                ];
+            } else {
+                $this->preacherDataCache[$id] = null;
+            }
+        }
+        return $this->preacherDataCache[$id];
+    }
+
+    /**
+     * The main centered line in a preacher cell. 'name': the name.
+     * 'number': the number (blank if they don't have one). 'both': the
+     * name - the number itself is drawn separately, top-right, by
+     * getPreacherNumber() below, rather than appended here.
+     */
     private function getpreacher($id){
-        $preacher = Person::with('preacher')->find($id);
-        if (!$preacher){
+        $data = $this->loadPreacherData($id);
+        if (!$data) {
             return '';
         }
 
-        $name = substr($preacher->firstname,0,1) . " " . $preacher->surname;
         $mode = $this->circuit->preacher_numbers ?? 'name';
-        $number = optional($preacher->preacher)->number;
 
         if ($mode === 'number'){
-            return $number ?: '';
+            return $data['number'] ?: '';
         }
 
-        if ($mode === 'both'){
-            return $number ? ($number . ' - ' . $name) : $name;
-        }
+        // 'name' and 'both' both show the name on the main line
+        return $data['name'];
+    }
 
-        // 'name' (default)
-        return $name;
+    /**
+     * The number to draw top-right, in 'both' mode only. Blank for any
+     * other mode, or if this preacher has no number recorded.
+     */
+    private function getPreacherNumber($id){
+        if (($this->circuit->preacher_numbers ?? 'name') !== 'both'){
+            return '';
+        }
+        $data = $this->loadPreacherData($id);
+        return $data ? ($data['number'] ?: '') : '';
     }
 
     /**
@@ -768,24 +797,10 @@ class HomeController extends Controller
                     $font=8;
                     $size="unknown";
                     $pdf->SetFont('Helvetica', '', 8);
-                    if ($plan['servicetype']==""){
-                        $pdf->setxy($xp,$yy + $ygap/2);
-                    } else {
-                        $pdf->setxy($xp,$yy+ $ygap*3/4);
-                    }
-                    if ($plan['preacher']<>""){
-                        do {
-                            $pdf->SetFont('Helvetica', '', $font);
-                            $width=$pdf->GetStringWidth($this->getpreacher($plan['preacher']));
-                            if ($width < $xgap || $font <= 4){
-                                $pdf->cell($xgap,0,$this->getpreacher($plan['preacher']),0,0,'C');
-                                $size="known";
-                                $font=8;
-                            } else {
-                                $font=$font-0.5;
-                            }
-                        } while ($size=="unknown");
-                    }
+                    $mode = $this->circuit->preacher_numbers ?? 'name';
+                    $numberText = ($plan['preacher'] <> "") ? $this->getPreacherNumber($plan['preacher']) : '';
+                    $topY = 1+$yy+$ygap/4;
+
                     if ($plan['servicetype'] <> ""){
                         $stfont=9;
                         $stsize="unknown";
@@ -798,11 +813,29 @@ class HomeController extends Controller
                                 $stfont=$stfont-0.5;
                             }
                         } while ($stsize=="unknown");
+                        $pdf->setxy($xp,$topY);
+                        $pdf->cell($xgap,0,$plan['servicetype'],0,0,$numberText !== '' ? 'L' : 'C');
                     } else {
                         $pdf->SetFont('Helvetica', 'B', 9);
                     }
-                    $pdf->setxy($xp,1+$yy+$ygap/4);
-                    $pdf->cell($xgap,0,$plan['servicetype'],0,0,'C');
+
+                    if ($numberText !== ''){
+                        $numFont=8;
+                        $numSize="unknown";
+                        do {
+                            $pdf->SetFont('Helvetica', '', $numFont);
+                            $numWidth=$pdf->GetStringWidth($numberText);
+                            if ($numWidth < $xgap || $numFont <= 4){
+                                $numSize="known";
+                            } else {
+                                $numFont=$numFont-0.5;
+                            }
+                        } while ($numSize=="unknown");
+                        $pdf->setxy($xp,$topY);
+                        $pdf->cell($xgap,0,$numberText,0,0,'R');
+                    }
+
+                    $pdf->SetFont('Helvetica', 'B', 9);
                     $xp=$xp+$xgap;
                 }
                 $yy=$yy+$ygap;
